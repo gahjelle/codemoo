@@ -1,0 +1,36 @@
+/* Styles for the chat log and message bubbles */
+
+#log {
+    height: 1fr;
+    padding: 1 2;
+}
+
+/* Spacer takes 1 part, content takes 4 parts → content is ~80% wide */
+.bubble-spacer {
+    width: 1fr;
+}
+
+/* Shared bubble content styles */
+.bubble--human,
+.bubble--bot {
+    width: 4fr;
+    padding: 1 2;
+    margin-bottom: 1;
+    border: tall $panel;
+}
+
+/* Human messages: blue tint */
+.bubble--human {
+    background: #1a3a5c;
+}
+
+/* Bot messages: dark green tint */
+.bubble--bot {
+    background: #1a3a2a;
+}
+
+/* Bold sender header inside each bubble */
+.bubble-header {
+    text-style: bold;
+    margin-bottom: 1;
+}

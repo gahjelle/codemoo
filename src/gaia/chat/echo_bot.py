@@ -13,6 +13,11 @@ class EchoBot:
         """Return the bot's display name."""
         return "EchoBot"
 
+    @property
+    def emoji(self) -> str:
+        """Return the bot's display emoji."""
+        return "\N{ROBOT FACE}"
+
     async def on_message(self, message: ChatMessage) -> ChatMessage | None:
         """Echo the message, or return None if the sender is this bot."""
         # Skip own messages to prevent infinite echo loops

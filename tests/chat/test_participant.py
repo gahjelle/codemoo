@@ -1,5 +1,5 @@
 from gaia.chat.message import ChatMessage
-from gaia.chat.participant import ChatParticipant
+from gaia.chat.participant import ChatParticipant, HumanParticipant
 
 
 class _MinimalParticipant:
@@ -9,6 +9,10 @@ class _MinimalParticipant:
     def name(self) -> str:
         return "minimal"
 
+    @property
+    def emoji(self) -> str:
+        return "\N{WHITE SMILING FACE}"
+
     async def on_message(self, _message: ChatMessage) -> ChatMessage | None:
         return None
 
@@ -16,3 +20,11 @@ class _MinimalParticipant:
 def test_duck_typed_object_satisfies_protocol() -> None:
     participant = _MinimalParticipant()
     assert isinstance(participant, ChatParticipant)
+
+
+def test_human_participant_name() -> None:
+    assert HumanParticipant().name == "You"
+
+
+def test_human_participant_emoji() -> None:
+    assert HumanParticipant().emoji == "\N{ADULT}"

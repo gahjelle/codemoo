@@ -2,25 +2,34 @@
 
 from collections.abc import Sequence
 from datetime import UTC, datetime
+from pathlib import Path
 
 from textual.app import App, ComposeResult
-from textual.widgets import Input, RichLog
+from textual.containers import VerticalScroll
+from textual.widgets import Input
 
+from gaia.chat.bubble import ChatBubble
 from gaia.chat.message import ChatMessage
-from gaia.chat.participant import ChatParticipant
+from gaia.chat.participant import ChatParticipant, HumanParticipant
 
 
 class ChatApp(App[None]):
     """Main TUI application that hosts the chat log and input widget."""
 
+    CSS_PATH = Path(__file__).parent / "chat.tcss"
+
     def __init__(self, participants: Sequence[ChatParticipant]) -> None:
         """Initialise with an ordered list of chat participants."""
         super().__init__()
         self._participants = list(participants)
+        # Build a lookup from sender name → (emoji, is_human) for bubble rendering
+        self._sender_info: dict[str, tuple[str, bool]] = {
+            p.name: (p.emoji, isinstance(p, HumanParticipant)) for p in participants
+        }
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log and the text input field."""
-        yield RichLog(id="log", auto_scroll=True, markup=True)
+        yield VerticalScroll(id="log")
         yield Input(placeholder="Type a message and press Enter...")
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
@@ -40,9 +49,12 @@ class ChatApp(App[None]):
         self.run_worker(self._dispatch(message), exclusive=False)
 
     def _append_to_log(self, message: ChatMessage) -> None:
-        # RichLog with auto_scroll=True scrolls to latest entry automatically
-        log = self.query_one(RichLog)
-        log.write(f"[bold]{message.sender}[/bold]: {message.text}")
+        default = ("\N{SPEECH BALLOON}", False)
+        emoji, is_human = self._sender_info.get(message.sender, default)
+        bubble = ChatBubble(message.sender, emoji, message.text, is_human=is_human)
+        log = self.query_one("#log", VerticalScroll)
+        log.mount(bubble)
+        log.scroll_end(animate=False)
 
     async def _dispatch(self, initial_message: ChatMessage) -> None:
         """Propagate a message to all participants, then propagate any replies.

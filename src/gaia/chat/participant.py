@@ -14,6 +14,11 @@ class ChatParticipant(Protocol):
         """Return the participant's display name."""
         ...
 
+    @property
+    def emoji(self) -> str:
+        """Return the participant's display emoji."""
+        ...
+
     async def on_message(self, message: ChatMessage) -> ChatMessage | None:
         """Receive a message and optionally return a reply."""
         ...
@@ -32,6 +37,11 @@ class HumanParticipant:
         """Return the human's display name."""
         return "You"
 
-    async def on_message(self, _message: ChatMessage) -> ChatMessage | None:
+    @property
+    def emoji(self) -> str:
+        """Return the human's display emoji."""
+        return "\N{ADULT}"
+
+    async def on_message(self, message: ChatMessage) -> ChatMessage | None:  # noqa: ARG002
         """Return None — the human replies via the keyboard, not programmatically."""
         return None
