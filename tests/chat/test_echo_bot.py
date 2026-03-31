@@ -1,0 +1,44 @@
+import pytest
+from datetime import datetime, timezone
+
+from gaia.chat.echo_bot import EchoBot
+from gaia.chat.message import ChatMessage
+
+
+@pytest.fixture
+def bot() -> EchoBot:
+    return EchoBot()
+
+
+@pytest.fixture
+def human_message() -> ChatMessage:
+    return ChatMessage(
+        sender="human",
+        text="hello there",
+        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+    )
+
+
+def test_name_is_non_empty(bot: EchoBot) -> None:
+    assert bot.name
+
+
+@pytest.mark.asyncio
+async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) -> None:
+    reply = await bot.on_message(human_message)
+
+    assert reply is not None
+    assert reply.sender == bot.name
+    assert reply.text == human_message.text
+
+
+@pytest.mark.asyncio
+async def test_does_not_echo_own_message(bot: EchoBot) -> None:
+    own_message = ChatMessage(
+        sender=bot.name,
+        text="I said this",
+        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+    )
+    reply = await bot.on_message(own_message)
+
+    assert reply is None
