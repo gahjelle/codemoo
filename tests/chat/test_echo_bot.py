@@ -1,5 +1,6 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from gaia.chat.echo_bot import EchoBot
 from gaia.chat.message import ChatMessage
@@ -15,7 +16,7 @@ def human_message() -> ChatMessage:
     return ChatMessage(
         sender="human",
         text="hello there",
-        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC),
     )
 
 
@@ -37,7 +38,7 @@ async def test_does_not_echo_own_message(bot: EchoBot) -> None:
     own_message = ChatMessage(
         sender=bot.name,
         text="I said this",
-        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC),
     )
     reply = await bot.on_message(own_message)
 

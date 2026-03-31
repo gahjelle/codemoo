@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from textual.app import App, ComposeResult
 from textual.widgets import Input, RichLog
@@ -26,7 +26,7 @@ class ChatApp(App[None]):
         message = ChatMessage(
             sender="You",
             text=text,
-            timestamp=datetime.now(tz=timezone.utc),
+            timestamp=datetime.now(tz=UTC),
         )
         self._append_to_log(message)
         # Dispatch in a worker so participant coroutines run without blocking the UI

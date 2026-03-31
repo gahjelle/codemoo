@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from gaia.chat.message import ChatMessage
 
@@ -15,5 +15,5 @@ class EchoBot:
         return ChatMessage(
             sender=self.name,
             text=message.text,
-            timestamp=datetime.now(tz=timezone.utc),
+            timestamp=datetime.now(tz=UTC),
         )

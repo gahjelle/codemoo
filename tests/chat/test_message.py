@@ -1,5 +1,5 @@
 import dataclasses
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -7,7 +7,7 @@ from gaia.chat.message import ChatMessage
 
 
 def test_chat_message_fields() -> None:
-    ts = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    ts = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
     msg = ChatMessage(sender="alice", text="hello", timestamp=ts)
 
     assert msg.sender == "alice"
@@ -16,7 +16,7 @@ def test_chat_message_fields() -> None:
 
 
 def test_chat_message_is_immutable() -> None:
-    ts = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    ts = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
     msg = ChatMessage(sender="alice", text="hello", timestamp=ts)
 
     with pytest.raises(dataclasses.FrozenInstanceError):
