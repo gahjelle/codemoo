@@ -35,9 +35,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# D100/D103: Test modules and functions are named descriptively; docstrings add no value
 # PLR2004: Magic value used in comparison (OK for tests)
 # S101: Use of `assert` (OK for tests)
 # SLF001: Private member accessed (OK for tests)
 # UP018: Replace with string/integer/... literal (OK for typed tests)
-"tests/test_*.py" = ["PLR2004", "S101", "SLF001", "UP018"]
-"tests/*/test_*.py" = ["S101"]
+"tests/test_*.py" = ["D100", "D103", "PLR2004", "S101", "SLF001", "UP018"]
+"tests/*/test_*.py" = ["D100", "D103", "S101"]

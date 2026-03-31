@@ -1,3 +1,5 @@
+"""Textual TUI application wiring together chat participants."""
+
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
@@ -9,15 +11,20 @@ from gaia.chat.participant import ChatParticipant
 
 
 class ChatApp(App[None]):
+    """Main TUI application that hosts the chat log and input widget."""
+
     def __init__(self, participants: Sequence[ChatParticipant]) -> None:
+        """Initialise with an ordered list of chat participants."""
         super().__init__()
         self._participants = list(participants)
 
     def compose(self) -> ComposeResult:
+        """Yield the scrollable log and the text input field."""
         yield RichLog(id="log", auto_scroll=True, markup=True)
         yield Input(placeholder="Type a message and press Enter...")
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Handle Enter in the input box: create a message and dispatch it."""
         text = event.value.strip()
         # Empty input produces no message per spec
         if not text:

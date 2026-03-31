@@ -20,4 +20,4 @@ def test_chat_message_is_immutable() -> None:
     msg = ChatMessage(sender="alice", text="hello", timestamp=ts)
 
     with pytest.raises(dataclasses.FrozenInstanceError):
-        msg.text = "changed"  # type: ignore
+        msg.text = "changed"  # type: ignore[misc]

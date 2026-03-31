@@ -9,7 +9,7 @@ class _MinimalParticipant:
     def name(self) -> str:
         return "minimal"
 
-    async def on_message(self, message: ChatMessage) -> ChatMessage | None:
+    async def on_message(self, _message: ChatMessage) -> ChatMessage | None:
         return None
 
 
