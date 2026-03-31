@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from gaia.chat.message import ChatMessage
+from gaia.core.message import ChatMessage
 
 
 @runtime_checkable
@@ -17,6 +17,11 @@ class ChatParticipant(Protocol):
     @property
     def emoji(self) -> str:
         """Return the participant's display emoji."""
+        ...
+
+    @property
+    def is_human(self) -> bool:
+        """Return True if this participant represents the human user."""
         ...
 
     async def on_message(self, message: ChatMessage) -> ChatMessage | None:
@@ -41,6 +46,11 @@ class HumanParticipant:
     def emoji(self) -> str:
         """Return the human's display emoji."""
         return "\N{ADULT}"
+
+    @property
+    def is_human(self) -> bool:
+        """Return True — this participant is the human user."""
+        return True
 
     async def on_message(self, message: ChatMessage) -> ChatMessage | None:  # noqa: ARG002
         """Return None — the human replies via the keyboard, not programmatically."""

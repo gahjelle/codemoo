@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from gaia.chat.message import ChatMessage
+from gaia.core.message import ChatMessage
 
 
 def test_chat_message_fields() -> None:

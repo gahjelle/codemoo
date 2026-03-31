@@ -1,6 +1,6 @@
 """Textual TUI application wiring together chat participants."""
 
-from collections.abc import Sequence
+from collections.abc import AsyncGenerator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -9,8 +9,8 @@ from textual.containers import VerticalScroll
 from textual.widgets import Input
 
 from gaia.chat.bubble import ChatBubble
-from gaia.chat.message import ChatMessage
-from gaia.chat.participant import ChatParticipant, HumanParticipant
+from gaia.core.message import ChatMessage
+from gaia.core.participant import ChatParticipant
 
 
 class ChatApp(App[None]):
@@ -24,8 +24,10 @@ class ChatApp(App[None]):
         self._participants = list(participants)
         # Build a lookup from sender name → (emoji, is_human) for bubble rendering
         self._sender_info: dict[str, tuple[str, bool]] = {
-            p.name: (p.emoji, isinstance(p, HumanParticipant)) for p in participants
+            p.name: (p.emoji, p.is_human) for p in participants
         }
+        # Keep a reference to the human participant for outgoing message construction
+        self._human = next(p for p in participants if p.is_human)
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log and the text input field."""
@@ -40,7 +42,7 @@ class ChatApp(App[None]):
             return
         self.query_one(Input).clear()
         message = ChatMessage(
-            sender="You",
+            sender=self._human.name,
             text=text,
             timestamp=datetime.now(tz=UTC),
         )
@@ -56,11 +58,14 @@ class ChatApp(App[None]):
         log.mount(bubble)
         log.scroll_end(animate=False)
 
-    async def _dispatch(self, initial_message: ChatMessage) -> None:
-        """Propagate a message to all participants, then propagate any replies.
+    async def _collect_replies(
+        self, initial_message: ChatMessage
+    ) -> AsyncGenerator[ChatMessage, None]:
+        """Yield reply messages in BFS order with no UI side effects.
 
-        Uses a queue to avoid recursion. The loop terminates naturally because
-        bots are required to filter their own messages (returning None).
+        Pure async generator: given an initial message and the registered
+        participants, produces every reply that flows from it. The caller
+        is responsible for display and for stamping fresh timestamps.
         """
         queue: list[ChatMessage] = [initial_message]
         while queue:
@@ -68,5 +73,16 @@ class ChatApp(App[None]):
             for participant in self._participants:
                 reply = await participant.on_message(message)
                 if reply is not None:
-                    self._append_to_log(reply)
-                    queue.append(reply)
+                    # Stamp the timestamp here in the shell, not inside the bot
+                    stamped = ChatMessage(
+                        sender=reply.sender,
+                        text=reply.text,
+                        timestamp=datetime.now(tz=UTC),
+                    )
+                    queue.append(stamped)
+                    yield stamped
+
+    async def _dispatch(self, initial_message: ChatMessage) -> None:
+        """Consume replies from _collect_replies and render them to the log."""
+        async for reply in self._collect_replies(initial_message):
+            self._append_to_log(reply)

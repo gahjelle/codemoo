@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from gaia.chat.echo_bot import EchoBot
-from gaia.chat.message import ChatMessage
+from gaia.core.echo_bot import EchoBot
+from gaia.core.message import ChatMessage
 
 
 @pytest.fixture
@@ -31,6 +31,17 @@ async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) ->
     assert reply is not None
     assert reply.sender == bot.name
     assert reply.text == human_message.text
+
+
+@pytest.mark.asyncio
+async def test_reply_timestamp_matches_input(
+    bot: EchoBot, human_message: ChatMessage
+) -> None:
+    # EchoBot must not call datetime.now(); the shell owns timestamp assignment
+    reply = await bot.on_message(human_message)
+
+    assert reply is not None
+    assert reply.timestamp == human_message.timestamp
 
 
 @pytest.mark.asyncio

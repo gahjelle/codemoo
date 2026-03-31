@@ -1,32 +1,4 @@
-# Spec: chat-ui
-
-## Purpose
-
-The chat UI is a Textual terminal application that presents a scrollable message log and a text input field, allowing a human user to participate in a chat session alongside other registered participants.
-
-## Requirements
-
-### Requirement: Display chat message log
-The chat UI SHALL display an ordered, scrollable log of all messages in the session. Each message SHALL be rendered as a styled chat bubble showing the sender's emoji, name, and Markdown-formatted message body.
-
-#### Scenario: Messages appear in order
-- **WHEN** a message is posted by any participant
-- **THEN** it appears in the message log below all previously posted messages
-
-#### Scenario: Log scrolls to latest message
-- **WHEN** a new message is appended to the log
-- **THEN** the log SHALL scroll automatically to show the latest message
-
-### Requirement: Accept human text input
-The chat UI SHALL provide a text input field where the human user can type and submit messages.
-
-#### Scenario: Submit message with Enter key
-- **WHEN** the user types text into the input field and presses Enter
-- **THEN** the message SHALL be posted to the chat and the input field SHALL be cleared
-
-#### Scenario: Empty input is ignored
-- **WHEN** the user presses Enter with an empty input field
-- **THEN** no message SHALL be posted and the input field SHALL remain empty
+## ADDED Requirements
 
 ### Requirement: Dispatch logic is separable from UI side effects
 The chat application SHALL implement message dispatch as a pure async generator that yields reply messages, consumed by a separate imperative method that mounts bubbles. The generator SHALL have no dependency on the UI framework.
@@ -56,10 +28,3 @@ The chat application SHALL use the `is_human` property from the `ChatParticipant
 #### Scenario: Bot bubble is left-aligned
 - **WHEN** a message is posted by a participant whose `is_human` is `False`
 - **THEN** it SHALL be rendered as a left-aligned bubble
-
-### Requirement: Launch via CLI entry point
-The `gaia` CLI entry point SHALL launch the Textual chat application.
-
-#### Scenario: Running gaia starts the chat UI
-- **WHEN** the user runs `uv run gaia` from the terminal
-- **THEN** the Textual chat application SHALL start and render in the terminal

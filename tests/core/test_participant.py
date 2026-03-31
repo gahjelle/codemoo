@@ -1,5 +1,5 @@
-from gaia.chat.message import ChatMessage
-from gaia.chat.participant import ChatParticipant, HumanParticipant
+from gaia.core.message import ChatMessage
+from gaia.core.participant import ChatParticipant, HumanParticipant
 
 
 class _MinimalParticipant:
@@ -12,6 +12,10 @@ class _MinimalParticipant:
     @property
     def emoji(self) -> str:
         return "\N{WHITE SMILING FACE}"
+
+    @property
+    def is_human(self) -> bool:
+        return False
 
     async def on_message(self, _message: ChatMessage) -> ChatMessage | None:
         return None
