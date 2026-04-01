@@ -40,3 +40,10 @@ uv run ty check
 - Type hints required on all functions
 - Functional Core, Imperative Shell architecture
 - Comments explain why, not what
+
+## Textual Widget CSS
+
+Widget CSS follows a structural/visual split:
+
+- `DEFAULT_CSS` — properties the widget cannot function without (e.g. `height: auto`, `layout`, fractional widths). These travel with the widget class.
+- External `.tcss` file — visual/thematic properties only (colors, borders, spacing).

@@ -11,6 +11,7 @@ class _BubbleContent(Widget):
     DEFAULT_CSS = """
     _BubbleContent {
         height: auto;
+        width: 4fr;
     }
     """
 
@@ -35,13 +36,17 @@ class ChatBubble(Widget):
 
     Fractional widths (1fr / 4fr) handle the split at any terminal width,
     avoiding the need for percentage-based margins which Textual does not support.
-    All visual styling is defined in the external TCSS stylesheet.
+    Structural layout (height, direction, fractional widths) is defined in DEFAULT_CSS;
+    visual styling (colors, borders, spacing) lives in the external TCSS stylesheet.
     """
 
     DEFAULT_CSS = """
     ChatBubble {
         height: auto;
         layout: horizontal;
+    }
+    ChatBubble > .bubble-spacer {
+        width: 1fr;
     }
     """
 

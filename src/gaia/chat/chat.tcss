@@ -2,19 +2,13 @@
 
 #log {
     height: 1fr;
-    padding: 1 2;
+    padding: 0 1;
 }
 
-/* Spacer takes 1 part, content takes 4 parts → content is ~80% wide */
-.bubble-spacer {
-    width: 1fr;
-}
-
-/* Shared bubble content styles */
+/* Shared bubble content styles (fractional widths are structural, defined in DEFAULT_CSS) */
 .bubble--human,
 .bubble--bot {
-    width: 4fr;
-    padding: 1 2;
+    padding: 0 1;
     margin-bottom: 1;
     border: tall $panel;
 }
@@ -32,5 +26,13 @@
 /* Bold sender header inside each bubble */
 .bubble-header {
     text-style: bold;
-    margin-bottom: 1;
+    margin-bottom: 0;
+}
+
+/* Remove default bottom margin on Markdown and its block children (paragraphs etc.) */
+.bubble--human Markdown,
+.bubble--bot Markdown,
+.bubble--human MarkdownBlock,
+.bubble--bot MarkdownBlock {
+    margin-bottom: 0;
 }
