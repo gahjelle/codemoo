@@ -22,7 +22,7 @@ def main() -> None:
             human_name=human.name,
         ),
         SystemBot(
-            name="Sigma",
+            name="Sona",
             emoji="\N{PERFORMING ARTS}",
             backend=mistral,
             human_name=human.name,
