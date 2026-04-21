@@ -8,9 +8,9 @@ from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Input
 
-from gaia.chat.bubble import ChatBubble
-from gaia.core.message import ChatMessage
-from gaia.core.participant import ChatParticipant
+from codaroo.chat.bubble import ChatBubble
+from codaroo.core.message import ChatMessage
+from codaroo.core.participant import ChatParticipant
 
 
 class ChatApp(App[None]):

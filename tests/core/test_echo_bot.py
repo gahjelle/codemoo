@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from gaia.core.echo_bot import EchoBot
-from gaia.core.message import ChatMessage
+from codaroo.core.echo_bot import EchoBot
+from codaroo.core.message import ChatMessage
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from gaia.chat.bubble import ChatBubble, _BubbleContent
+from codaroo.chat.bubble import ChatBubble, _BubbleContent
 
 
 def _content(bubble: ChatBubble) -> _BubbleContent:

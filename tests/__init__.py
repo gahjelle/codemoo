@@ -1,1 +1,1 @@
-"""Test suite for Gaia."""
+"""Test suite for Codaroo."""

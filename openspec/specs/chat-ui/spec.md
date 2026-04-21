@@ -58,8 +58,8 @@ The chat application SHALL use the `is_human` property from the `ChatParticipant
 - **THEN** it SHALL be rendered as a left-aligned bubble
 
 ### Requirement: Launch via CLI entry point
-The `gaia` CLI entry point SHALL launch the Textual chat application.
+The `codaroo` CLI entry point SHALL launch the Textual chat application.
 
-#### Scenario: Running gaia starts the chat UI
-- **WHEN** the user runs `uv run gaia` from the terminal
+#### Scenario: Running codaroo starts the chat UI
+- **WHEN** the user runs `uv run codaroo` from the terminal
 - **THEN** the Textual chat application SHALL start and render in the terminal

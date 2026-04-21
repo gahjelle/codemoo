@@ -1,1 +1,1 @@
-# Gaia - Geir Arne's Agentic Loop
+# Codaroo - Geir Arne's Agentic Loop

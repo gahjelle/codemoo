@@ -1,5 +1,5 @@
-from gaia.core.message import ChatMessage
-from gaia.core.participant import ChatParticipant, HumanParticipant
+from codaroo.core.message import ChatMessage
+from codaroo.core.participant import ChatParticipant, HumanParticipant
 
 
 class _MinimalParticipant:

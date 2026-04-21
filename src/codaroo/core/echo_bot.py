@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from gaia.core.message import ChatMessage
+from codaroo.core.message import ChatMessage
 
 
 class EchoBot:

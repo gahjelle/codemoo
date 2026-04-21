@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from gaia.core.message import ChatMessage
+from codaroo.core.message import ChatMessage
 
 
 @runtime_checkable

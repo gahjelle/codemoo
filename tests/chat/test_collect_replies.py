@@ -7,9 +7,9 @@ from datetime import UTC, datetime
 
 import pytest
 
-from gaia.chat.app import ChatApp
-from gaia.core.message import ChatMessage
-from gaia.core.participant import ChatParticipant, HumanParticipant
+from codaroo.chat.app import ChatApp
+from codaroo.core.message import ChatMessage
+from codaroo.core.participant import ChatParticipant, HumanParticipant
 
 
 class _EchoParticipant:
