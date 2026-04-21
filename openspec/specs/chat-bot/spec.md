@@ -14,7 +14,7 @@ Defines `ChatBot`, a context-aware chat participant that builds a filtered LLM c
 - **THEN** it SHALL return `False`
 
 ### Requirement: ChatBot builds LLM context from filtered history
-When `on_message` is called, `ChatBot` SHALL delegate context-building to `build_llm_context` (from `core/backend.py`), passing `history`, the current message, `self.name`, `human_name`, and `max_messages`. The resulting `list[Message]` SHALL be passed to the backend.
+When `on_message` is called, `ChatBot` SHALL delegate context-building to `build_llm_context` (from `core/backend.py`), passing `history`, the current message, `self.name`, `human_name`, and `max_messages`. The resulting `list[Message]` SHALL be passed to the backend. The reply SHALL be constructed as `ChatMessage(sender=self.name, text=response)`, relying on the default factory for `timestamp`.
 
 #### Scenario: Messages from other bots are excluded from context
 - **WHEN** `history` contains messages from a third participant (neither human nor self)
@@ -32,6 +32,10 @@ When `on_message` is called, `ChatBot` SHALL delegate context-building to `build
 - **WHEN** `on_message` is called
 - **THEN** the final message in the list sent to the backend SHALL be `Message(role="user", content=message.text)`
 
+#### Scenario: ChatBot constructs reply without explicit timestamp
+- **WHEN** `ChatBot.on_message` returns a reply
+- **THEN** the reply SHALL be a `ChatMessage` constructed with `sender` and `text` only
+
 ### Requirement: ChatBot clips context to a configurable maximum message count
 `ChatBot` SHALL accept a `max_messages: int` parameter (default: 20). Before calling the backend, it SHALL retain only the most recent `max_messages` messages from the filtered history, then append the current message.
 
@@ -42,10 +46,3 @@ When `on_message` is called, `ChatBot` SHALL delegate context-building to `build
 #### Scenario: Context is not clipped when history is within limit
 - **WHEN** the filtered history contains `max_messages` or fewer entries
 - **THEN** all filtered history entries SHALL be included
-
-### Requirement: ChatBot does not respond to its own messages
-If the incoming message's sender matches `ChatBot.name`, `on_message` SHALL return `None` without calling the backend.
-
-#### Scenario: ChatBot skips own messages
-- **WHEN** `on_message` is called with a message whose sender equals `ChatBot.name`
-- **THEN** it SHALL return `None` and the backend SHALL NOT be called

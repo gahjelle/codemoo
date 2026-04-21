@@ -46,16 +46,6 @@ def test_chat_bot_is_not_human(chat_bot: ChatBot) -> None:
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_skips_own_messages(
-    chat_bot: ChatBot, chat_backend: _MockBackend
-) -> None:
-    reply = await chat_bot.on_message(_msg("ChatBot", "my message"), [])
-
-    assert reply is None
-    assert chat_backend.calls == []
-
-
-@pytest.mark.asyncio
 async def test_chat_bot_filters_out_other_bot_messages(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:

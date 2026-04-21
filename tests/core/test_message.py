@@ -21,3 +21,12 @@ def test_chat_message_is_immutable() -> None:
 
     with pytest.raises(dataclasses.FrozenInstanceError):
         msg.text = "changed"  # type: ignore[misc]  # ty: ignore[invalid-assignment]
+
+
+def test_chat_message_timestamp_defaults_to_utc_now() -> None:
+    before = datetime.now(tz=UTC)
+    msg = ChatMessage(sender="alice", text="hello")
+    after = datetime.now(tz=UTC)
+
+    assert msg.timestamp.tzinfo is UTC
+    assert before <= msg.timestamp <= after

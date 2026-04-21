@@ -19,8 +19,5 @@ class EchoBot:
         message: ChatMessage,
         history: list[ChatMessage],  # noqa: ARG002
     ) -> ChatMessage | None:
-        """Echo the message, or return None if the sender is this bot."""
-        if message.sender == self.name:
-            return None
-
-        return dataclasses.replace(message, sender=self.name)
+        """Echo the message back with this bot as sender."""
+        return ChatMessage(sender=self.name, text=message.text)

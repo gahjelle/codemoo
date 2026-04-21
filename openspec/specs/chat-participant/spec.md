@@ -7,11 +7,15 @@ Defines the core domain types and protocols for chat participants: an immutable 
 ## Requirements
 
 ### Requirement: ChatMessage is an immutable value type
-The system SHALL represent chat messages as immutable values carrying sender name, message text, and a UTC timestamp.
+The system SHALL represent chat messages as immutable values carrying sender name, message text, and a UTC timestamp. The `timestamp` field SHALL have a default factory of `datetime.now(UTC)` so that callers may omit it; when omitted the timestamp SHALL be set to the current UTC time at construction.
 
 #### Scenario: Message fields are set at construction
 - **WHEN** a `ChatMessage` is created with a sender, text, and timestamp
 - **THEN** those fields SHALL be accessible and SHALL NOT be modifiable after construction
+
+#### Scenario: Timestamp defaults to current UTC time when omitted
+- **WHEN** a `ChatMessage` is created with only `sender` and `text`
+- **THEN** `timestamp` SHALL be a `datetime` in UTC representing approximately the time of construction
 
 ### Requirement: ChatParticipant protocol defines the participant interface
 The system SHALL define a `ChatParticipant` structural protocol. Any object implementing the required interface SHALL be usable as a participant without explicit subclassing.
@@ -43,11 +47,16 @@ The `ChatParticipant` protocol SHALL include an `is_human: bool` property. This 
 - **THEN** it SHALL return `"🧑"`
 
 ### Requirement: Participants are notified of every posted message
-The system SHALL call `on_message` on every registered participant when any message is posted to the chat, including messages from other participants.
+The system SHALL call `on_message` on every registered participant when any message is posted to the chat, **except** the participant whose `name` matches the message sender. The dispatch shell SHALL enforce this invariant; individual participants SHALL NOT be required to guard against receiving their own messages.
 
-#### Scenario: All participants receive each message
+#### Scenario: Sender is skipped during dispatch
 - **WHEN** participant A posts a message
-- **THEN** every registered participant (including A) SHALL have `on_message` called with that message
+- **THEN** `on_message` SHALL NOT be called on participant A for that message
+- **THEN** every other registered participant SHALL have `on_message` called with that message
+
+#### Scenario: Other participants receive each message
+- **WHEN** participant A posts a message
+- **THEN** every participant whose `name` differs from the message sender SHALL have `on_message` called
 
 ### Requirement: Participant replies are posted to the chat
 When a participant's `on_message` returns a `ChatMessage`, the system SHALL post that reply to the chat and propagate it to all participants.

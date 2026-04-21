@@ -1,7 +1,7 @@
 """Immutable value type representing a single chat message."""
 
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 
 @dataclass(frozen=True)
@@ -10,4 +10,4 @@ class ChatMessage:
 
     sender: str
     text: str
-    timestamp: datetime
+    timestamp: datetime = field(default_factory=lambda: datetime.now(tz=UTC))

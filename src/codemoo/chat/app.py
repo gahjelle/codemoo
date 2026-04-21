@@ -1,7 +1,6 @@
 """Textual TUI application wiring together chat participants."""
 
 from collections.abc import AsyncGenerator, Sequence
-from datetime import UTC, datetime
 from pathlib import Path
 
 from textual.app import App, ComposeResult
@@ -43,11 +42,7 @@ class ChatApp(App[None]):
         if not text:
             return
         self.query_one(Input).clear()
-        message = ChatMessage(
-            sender=self._human.name,
-            text=text,
-            timestamp=datetime.now(tz=UTC),
-        )
+        message = ChatMessage(sender=self._human.name, text=text)
         self._append_to_log(message)
         # Snapshot before appending: history excludes the current message
         prior_history = list(self._history)
@@ -80,16 +75,12 @@ class ChatApp(App[None]):
         while queue:
             message = queue.pop(0)
             for participant in self._participants:
+                if message.sender == participant.name:
+                    continue
                 reply = await participant.on_message(message, running_history)
                 if reply is not None:
-                    # Stamp the timestamp here in the shell, not inside the bot
-                    stamped = ChatMessage(
-                        sender=reply.sender,
-                        text=reply.text,
-                        timestamp=datetime.now(tz=UTC),
-                    )
-                    queue.append(stamped)
-                    yield stamped
+                    queue.append(reply)
+                    yield reply
             running_history.append(message)
 
     async def _dispatch(

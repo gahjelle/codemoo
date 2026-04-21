@@ -26,9 +26,7 @@ class LLMBot:
         history: list[ChatMessage],  # noqa: ARG002
     ) -> ChatMessage | None:
         """Respond to message using only its text; ignore history."""
-        if message.sender == self.name:
-            return None
         response = await self.backend.complete(
             [Message(role="user", content=message.text)]
         )
-        return dataclasses.replace(message, sender=self.name, text=response)
+        return ChatMessage(sender=self.name, text=response)

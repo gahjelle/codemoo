@@ -13,12 +13,9 @@ def main() -> None:
     human = HumanParticipant()
     available_bots: list[ChatParticipant] = [
         EchoBot(name="Lulu", emoji="\N{SATELLITE ANTENNA}"),
-        LLMBot(name="Mistral", emoji="\N{SPARKLES}", backend=mistral),
+        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=mistral),
         ChatBot(
-            name="Mistral Chat",
-            emoji="\N{ROBOT FACE}",
-            backend=mistral,
-            human_name=human.name,
+            name="Iris", emoji="\N{ROBOT FACE}", backend=mistral, human_name=human.name
         ),
     ]
 

@@ -1,7 +1,6 @@
 """Context-aware LLM bot that maintains conversation history."""
 
 import dataclasses
-from datetime import UTC, datetime
 from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, build_llm_context
@@ -27,14 +26,8 @@ class ChatBot:
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
         """Respond using filtered conversation history."""
-        if message.sender == self.name:
-            return None
         context = build_llm_context(
             history, message, self.name, self.human_name, self.max_messages
         )
         response = await self.backend.complete(context)
-        return ChatMessage(
-            sender=self.name,
-            text=response,
-            timestamp=datetime.now(tz=UTC),
-        )
+        return ChatMessage(sender=self.name, text=response)

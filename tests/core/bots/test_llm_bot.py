@@ -61,13 +61,3 @@ async def test_llm_bot_returns_response_as_chat_message(
     assert reply is not None
     assert reply.sender == "LLMBot"
     assert reply.text == "I am a bot"
-
-
-@pytest.mark.asyncio
-async def test_llm_bot_skips_own_messages(
-    llm_bot: LLMBot, mock_backend: _MockBackend
-) -> None:
-    reply = await llm_bot.on_message(_msg("LLMBot", "my own message"), [])
-
-    assert reply is None
-    assert mock_backend.calls == []

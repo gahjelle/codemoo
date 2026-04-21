@@ -1,17 +1,4 @@
-# Spec: llm-bot
-
-## Purpose
-
-Defines `LLMBot`, a stateless chat participant that responds to each message in isolation by forwarding only the current message to an `LLMBackend`, without considering conversation history.
-
-## Requirements
-
-### Requirement: LLMBot satisfies the ChatParticipant protocol
-`LLMBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
-
-#### Scenario: LLMBot.is_human returns False
-- **WHEN** `LLMBot.is_human` is accessed
-- **THEN** it SHALL return `False`
+## MODIFIED Requirements
 
 ### Requirement: LLMBot responds using only the current message
 When `on_message` is called, `LLMBot` SHALL send a single `Message(role="user", content=message.text)` to its backend and return the response as a `ChatMessage`. It SHALL ignore the `history` parameter entirely. The reply SHALL be constructed as `ChatMessage(sender=self.name, text=response)`, relying on the default factory for `timestamp`.
@@ -23,3 +10,9 @@ When `on_message` is called, `LLMBot` SHALL send a single `Message(role="user", 
 #### Scenario: LLMBot returns response as ChatMessage
 - **WHEN** `on_message` is called with a human message
 - **THEN** `LLMBot` SHALL return a `ChatMessage` with `sender == self.name` and `text` equal to the backend's response
+
+## REMOVED Requirements
+
+### Requirement: LLMBot does not respond to its own messages
+**Reason**: The dispatch shell now guarantees that no participant receives its own messages.
+**Migration**: Remove the `if message.sender == self.name: return None` guard from `LLMBot.on_message`.

@@ -1,10 +1,4 @@
-# Spec: echo-bot
-
-## Purpose
-
-Defines the `EchoBot` participant — a minimal bot that echoes back any received message. The dispatch shell ensures EchoBot does not receive its own messages.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: EchoBot echoes messages from other participants
 The `EchoBot` participant SHALL reply to any received message by returning a `ChatMessage` containing the same text as the original message and the bot's own name as sender. The reply's timestamp SHALL be set automatically by `ChatMessage`'s default factory at construction time.
@@ -17,9 +11,8 @@ The `EchoBot` participant SHALL reply to any received message by returning a `Ch
 - **WHEN** `EchoBot.on_message` returns a reply
 - **THEN** the reply SHALL be a `ChatMessage` constructed with `sender` and `text` only, relying on the default factory for `timestamp`
 
-### Requirement: EchoBot has a fixed display name
-The `EchoBot` SHALL expose a stable `name` attribute used as the sender field in its replies.
+## REMOVED Requirements
 
-#### Scenario: Name is accessible
-- **WHEN** `EchoBot.name` is accessed
-- **THEN** it SHALL return a non-empty string identifying the bot
+### Requirement: EchoBot does not echo its own messages
+**Reason**: The dispatch shell now guarantees that no participant receives its own messages. Individual bots no longer need to guard against this.
+**Migration**: Remove the `if message.sender == self.name: return None` guard from `EchoBot.on_message`.

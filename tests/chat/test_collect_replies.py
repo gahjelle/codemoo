@@ -13,7 +13,7 @@ from codemoo.core.participant import ChatParticipant, HumanParticipant
 
 
 class _EchoParticipant:
-    """Minimal bot that echoes any message not from itself."""
+    """Minimal bot that echoes every message it receives."""
 
     @property
     def name(self) -> str:
@@ -32,11 +32,7 @@ class _EchoParticipant:
         message: ChatMessage,
         history: list[ChatMessage],  # noqa: ARG002
     ) -> ChatMessage | None:
-        if message.sender == self.name:
-            return None
-        return ChatMessage(
-            sender=self.name, text=message.text, timestamp=message.timestamp
-        )
+        return ChatMessage(sender=self.name, text=message.text)
 
 
 class _SilentParticipant:
@@ -89,6 +85,34 @@ class _HistoryCapturingParticipant:
         return None
 
 
+class _MessageCapturingParticipant:
+    """Participant that records every message it receives."""
+
+    def __init__(self, name: str) -> None:
+        self._name = name
+        self.received_messages: list[ChatMessage] = []
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def emoji(self) -> str:
+        return "\N{MEMO}"
+
+    @property
+    def is_human(self) -> bool:
+        return False
+
+    async def on_message(
+        self,
+        message: ChatMessage,
+        history: list[ChatMessage],  # noqa: ARG002
+    ) -> ChatMessage | None:
+        self.received_messages.append(message)
+        return None
+
+
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
@@ -118,13 +142,24 @@ async def test_collect_replies_yields_nothing_for_silent_bot() -> None:
 
 @pytest.mark.asyncio
 async def test_collect_replies_does_not_loop_on_echo() -> None:
-    # The echo bot filters its own messages, so the chain must terminate.
+    # The shell skips the sender, so the echo bot's reply is never dispatched back.
     app = _make_app([HumanParticipant(), _EchoParticipant()])
     initial = ChatMessage(sender="You", text="ping", timestamp=_TS)
 
     replies = [r async for r in app._collect_replies(initial, [])]
     # Exactly one reply: the echo. The echo bot's reply is not echoed again.
     assert len(replies) == 1
+
+
+@pytest.mark.asyncio
+async def test_sender_is_not_called_with_own_message() -> None:
+    # The shell must skip the sender — the bot should never receive its own message.
+    capture = _MessageCapturingParticipant("Bot")
+    app = _make_app([HumanParticipant(), capture])
+    own_message = ChatMessage(sender="Bot", text="I said this", timestamp=_TS)
+
+    [_ async for _ in app._collect_replies(own_message, [])]
+    assert all(m.sender != "Bot" for m in capture.received_messages)
 
 
 @pytest.mark.asyncio

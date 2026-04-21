@@ -8,7 +8,7 @@ from codemoo.core.message import ChatMessage
 
 @pytest.fixture
 def bot() -> EchoBot:
-    return EchoBot()
+    return EchoBot(name="Echo", emoji="\N{ROBOT FACE}")
 
 
 @pytest.fixture
@@ -34,23 +34,13 @@ async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) ->
 
 
 @pytest.mark.asyncio
-async def test_reply_timestamp_matches_input(
+async def test_reply_has_utc_timestamp(
     bot: EchoBot, human_message: ChatMessage
 ) -> None:
-    # EchoBot must not call datetime.now(); the shell owns timestamp assignment
+    before = datetime.now(tz=UTC)
     reply = await bot.on_message(human_message, [])
+    after = datetime.now(tz=UTC)
 
     assert reply is not None
-    assert reply.timestamp == human_message.timestamp
-
-
-@pytest.mark.asyncio
-async def test_does_not_echo_own_message(bot: EchoBot) -> None:
-    own_message = ChatMessage(
-        sender=bot.name,
-        text="I said this",
-        timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC),
-    )
-    reply = await bot.on_message(own_message, [])
-
-    assert reply is None
+    assert reply.timestamp.tzinfo is UTC
+    assert before <= reply.timestamp <= after
