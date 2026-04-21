@@ -1,0 +1,13 @@
+{
+  "cli": {
+    "command": "openspec"
+  },
+  "theme": "system",
+  "terminal": {
+    "fontSize": 13,
+    "fontFamily": "",
+    "cursorBlink": true,
+    "cursorStyle": "block",
+    "scrollback": 1000
+  }
+}
