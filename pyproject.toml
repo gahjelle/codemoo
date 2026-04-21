@@ -5,17 +5,23 @@ build-backend = "uv_build"
 [project]
 name = "codemoo"
 version = "0.1.0"
-description = "Geir Arne's AI-driven Agentic Loop"
+description = "Demonstrations of how AI coding agents work"
 readme = "README.md"
 authors = [
     { name = "Geir Arne Hjelle", email = "geirarne@gmail.com" },
     { name = "Geir Arne Hjelle", email = "geir.arne.hjelle@xlent.no" },
 ]
 requires-python = ">=3.12"
-dependencies = ["mistralai>=2.4.0", "textual>=8.2.1"]
+dependencies = [
+    "cyclopts>=4.10.2",
+    "mistralai>=2.4.0",
+    "rich>=15.0.0",
+    "textual>=8.2.1",
+]
 
 [project.scripts]
 codemoo = "codemoo:main"
+demoo = "codemoo.cli:main"
 
 [dependency-groups]
 dev = [

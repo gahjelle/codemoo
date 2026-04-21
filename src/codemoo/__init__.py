@@ -1,4 +1,4 @@
-"""Codemoo — Geir Arne's Agentic Loop."""
+"""Codemoo — Demoonstrate coding agents."""
 
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
