@@ -7,9 +7,9 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codaroo.chat.app import ChatApp
-from codaroo.core.message import ChatMessage
-from codaroo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.chat.app import ChatApp
+from codemoo.core.message import ChatMessage
+from codemoo.core.participant import ChatParticipant, HumanParticipant
 
 
 class _EchoParticipant:

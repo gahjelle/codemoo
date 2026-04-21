@@ -3,7 +3,7 @@ requires = ["uv_build>=0.10.0,<0.12.0"]
 build-backend = "uv_build"
 
 [project]
-name = "codaroo"
+name = "codemoo"
 version = "0.1.0"
 description = "Geir Arne's AI-driven Agentic Loop"
 readme = "README.md"
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-codaroo = "codaroo:main"
+codemoo = "codemoo:main"
 
 [dependency-groups]
 dev = [

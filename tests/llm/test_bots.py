@@ -2,9 +2,9 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codaroo.core.message import ChatMessage
-from codaroo.llm.bots import ChatBot, LLMBot
-from codaroo.llm.message import LLMMessage
+from codemoo.core.message import ChatMessage
+from codemoo.llm.bots import ChatBot, LLMBot
+from codemoo.llm.message import LLMMessage
 
 
 class _MockBackend:

@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from codaroo.core.message import ChatMessage
+from codemoo.core.message import ChatMessage
 
 
 @runtime_checkable

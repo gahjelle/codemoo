@@ -1,1 +1,6 @@
-# Codaroo - Geir Arne's Agentic Loop
+# Codemoo - Demonstrate how coding agents work under the hood
+
+Requirements:
+
+- `uv`
+- Mistral API key

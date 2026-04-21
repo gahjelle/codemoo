@@ -6,7 +6,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, Label, SelectionList
 
-from codaroo.core.participant import ChatParticipant
+from codemoo.core.participant import ChatParticipant
 
 _BOT_TYPE_ORDER: dict[str, int] = {"EchoBot": 0, "LLMBot": 1, "ChatBot": 2}
 

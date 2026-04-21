@@ -4,7 +4,9 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## Project
 
-Codaroo — an agentic loop application built with Python 3.14. Currently in early development. The project was earlier called Gaia (Geir Arne's Agentic Loop), and you may find that name in legacy documentation.
+Codemoo — an agentic loop application built with Python 3.14. The project will be used to demonstrate how coding agents like OpenCode and Claude Code work under the hood.
+
+The project was earlier called Gaia (Geir Arne's Agentic Loop) and Coderoo, and you may find those names in legacy documentation.
 
 ## Development Commands
 
@@ -15,7 +17,7 @@ This project uses `uv` for package management.
 uv sync
 
 # Run the CLI entry point
-uv run codaroo
+uv run codemoo
 
 # Run Python directly
 uv run python

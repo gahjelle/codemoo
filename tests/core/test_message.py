@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codaroo.core.message import ChatMessage
+from codemoo.core.message import ChatMessage
 
 
 def test_chat_message_fields() -> None:

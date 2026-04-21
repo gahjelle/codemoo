@@ -5,7 +5,7 @@ from typing import Protocol
 
 from mistralai.client import Mistral
 
-from codaroo.llm.message import LLMMessage
+from codemoo.llm.message import LLMMessage
 
 
 class LLMBackend(Protocol):

@@ -1,1 +1,1 @@
-"""Test suite for Codaroo."""
+"""Test suite for Codemoo."""

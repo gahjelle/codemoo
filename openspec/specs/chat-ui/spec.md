@@ -58,10 +58,10 @@ The chat application SHALL use the `is_human` property from the `ChatParticipant
 - **THEN** it SHALL be rendered as a left-aligned bubble
 
 ### Requirement: Launch via CLI entry point
-The `codaroo` CLI entry point SHALL launch a bot selection screen first. After the user confirms their selection, the Textual chat application SHALL start with the human participant and the chosen bots.
+The `codemoo` CLI entry point SHALL launch a bot selection screen first. After the user confirms their selection, the Textual chat application SHALL start with the human participant and the chosen bots.
 
-#### Scenario: Running codaroo shows the selection screen first
-- **WHEN** the user runs `uv run codaroo` from the terminal
+#### Scenario: Running codemoo shows the selection screen first
+- **WHEN** the user runs `uv run codemoo` from the terminal
 - **THEN** the bot selection screen SHALL appear before the chat UI
 
 #### Scenario: Confirming selection opens the chat UI

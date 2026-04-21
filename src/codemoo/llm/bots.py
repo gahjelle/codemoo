@@ -3,9 +3,9 @@
 import dataclasses
 from datetime import UTC, datetime
 
-from codaroo.core.message import ChatMessage
-from codaroo.llm.backend import LLMBackend
-from codaroo.llm.message import LLMMessage
+from codemoo.core.message import ChatMessage
+from codemoo.llm.backend import LLMBackend
+from codemoo.llm.message import LLMMessage
 
 
 class LLMBot:

@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from codaroo.core.message import ChatMessage
+from codemoo.core.message import ChatMessage
 
 
 class EchoBot:

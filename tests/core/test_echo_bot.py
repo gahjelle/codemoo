@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codaroo.core.echo_bot import EchoBot
-from codaroo.core.message import ChatMessage
+from codemoo.core.echo_bot import EchoBot
+from codemoo.core.message import ChatMessage
 
 
 @pytest.fixture

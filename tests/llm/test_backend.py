@@ -2,8 +2,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from codaroo.llm.backend import create_mistral_backend
-from codaroo.llm.message import LLMMessage
+from codemoo.llm.backend import create_mistral_backend
+from codemoo.llm.message import LLMMessage
 
 
 def test_llm_message_is_immutable() -> None:

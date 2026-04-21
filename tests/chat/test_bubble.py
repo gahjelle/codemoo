@@ -1,4 +1,4 @@
-from codaroo.chat.bubble import ChatBubble, _BubbleContent
+from codemoo.chat.bubble import ChatBubble, _BubbleContent
 
 
 def _content(bubble: ChatBubble) -> _BubbleContent:

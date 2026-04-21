@@ -1,5 +1,5 @@
-from codaroo.core.message import ChatMessage
-from codaroo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.core.message import ChatMessage
+from codemoo.core.participant import ChatParticipant, HumanParticipant
 
 
 class _MinimalParticipant:

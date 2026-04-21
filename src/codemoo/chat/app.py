@@ -8,9 +8,9 @@ from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Input
 
-from codaroo.chat.bubble import ChatBubble
-from codaroo.core.message import ChatMessage
-from codaroo.core.participant import ChatParticipant
+from codemoo.chat.bubble import ChatBubble
+from codemoo.core.message import ChatMessage
+from codemoo.core.participant import ChatParticipant
 
 
 class ChatApp(App[None]):

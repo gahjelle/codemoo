@@ -1,1 +1,1 @@
-"""Tests for the codaroo.llm package."""
+"""Tests for the codemoo.llm package."""
