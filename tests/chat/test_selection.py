@@ -7,7 +7,7 @@ from codemoo.llm.bots import ChatBot, LLMBot
 
 
 class _StubBackend:
-    async def complete(self, messages: object) -> str:
+    async def complete(self, _messages: object) -> str:
         return ""
 
 
@@ -27,7 +27,7 @@ def test_unknown_type_sorts_last() -> None:
         emoji = ""
         is_human = False
 
-        async def on_message(self, message: object, history: object) -> None:
+        async def on_message(self, _message: object, _history: object) -> None:
             return None
 
     assert _bot_sort_key(_OtherBot()) == 999  # type: ignore[arg-type]
