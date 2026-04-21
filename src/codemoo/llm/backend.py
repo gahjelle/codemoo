@@ -26,7 +26,7 @@ class _MistralBackend:
 
 def create_mistral_backend(
     model: str = "mistral-small-latest",
-    timeout: float = 120.0,
+    timeout_ms: int = 120_000,
 ) -> LLMBackend:
     """Create a Mistral-backed LLMBackend.
 
@@ -40,5 +40,5 @@ def create_mistral_backend(
         )
         raise ValueError(msg)
     return _MistralBackend(
-        client=Mistral(api_key=api_key, timeout=timeout), model=model
+        client=Mistral(api_key=api_key, timeout_ms=timeout_ms), model=model
     )
