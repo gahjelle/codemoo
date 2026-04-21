@@ -61,3 +61,36 @@ def test_empty_history_returns_only_current() -> None:
     result = build_llm_context([], _msg("You", "hi"), "Bot", "You", 5)
 
     assert result == [Message(role="user", content="hi")]
+
+
+def test_system_message_prepended_when_provided() -> None:
+    result = build_llm_context(
+        [], _msg("You", "hi"), "Bot", "You", 5, system="Be terse."
+    )
+
+    assert result[0] == Message(role="system", content="Be terse.")
+    assert result[-1] == Message(role="user", content="hi")
+
+
+def test_system_message_is_first_with_history() -> None:
+    history = [_msg("You", "earlier"), _msg("Bot", "reply")]
+    result = build_llm_context(
+        history, _msg("You", "now"), "Bot", "You", 20, system="Be terse."
+    )
+
+    assert result[0] == Message(role="system", content="Be terse.")
+    assert len(result) == 4  # system + 2 history + current
+
+
+def test_no_system_message_when_empty_string() -> None:
+    result = build_llm_context([], _msg("You", "hi"), "Bot", "You", 5, system="")
+
+    roles = [m.role for m in result]
+    assert "system" not in roles
+
+
+def test_no_system_message_by_default() -> None:
+    result = build_llm_context([], _msg("You", "hi"), "Bot", "You", 5)
+
+    roles = [m.role for m in result]
+    assert "system" not in roles

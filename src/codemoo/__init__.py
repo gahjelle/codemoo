@@ -2,7 +2,7 @@
 
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
-from codemoo.core.bots import ChatBot, EchoBot, LLMBot
+from codemoo.core.bots import ChatBot, EchoBot, LLMBot, SystemBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.backend import create_mistral_backend
 
@@ -17,6 +17,12 @@ def main() -> None:
         ChatBot(
             name="Iris",
             emoji="\N{EYE}\N{VARIATION SELECTOR-16}",
+            backend=mistral,
+            human_name=human.name,
+        ),
+        SystemBot(
+            name="Sigma",
+            emoji="\N{PERFORMING ARTS}",
             backend=mistral,
             human_name=human.name,
         ),

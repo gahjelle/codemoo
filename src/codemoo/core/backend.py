@@ -24,18 +24,19 @@ class LLMBackend(Protocol):
         ...
 
 
-def build_llm_context(
+def build_llm_context(  # noqa: PLR0913
     history: list[ChatMessage],
     current: ChatMessage,
     bot_name: str,
     human_name: str,
     max_messages: int,
+    system: str = "",
 ) -> list[Message]:
     """Build a filtered, clipped Message list for an LLM completion call.
 
     Pure function: filters history to human + bot messages, clips to the most
     recent max_messages, maps senders to roles, then appends current as the
-    final user turn.
+    final user turn. Prepends a system message when system is non-empty.
     """
     relevant = [m for m in history if m.sender in (human_name, bot_name)]
     clipped = relevant[-max_messages:]
@@ -47,4 +48,6 @@ def build_llm_context(
         for m in clipped
     ]
     messages.append(Message(role="user", content=current.text))
+    if system:
+        messages.insert(0, Message(role="system", content=system))
     return messages
