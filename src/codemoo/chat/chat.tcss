@@ -7,7 +7,8 @@
 
 /* Shared bubble content styles (fractional widths are structural, defined in DEFAULT_CSS) */
 .bubble--human,
-.bubble--bot {
+.bubble--bot,
+.bubble--error {
     padding: 0 1;
     margin-bottom: 1;
     border: tall $panel;
@@ -21,6 +22,11 @@
 /* Bot messages: dark violet — distinct from Markdown code-block backgrounds */
 .bubble--bot {
     background: #150f25;
+}
+
+/* Error bot messages: dark red */
+.bubble--error {
+    background: #3a0f0f;
 }
 
 /* Bold sender header inside each bubble */
@@ -51,10 +57,19 @@
     align-horizontal: center;
 }
 
+/* ThinkingStatus: subtle italic text, padded to match bubble area */
+ThinkingStatus {
+    padding: 0 1;
+    color: $text-muted;
+    text-style: italic;
+}
+
 /* Remove default bottom margin on Markdown and its block children (paragraphs etc.) */
 .bubble--human Markdown,
 .bubble--bot Markdown,
+.bubble--error Markdown,
 .bubble--human MarkdownBlock,
-.bubble--bot MarkdownBlock {
+.bubble--bot MarkdownBlock,
+.bubble--error MarkdownBlock {
     margin-bottom: 0;
 }

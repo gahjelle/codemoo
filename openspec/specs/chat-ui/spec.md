@@ -17,6 +17,13 @@ The chat UI SHALL display an ordered, scrollable log of all messages in the sess
 - **WHEN** a new message is appended to the log
 - **THEN** the log SHALL scroll automatically to show the latest message
 
+### Requirement: Chat UI layout includes a status bar
+The chat UI layout SHALL include a status bar widget positioned between the message log and the text input field.
+
+#### Scenario: Status bar present in composed layout
+- **WHEN** the chat UI is composed
+- **THEN** the layout SHALL contain, in order from top to bottom: the scrollable message log, the status bar, and the text input field
+
 ### Requirement: Accept human text input
 The chat UI SHALL provide a text input field where the human user can type and submit messages.
 

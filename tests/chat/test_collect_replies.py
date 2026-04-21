@@ -8,8 +8,17 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.chat.app import ChatApp
+from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
+
+
+class _MockBackend:
+    def __init__(self, response: str = "error description") -> None:
+        self.response = response
+
+    async def complete(self, messages: object) -> str:  # noqa: ARG002
+        return self.response
 
 
 class _EchoParticipant:
@@ -117,7 +126,10 @@ _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
 def _make_app(participants: list[ChatParticipant]) -> ChatApp:
-    return ChatApp(participants=participants)
+    return ChatApp(
+        participants=participants,
+        error_bot=ErrorBot(backend=_MockBackend()),
+    )
 
 
 @pytest.mark.asyncio
@@ -181,3 +193,61 @@ async def test_history_passed_includes_prior_messages() -> None:
 
     [_ async for _ in app._collect_replies(initial, [prior])]
     assert capture.received_histories[0] == [prior]
+
+
+class _FailingParticipant:
+    """Participant whose on_message always raises."""
+
+    @property
+    def name(self) -> str:
+        return "Failer"
+
+    @property
+    def emoji(self) -> str:
+        return "\N{COLLISION SYMBOL}"
+
+    @property
+    def is_human(self) -> bool:
+        return False
+
+    async def on_message(
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        history: list[ChatMessage],  # noqa: ARG002
+    ) -> ChatMessage | None:
+        msg = "simulated LLM failure"
+        raise RuntimeError(msg)
+
+
+@pytest.mark.asyncio
+async def test_exception_yields_error_bubble_not_crash() -> None:
+    app = _make_app([HumanParticipant(), _FailingParticipant()])
+    initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+
+    replies = [r async for r in app._collect_replies(initial, [])]
+    assert len(replies) == 1
+    assert replies[0].sender == app._error_bot.name
+
+
+@pytest.mark.asyncio
+async def test_exception_does_not_block_remaining_participants() -> None:
+    capture = _MessageCapturingParticipant("Capture")
+    app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
+    initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+
+    [_ async for _ in app._collect_replies(initial, [])]
+    # The capture participant must still have received the message
+    assert any(m.text == "hi" for m in capture.received_messages)
+
+
+@pytest.mark.asyncio
+async def test_error_message_is_not_dispatched_to_other_bots() -> None:
+    # Error messages must not re-enter the BFS queue — no bot should respond to them.
+    capture = _MessageCapturingParticipant("Capture")
+    app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
+    initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+
+    [_ async for _ in app._collect_replies(initial, [])]
+    # The capture participant must not have received the error bot's message
+    error_name = app._error_bot.name
+    assert all(m.sender != error_name for m in capture.received_messages)

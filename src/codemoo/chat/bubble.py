@@ -50,17 +50,28 @@ class ChatBubble(Widget):
     }
     """
 
-    def __init__(self, name: str, emoji: str, text: str, *, is_human: bool) -> None:
+    def __init__(
+        self,
+        name: str,
+        emoji: str,
+        text: str,
+        *,
+        is_human: bool,
+        css_class: str | None = None,
+    ) -> None:
         """Initialise the bubble with sender info and message content."""
         super().__init__()
         self._sender_name = name
         self._sender_emoji = emoji
         self._text = text
         self._is_human = is_human
+        self._css_class = css_class
 
     def compose(self) -> ComposeResult:
         """Yield spacer and content in the order that produces the correct alignment."""
-        css_class = "bubble--human" if self._is_human else "bubble--bot"
+        css_class = self._css_class or (
+            "bubble--human" if self._is_human else "bubble--bot"
+        )
         content = _BubbleContent(
             self._sender_name, self._sender_emoji, self._text, css_class
         )
