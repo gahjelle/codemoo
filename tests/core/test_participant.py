@@ -17,7 +17,9 @@ class _MinimalParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(self, _message: ChatMessage) -> ChatMessage | None:
+    async def on_message(
+        self, _message: ChatMessage, _history: list[ChatMessage]
+    ) -> ChatMessage | None:
         return None
 
 

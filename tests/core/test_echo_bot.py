@@ -26,7 +26,7 @@ def test_name_is_non_empty(bot: EchoBot) -> None:
 
 @pytest.mark.asyncio
 async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) -> None:
-    reply = await bot.on_message(human_message)
+    reply = await bot.on_message(human_message, [])
 
     assert reply is not None
     assert reply.sender == bot.name
@@ -38,7 +38,7 @@ async def test_reply_timestamp_matches_input(
     bot: EchoBot, human_message: ChatMessage
 ) -> None:
     # EchoBot must not call datetime.now(); the shell owns timestamp assignment
-    reply = await bot.on_message(human_message)
+    reply = await bot.on_message(human_message, [])
 
     assert reply is not None
     assert reply.timestamp == human_message.timestamp
@@ -51,6 +51,6 @@ async def test_does_not_echo_own_message(bot: EchoBot) -> None:
         text="I said this",
         timestamp=datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC),
     )
-    reply = await bot.on_message(own_message)
+    reply = await bot.on_message(own_message, [])
 
     assert reply is None

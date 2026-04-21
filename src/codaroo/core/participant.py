@@ -24,7 +24,9 @@ class ChatParticipant(Protocol):
         """Return True if this participant represents the human user."""
         ...
 
-    async def on_message(self, message: ChatMessage) -> ChatMessage | None:
+    async def on_message(
+        self, message: ChatMessage, history: list[ChatMessage]
+    ) -> ChatMessage | None:
         """Receive a message and optionally return a reply."""
         ...
 
@@ -52,6 +54,10 @@ class HumanParticipant:
         """Return True — this participant is the human user."""
         return True
 
-    async def on_message(self, message: ChatMessage) -> ChatMessage | None:  # noqa: ARG002
+    async def on_message(
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        history: list[ChatMessage],  # noqa: ARG002
+    ) -> ChatMessage | None:
         """Return None — the human replies via the keyboard, not programmatically."""
         return None

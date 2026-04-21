@@ -23,7 +23,11 @@ class EchoBot:
         """Return False — this participant is a bot."""
         return False
 
-    async def on_message(self, message: ChatMessage) -> ChatMessage | None:
+    async def on_message(
+        self,
+        message: ChatMessage,
+        history: list[ChatMessage],  # noqa: ARG002
+    ) -> ChatMessage | None:
         """Echo the message, or return None if the sender is this bot."""
         # Skip own messages to prevent infinite echo loops
         if message.sender == self.name:

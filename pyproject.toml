@@ -44,4 +44,4 @@ ignore = [
 # SLF001: Private member accessed (OK for tests)
 # UP018: Replace with string/integer/... literal (OK for typed tests)
 "tests/test_*.py" = ["D100", "D103", "PLR2004", "S101", "SLF001", "UP018"]
-"tests/*/test_*.py" = ["D100", "D103", "S101"]
+"tests/*/test_*.py" = ["D100", "D103", "PLR2004", "S101", "SLF001", "UP018"]

@@ -28,6 +28,8 @@ class ChatApp(App[None]):
         }
         # Keep a reference to the human participant for outgoing message construction
         self._human = next(p for p in participants if p.is_human)
+        # Authoritative ordered history of all messages posted in this session
+        self._history: list[ChatMessage] = []
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log and the text input field."""
@@ -47,8 +49,11 @@ class ChatApp(App[None]):
             timestamp=datetime.now(tz=UTC),
         )
         self._append_to_log(message)
+        # Snapshot before appending: history excludes the current message
+        prior_history = list(self._history)
+        self._history.append(message)
         # Dispatch in a worker so participant coroutines run without blocking the UI
-        self.run_worker(self._dispatch(message), exclusive=False)
+        self.run_worker(self._dispatch(message, prior_history), exclusive=False)
 
     def _append_to_log(self, message: ChatMessage) -> None:
         default = ("\N{SPEECH BALLOON}", False)
@@ -59,19 +64,23 @@ class ChatApp(App[None]):
         log.scroll_end(animate=False)
 
     async def _collect_replies(
-        self, initial_message: ChatMessage
+        self, initial_message: ChatMessage, history: list[ChatMessage]
     ) -> AsyncGenerator[ChatMessage, None]:
         """Yield reply messages in BFS order with no UI side effects.
 
-        Pure async generator: given an initial message and the registered
-        participants, produces every reply that flows from it. The caller
-        is responsible for display and for stamping fresh timestamps.
+        Pure async generator: given an initial message, the registered
+        participants, and the prior history, produces every reply that flows
+        from it. The caller is responsible for display and for stamping fresh
+        timestamps. Each message is added to running_history after all
+        participants have processed it, so on_message always receives history
+        that excludes the message being responded to.
         """
+        running_history = list(history)
         queue: list[ChatMessage] = [initial_message]
         while queue:
             message = queue.pop(0)
             for participant in self._participants:
-                reply = await participant.on_message(message)
+                reply = await participant.on_message(message, running_history)
                 if reply is not None:
                     # Stamp the timestamp here in the shell, not inside the bot
                     stamped = ChatMessage(
@@ -81,8 +90,14 @@ class ChatApp(App[None]):
                     )
                     queue.append(stamped)
                     yield stamped
+            running_history.append(message)
 
-    async def _dispatch(self, initial_message: ChatMessage) -> None:
+    async def _dispatch(
+        self, initial_message: ChatMessage, history: list[ChatMessage]
+    ) -> None:
         """Consume replies from _collect_replies and render them to the log."""
-        async for reply in self._collect_replies(initial_message):
+        replies: list[ChatMessage] = []
+        async for reply in self._collect_replies(initial_message, history):
             self._append_to_log(reply)
+            replies.append(reply)
+        self._history.extend(replies)
