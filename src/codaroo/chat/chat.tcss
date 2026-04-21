@@ -18,15 +18,37 @@
     background: #1a3a5c;
 }
 
-/* Bot messages: dark green tint */
+/* Bot messages: dark violet — distinct from Markdown code-block backgrounds */
 .bubble--bot {
-    background: #1a3a2a;
+    background: #150f25;
 }
 
 /* Bold sender header inside each bubble */
 .bubble-header {
     text-style: bold;
     margin-bottom: 0;
+}
+
+/* Bot selection screen */
+#selection-container {
+    align: center middle;
+    height: 1fr;
+    padding: 2 4;
+}
+
+#selection-title {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#bot-list {
+    height: auto;
+    margin-bottom: 1;
+}
+
+#start-btn {
+    width: auto;
+    align-horizontal: center;
 }
 
 /* Remove default bottom margin on Markdown and its block children (paragraphs etc.) */

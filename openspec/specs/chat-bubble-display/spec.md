@@ -18,7 +18,7 @@ The chat UI SHALL render each message as a distinct chat bubble widget. The bubb
 - **THEN** the bubble body SHALL render the Markdown (including bold, italics, code, and lists)
 
 ### Requirement: Bubble color is keyed to the participant
-Each participant type SHALL have a distinct bubble background color defined in the external stylesheet. The color SHALL be applied via a CSS class, not an inline style.
+Each participant type SHALL have a distinct bubble background color defined in the external stylesheet. The color SHALL be applied via a CSS class, not an inline style. The bot bubble background color SHALL be chosen to maintain visible contrast against Textual's Markdown code-block rendering.
 
 #### Scenario: Human bubble uses human color class
 - **WHEN** a human message is appended
@@ -27,6 +27,10 @@ Each participant type SHALL have a distinct bubble background color defined in t
 #### Scenario: Bot bubble uses bot color class
 - **WHEN** a non-human participant's message is appended
 - **THEN** the bubble SHALL have the CSS class `bubble--bot` and SHALL render with the bot background color defined in the stylesheet
+
+#### Scenario: Bot bubble background contrasts with code-block background
+- **WHEN** a bot message contains a fenced code block
+- **THEN** the code-block background SHALL be visually distinguishable from the surrounding bot bubble background
 
 ### Requirement: Human messages align right; others align left
 Human participant bubbles SHALL be aligned to the right side of the chat log. All other participant bubbles SHALL be aligned to the left. Both SHALL use most of the available width for content.
