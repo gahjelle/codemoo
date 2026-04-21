@@ -17,7 +17,7 @@ The system SHALL represent chat messages as immutable values carrying sender nam
 The system SHALL define a `ChatParticipant` structural protocol. Any object implementing the required interface SHALL be usable as a participant without explicit subclassing.
 
 #### Scenario: Protocol requires name, emoji, is_human, and on_message
-- **WHEN** an object exposes a `name: str` property, an `emoji: str` property, an `is_human: bool` property, and an async `on_message(message: ChatMessage, history: list[ChatMessage]) -> ChatMessage | None` method
+- **WHEN** an object exposes a `name: str` attribute, an `emoji: str` attribute, an `is_human: bool` attribute, and an async `on_message(message: ChatMessage, history: list[ChatMessage]) -> ChatMessage | None` method
 - **THEN** it SHALL satisfy the `ChatParticipant` protocol
 
 ### Requirement: ChatParticipant protocol exposes is_human flag
@@ -32,7 +32,7 @@ The `ChatParticipant` protocol SHALL include an `is_human: bool` property. This 
 - **THEN** it SHALL return `False`
 
 ### Requirement: HumanParticipant has fixed display defaults
-`HumanParticipant` SHALL have hardcoded defaults for name, emoji, and color class: name `"You"`, emoji `"🧑"`, and CSS class `"bubble--human"`. These SHALL NOT be configurable by the user at this time.
+`HumanParticipant` SHALL have hardcoded class-level defaults for name and emoji: name `"You"` and emoji `"🧑"`. These SHALL NOT be configurable by the user at this time.
 
 #### Scenario: HumanParticipant exposes fixed name
 - **WHEN** `HumanParticipant.name` is accessed

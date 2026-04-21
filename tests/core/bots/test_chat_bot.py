@@ -2,9 +2,9 @@ from datetime import UTC, datetime
 
 import pytest
 
+from codemoo.core.backend import Message
+from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.message import ChatMessage
-from codemoo.llm.bots import ChatBot, LLMBot
-from codemoo.llm.message import LLMMessage
 
 
 class _MockBackend:
@@ -12,9 +12,9 @@ class _MockBackend:
 
     def __init__(self, response: str = "mock response") -> None:
         self.response = response
-        self.calls: list[list[LLMMessage]] = []
+        self.calls: list[list[Message]] = []
 
-    async def complete(self, messages: list[LLMMessage]) -> str:
+    async def complete(self, messages: list[Message]) -> str:
         self.calls.append(list(messages))
         return self.response
 
@@ -24,59 +24,6 @@ _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 def _msg(sender: str, text: str) -> ChatMessage:
     return ChatMessage(sender=sender, text=text, timestamp=_TS)
-
-
-# ─── LLMBot ──────────────────────────────────────────────────────────────────
-
-
-@pytest.fixture
-def mock_backend() -> _MockBackend:
-    return _MockBackend()
-
-
-@pytest.fixture
-def llm_bot(mock_backend: _MockBackend) -> LLMBot:
-    return LLMBot(name="LLMBot", emoji="\N{ROBOT FACE}", backend=mock_backend)
-
-
-def test_llm_bot_is_not_human(llm_bot: LLMBot) -> None:
-    assert llm_bot.is_human is False
-
-
-@pytest.mark.asyncio
-async def test_llm_bot_sends_only_current_message(
-    llm_bot: LLMBot, mock_backend: _MockBackend
-) -> None:
-    history = [_msg("You", "earlier message")]
-    await llm_bot.on_message(_msg("You", "latest"), history)
-
-    assert len(mock_backend.calls) == 1
-    assert mock_backend.calls[0] == [LLMMessage(role="user", content="latest")]
-
-
-@pytest.mark.asyncio
-async def test_llm_bot_returns_response_as_chat_message(
-    llm_bot: LLMBot, mock_backend: _MockBackend
-) -> None:
-    mock_backend.response = "I am a bot"
-    reply = await llm_bot.on_message(_msg("You", "hi"), [])
-
-    assert reply is not None
-    assert reply.sender == "LLMBot"
-    assert reply.text == "I am a bot"
-
-
-@pytest.mark.asyncio
-async def test_llm_bot_skips_own_messages(
-    llm_bot: LLMBot, mock_backend: _MockBackend
-) -> None:
-    reply = await llm_bot.on_message(_msg("LLMBot", "my own message"), [])
-
-    assert reply is None
-    assert mock_backend.calls == []
-
-
-# ─── ChatBot ─────────────────────────────────────────────────────────────────
 
 
 @pytest.fixture
@@ -121,9 +68,9 @@ async def test_chat_bot_filters_out_other_bot_messages(
 
     sent = chat_backend.calls[0]
     assert sent == [
-        LLMMessage(role="user", content="hello"),
-        LLMMessage(role="assistant", content="hi there"),
-        LLMMessage(role="user", content="how are you?"),
+        Message(role="user", content="hello"),
+        Message(role="assistant", content="hi there"),
+        Message(role="user", content="how are you?"),
     ]
 
 
@@ -135,7 +82,7 @@ async def test_chat_bot_maps_own_history_to_assistant_role(
     await chat_bot.on_message(_msg("You", "follow up"), history)
 
     sent = chat_backend.calls[0]
-    assert LLMMessage(role="assistant", content="previous reply") in sent
+    assert Message(role="assistant", content="previous reply") in sent
 
 
 @pytest.mark.asyncio
@@ -146,7 +93,7 @@ async def test_chat_bot_maps_human_history_to_user_role(
     await chat_bot.on_message(_msg("You", "now"), history)
 
     sent = chat_backend.calls[0]
-    assert LLMMessage(role="user", content="earlier question") in sent
+    assert Message(role="user", content="earlier question") in sent
 
 
 @pytest.mark.asyncio
@@ -157,7 +104,7 @@ async def test_chat_bot_current_message_is_last_user_turn(
     await chat_bot.on_message(_msg("You", "final"), history)
 
     sent = chat_backend.calls[0]
-    assert sent[-1] == LLMMessage(role="user", content="final")
+    assert sent[-1] == Message(role="user", content="final")
 
 
 @pytest.mark.asyncio
@@ -173,13 +120,12 @@ async def test_chat_bot_clips_history_to_max_messages() -> None:
     history = [
         _msg("You", "msg1"),
         _msg("ChatBot", "reply1"),
-        _msg("You", "msg2"),  # oldest that fits
-        _msg("ChatBot", "reply2"),  # oldest that fits
+        _msg("You", "msg2"),
+        _msg("ChatBot", "reply2"),
     ]
     await bot.on_message(_msg("You", "msg3"), history)
 
     sent = backend.calls[0]
-    # max_messages=2 means only the 2 most recent history items, plus current
     assert len(sent) == 3
     assert sent[0].content == "msg2"
     assert sent[1].content == "reply2"

@@ -8,16 +8,9 @@ from textual.widgets import Button, Label, SelectionList
 
 from codemoo.core.participant import ChatParticipant
 
-_BOT_TYPE_ORDER: dict[str, int] = {"EchoBot": 0, "LLMBot": 1, "ChatBot": 2}
-
-
-def _bot_sort_key(bot: ChatParticipant) -> int:
-    """Return the position of a bot in the fixed display order."""
-    return _BOT_TYPE_ORDER.get(type(bot).__name__, 999)
-
 
 def _bot_label(bot: ChatParticipant) -> str:
-    """Format a bot's selection list label as 'Name (TypeName)'."""
+    """Format a bot's selection list label as 'Emoji Name (TypeName)'."""
     return f"{bot.emoji} {bot.name} ({type(bot).__name__})"
 
 
@@ -29,7 +22,7 @@ class SelectionApp(App[list[ChatParticipant]]):
     def __init__(self, available_bots: list[ChatParticipant]) -> None:
         """Initialise with the full candidate bot list."""
         super().__init__()
-        self._available_bots = sorted(available_bots, key=_bot_sort_key)
+        self._available_bots = available_bots
 
     def compose(self) -> ComposeResult:
         """Yield the title, selection list, and confirm button."""
@@ -46,8 +39,4 @@ class SelectionApp(App[list[ChatParticipant]]):
         if event.button.id != "start-btn":
             return
         selection_list = self.query_one("#bot-list", SelectionList)
-        # Preserve the fixed type order within the selection
-        selected: list[ChatParticipant] = sorted(
-            selection_list.selected, key=_bot_sort_key
-        )
-        self.exit(selected)
+        self.exit(selection_list.selected)

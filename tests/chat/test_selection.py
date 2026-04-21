@@ -1,9 +1,8 @@
 """Tests for SelectionApp's pure helper functions."""
 
 from codemoo.chat.selection import _bot_label, _bot_sort_key
-from codemoo.core.echo_bot import EchoBot
-from codemoo.llm.backend import LLMBackend
-from codemoo.llm.bots import ChatBot, LLMBot
+from codemoo.core.backend import LLMBackend
+from codemoo.core.bots import ChatBot, EchoBot, LLMBot
 
 
 class _StubBackend:

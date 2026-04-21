@@ -1,19 +1,10 @@
-"""LLMBackend protocol and provider-specific factory functions."""
+"""Concrete LLM backend implementations and factory functions."""
 
 import os
-from typing import Protocol
 
 from mistralai.client import Mistral
 
-from codemoo.llm.message import LLMMessage
-
-
-class LLMBackend(Protocol):
-    """Structural protocol for LLM completion backends."""
-
-    async def complete(self, messages: list[LLMMessage]) -> str:
-        """Send messages to the LLM and return the response text."""
-        ...
+from codemoo.core.backend import LLMBackend, Message
 
 
 class _MistralBackend:
@@ -23,7 +14,7 @@ class _MistralBackend:
         self._client = client
         self._model = model
 
-    async def complete(self, messages: list[LLMMessage]) -> str:
+    async def complete(self, messages: list[Message]) -> str:
         """Call Mistral chat completion and return the response text."""
         response = await self._client.chat.complete_async(
             model=self._model,

@@ -7,14 +7,14 @@ Defines `ChatBot`, a context-aware chat participant that builds a filtered LLM c
 ## Requirements
 
 ### Requirement: ChatBot satisfies the ChatParticipant protocol
-`ChatBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` properties, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
+`ChatBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
 
 #### Scenario: ChatBot.is_human returns False
 - **WHEN** `ChatBot.is_human` is accessed
 - **THEN** it SHALL return `False`
 
 ### Requirement: ChatBot builds LLM context from filtered history
-When `on_message` is called, `ChatBot` SHALL filter `history` to messages where the sender is either the configured `human_name` or `self.name`. It SHALL map human messages to `LLMMessage(role="user", ...)` and own messages to `LLMMessage(role="assistant", ...)`. The current `message` SHALL be appended as a final `LLMMessage(role="user", ...)`.
+When `on_message` is called, `ChatBot` SHALL delegate context-building to `build_llm_context` (from `core/backend.py`), passing `history`, the current message, `self.name`, `human_name`, and `max_messages`. The resulting `list[Message]` SHALL be passed to the backend.
 
 #### Scenario: Messages from other bots are excluded from context
 - **WHEN** `history` contains messages from a third participant (neither human nor self)
@@ -22,15 +22,15 @@ When `on_message` is called, `ChatBot` SHALL filter `history` to messages where 
 
 #### Scenario: Own history messages are mapped to assistant role
 - **WHEN** `history` contains a message with `sender == self.name`
-- **THEN** it SHALL be sent to the backend as `LLMMessage(role="assistant", ...)`
+- **THEN** it SHALL be sent to the backend as `Message(role="assistant", ...)`
 
 #### Scenario: Human history messages are mapped to user role
 - **WHEN** `history` contains a message with `sender == human_name`
-- **THEN** it SHALL be sent to the backend as `LLMMessage(role="user", ...)`
+- **THEN** it SHALL be sent to the backend as `Message(role="user", ...)`
 
 #### Scenario: Current message is appended as final user turn
 - **WHEN** `on_message` is called
-- **THEN** the final message in the list sent to the backend SHALL be `LLMMessage(role="user", content=message.text)`
+- **THEN** the final message in the list sent to the backend SHALL be `Message(role="user", content=message.text)`
 
 ### Requirement: ChatBot clips context to a configurable maximum message count
 `ChatBot` SHALL accept a `max_messages: int` parameter (default: 20). Before calling the backend, it SHALL retain only the most recent `max_messages` messages from the filtered history, then append the current message.

@@ -1,6 +1,7 @@
 """Protocol and built-in participant types for the chat loop."""
 
-from typing import Protocol, runtime_checkable
+import dataclasses
+from typing import ClassVar, Protocol, runtime_checkable
 
 from codemoo.core.message import ChatMessage
 
@@ -9,20 +10,9 @@ from codemoo.core.message import ChatMessage
 class ChatParticipant(Protocol):
     """Structural protocol that every participant must satisfy."""
 
-    @property
-    def name(self) -> str:
-        """Return the participant's display name."""
-        ...
-
-    @property
-    def emoji(self) -> str:
-        """Return the participant's display emoji."""
-        ...
-
-    @property
-    def is_human(self) -> bool:
-        """Return True if this participant represents the human user."""
-        ...
+    name: str
+    emoji: str
+    is_human: ClassVar[bool]
 
     async def on_message(
         self, message: ChatMessage, history: list[ChatMessage]
@@ -31,6 +21,7 @@ class ChatParticipant(Protocol):
         ...
 
 
+@dataclasses.dataclass(eq=False)
 class HumanParticipant:
     """Represents the human user in the participant slot system.
 
@@ -39,20 +30,9 @@ class HumanParticipant:
     receives dispatched messages, but always returns None (no programmatic reply).
     """
 
-    @property
-    def name(self) -> str:
-        """Return the human's display name."""
-        return "You"
-
-    @property
-    def emoji(self) -> str:
-        """Return the human's display emoji."""
-        return "\N{ADULT}"
-
-    @property
-    def is_human(self) -> bool:
-        """Return True — this participant is the human user."""
-        return True
+    name: str = "You"
+    emoji: str = "\N{ADULT}"
+    is_human: ClassVar[bool] = True
 
     async def on_message(
         self,

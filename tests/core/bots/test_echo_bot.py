@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codemoo.core.echo_bot import EchoBot
+from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.message import ChatMessage
 
 

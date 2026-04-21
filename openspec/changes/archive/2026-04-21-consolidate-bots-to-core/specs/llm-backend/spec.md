@@ -1,10 +1,4 @@
-# Spec: llm-backend
-
-## Purpose
-
-Defines the `Message` value type and `Role` type alias, the `LLMBackend` structural protocol, and concrete backend factories (starting with Mistral) that connect the chat system to external language model APIs.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Message is an immutable value type with role and content
 The system SHALL provide a `Message` dataclass with a `role` field typed as `Role` (a `Literal["user", "assistant", "system"]` type alias) and a `content: str` field. It SHALL be frozen (immutable after construction). Both types SHALL live in `core/backend.py`.
@@ -30,3 +24,9 @@ The system SHALL provide a `create_mistral_backend(model: str) -> LLMBackend` fa
 #### Scenario: Backend calls Mistral API with provided messages
 - **WHEN** `complete(messages)` is called on a Mistral backend
 - **THEN** it SHALL call the Mistral chat completion API with the given messages and the configured model, and return the response text
+
+## REMOVED Requirements
+
+### Requirement: LLMMessage is an immutable value type with role and content
+**Reason**: Renamed to `Message` and moved to `core/backend.py`. The type alias `Role` replaces the inline `Literal` annotation.
+**Migration**: Replace `from codemoo.llm.message import LLMMessage` with `from codemoo.core.backend import Message`. Replace all `LLMMessage(role=..., content=...)` usages with `Message(role=..., content=...)`.

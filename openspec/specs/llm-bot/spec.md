@@ -7,14 +7,14 @@ Defines `LLMBot`, a stateless chat participant that responds to each message in 
 ## Requirements
 
 ### Requirement: LLMBot satisfies the ChatParticipant protocol
-`LLMBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` properties, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
+`LLMBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
 
 #### Scenario: LLMBot.is_human returns False
 - **WHEN** `LLMBot.is_human` is accessed
 - **THEN** it SHALL return `False`
 
 ### Requirement: LLMBot responds using only the current message
-When `on_message` is called, `LLMBot` SHALL send a single `LLMMessage(role="user", content=message.text)` to its backend and return the response as a `ChatMessage`. It SHALL ignore the `history` parameter entirely.
+When `on_message` is called, `LLMBot` SHALL send a single `Message(role="user", content=message.text)` to its backend and return the response as a `ChatMessage`. It SHALL ignore the `history` parameter entirely.
 
 #### Scenario: LLMBot ignores history
 - **WHEN** `on_message` is called with a non-empty `history`
