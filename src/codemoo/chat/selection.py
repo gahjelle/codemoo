@@ -18,7 +18,7 @@ def _bot_sort_key(bot: ChatParticipant) -> int:
 
 def _bot_label(bot: ChatParticipant) -> str:
     """Format a bot's selection list label as 'Name (TypeName)'."""
-    return f"{bot.name} ({type(bot).__name__})"
+    return f"{bot.emoji} {bot.name} ({type(bot).__name__})"
 
 
 class SelectionApp(App[list[ChatParticipant]]):
