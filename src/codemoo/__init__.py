@@ -12,10 +12,13 @@ def main() -> None:
     mistral = create_mistral_backend()
     human = HumanParticipant()
     available_bots: list[ChatParticipant] = [
-        EchoBot(name="Lulu", emoji="\N{SATELLITE ANTENNA}"),
+        EchoBot(name="Lulu", emoji="\N{PARROT}"),
         LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=mistral),
         ChatBot(
-            name="Iris", emoji="\N{ROBOT FACE}", backend=mistral, human_name=human.name
+            name="Iris",
+            emoji="\N{EYE}\N{VARIATION SELECTOR-16}",
+            backend=mistral,
+            human_name=human.name,
         ),
     ]
 

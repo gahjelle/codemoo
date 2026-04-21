@@ -38,3 +38,21 @@ Each bot has a memorable name. EchoBot is Lulu because "Lu" echoed is "Lulu".
 **Act 4 — Agency** (Axel → Percy): "Goals, not commands. Planning, not just reacting."
 **Act 5 — Knowledge** (Scout → Mnemo): "The world and memory. It knows more than its weights."
 **Act 6 — Scale** (Pax → Codemoo): "Parallelism and sub-agents. Complexity handled."
+
+### Bot Emojis
+
+| # | Bot | Name | Emoji | `\N{}` name | Rationale |
+|---|-----|------|-------|-------------|-----------|
+| 1 | EchoBot | Lulu | 🦜 | `PARROT` | Parrots echo |
+| 2 | LLMBot | Mono | ✨ | `SPARKLES` | A flash of intelligence (current) |
+| 3 | ChatBot | Iris | 👁️ | `EYE` | "The iris sees the whole scene" |
+| 4 | SystemBot | Sigma | 🎭 | `PERFORMING ARTS` | Adopts a persona/role |
+| 5 | ToolBot | Twix | 🔧 | `WRENCH` | Uses a tool |
+| 6 | FileBot | Filo | 📁 | `FILE FOLDER` | Reads files |
+| 7 | ShellBot | Bash | 🐚 | `SPIRAL SHELL` | Shell pun |
+| 8 | AgentBot | Axel | ♾️ | `INFINITY` | Loops until done |
+| 9 | PlannerBot | Percy | 🤔 | `THINKING FACE` | Thinks before acting |
+| 10 | SearchBot | Scout | 🔍 | `MAGNIFYING GLASS TILTED LEFT` | Searches the web |
+| 11 | MemoryBot | Mnemo | 💾 | `FLOPPY DISK` | Persists across sessions |
+| 12 | ParallelBot | Pax | 🔀 | `TWISTED RIGHTWARDS ARROWS` | Multiple things at once |
+| 13 | CoderBot | Codemoo | 🐄 | `COW` | The brand |

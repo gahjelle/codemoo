@@ -24,7 +24,10 @@ class _MistralBackend:
         return content if isinstance(content, str) else str(content)
 
 
-def create_mistral_backend(model: str = "mistral-small-latest") -> LLMBackend:
+def create_mistral_backend(
+    model: str = "mistral-small-latest",
+    timeout: float = 120.0,
+) -> LLMBackend:
     """Create a Mistral-backed LLMBackend.
 
     Reads MISTRAL_API_KEY from the environment.
@@ -36,4 +39,6 @@ def create_mistral_backend(model: str = "mistral-small-latest") -> LLMBackend:
             "Set it to your Mistral API key before using this backend."
         )
         raise ValueError(msg)
-    return _MistralBackend(client=Mistral(api_key=api_key), model=model)
+    return _MistralBackend(
+        client=Mistral(api_key=api_key, timeout=timeout), model=model
+    )
