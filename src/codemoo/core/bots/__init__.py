@@ -1,5 +1,6 @@
 """Bot participants for the Codemoo chat loop."""
 
+from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
@@ -10,6 +11,7 @@ from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 
 __all__ = [
+    "AgentBot",
     "ChatBot",
     "EchoBot",
     "ErrorBot",
