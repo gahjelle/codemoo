@@ -5,7 +5,9 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 from codemoo.core.backend import Message, ToolUse
-from codemoo.core.tools import reverse_string
+from codemoo.core.bots.file_bot import FileBot
+from codemoo.core.message import ChatMessage
+from codemoo.core.tools import read_file, reverse_string
 from codemoo.llm.backend import create_mistral_backend
 
 app = cyclopts.App()
@@ -24,6 +26,22 @@ async def llm(query: str) -> None:
     stdout.print(query, style="yellow")
     response = await mistral.complete([Message(role="user", content=query)])
     stdout.print(Markdown(response))
+
+
+@app.command
+async def file(query: str) -> None:
+    """Call FileBot — an LLM that can read files before answering."""
+    stdout.print(query, style="yellow")
+    bot = FileBot(
+        name="R",
+        emoji="\N{FILE FOLDER}",
+        backend=mistral,
+        human_name="You",
+        tools=[read_file],
+    )
+    reply = await bot.on_message(ChatMessage(sender="You", text=query), [])
+    if reply:
+        stdout.print(Markdown(reply.text))
 
 
 @app.command

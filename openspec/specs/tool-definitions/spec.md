@@ -35,6 +35,13 @@ The `reverse_string.schema` dict SHALL conform to the format expected by the LLM
 - **WHEN** `reverse_string.schema` is inspected
 - **THEN** it SHALL have keys `"type"`, `"function"` with nested `"name"`, `"description"`, and `"parameters"`
 
+### Requirement: tools module exports read_file
+The `tools` module SHALL export `read_file` in its `__all__` list, alongside the existing `ToolDef` and `reverse_string` exports.
+
+#### Scenario: read_file is importable from the tools module
+- **WHEN** `from codemoo.core.tools import read_file` is executed
+- **THEN** it SHALL succeed and `read_file` SHALL be a `ToolDef` instance
+
 ### Requirement: LLMBackend exposes complete_step for structured single-turn responses
 `LLMBackend` SHALL expose a `complete_step(messages, tools) -> TextResponse | ToolUse` method. It SHALL send one request to the LLM with the provided tools list and return either a `TextResponse(text: str)` if the LLM replied with text, or a `ToolUse(name: str, arguments: dict)` if the LLM requested a tool call. It SHALL NOT invoke the tool function or re-submit to the LLM — that is the caller's responsibility.
 

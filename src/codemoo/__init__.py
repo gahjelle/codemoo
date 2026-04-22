@@ -2,9 +2,8 @@
 
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
-from codemoo.core.bots import ChatBot, EchoBot, ErrorBot, LLMBot, SystemBot, ToolBot
+from codemoo.core import bots, tools
 from codemoo.core.participant import ChatParticipant, HumanParticipant
-from codemoo.core.tools import reverse_string
 from codemoo.llm.backend import create_mistral_backend
 
 
@@ -12,28 +11,35 @@ def main() -> None:
     """Launch the Codemoo chat application."""
     mistral = create_mistral_backend()
     human = HumanParticipant()
-    error_bot = ErrorBot(backend=mistral)
+    error_bot = bots.ErrorBot(backend=mistral)
     available_bots: list[ChatParticipant] = [
-        EchoBot(name="Lulu", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=mistral),
-        ChatBot(
+        bots.EchoBot(name="Coco", emoji="\N{PARROT}"),
+        bots.LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=mistral),
+        bots.ChatBot(
             name="Iris",
             emoji="\N{EYE}\N{VARIATION SELECTOR-16}",
             backend=mistral,
             human_name=human.name,
         ),
-        SystemBot(
+        bots.SystemBot(
             name="Sona",
             emoji="\N{PERFORMING ARTS}",
             backend=mistral,
             human_name=human.name,
         ),
-        ToolBot(
+        bots.ToolBot(
             name="Telo",
             emoji="\N{WRENCH}",
             backend=mistral,
             human_name=human.name,
-            tools=[reverse_string],
+            tools=[tools.reverse_string],
+        ),
+        bots.FileBot(
+            name="Rune",
+            emoji="\N{FILE FOLDER}",
+            backend=mistral,
+            human_name=human.name,
+            tools=[tools.read_file, tools.reverse_string],
         ),
     ]
 

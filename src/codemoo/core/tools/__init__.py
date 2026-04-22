@@ -2,8 +2,9 @@
 
 import dataclasses
 from collections.abc import Callable
+from pathlib import Path
 
-__all__ = ["ToolDef", "reverse_string"]
+__all__ = ["ToolDef", "read_file", "reverse_string"]
 
 
 @dataclasses.dataclass
@@ -12,6 +13,37 @@ class ToolDef:
 
     schema: dict[str, object]
     fn: Callable[..., str]
+
+
+#
+# Read file
+#
+def _read_file(path: str) -> str:
+    return Path(path).read_text(encoding="utf-8")
+
+
+read_file = ToolDef(
+    schema={
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": (
+                "Read the contents of a file at the given path and return them as text."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "The file path to read.",
+                    }
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    fn=_read_file,
+)
 
 
 #
