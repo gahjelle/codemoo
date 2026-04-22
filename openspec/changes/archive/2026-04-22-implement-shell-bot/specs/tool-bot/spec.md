@@ -1,10 +1,4 @@
-# Spec: tool-bot
-
-## Purpose
-
-Defines `ToolBot`, the fifth bot in the Codemoo demo chain. It adds single-tool-call capability to the ChatBot/SystemBot pattern, making the LLM tool-calling round-trip visible in the bot's own `on_message` method.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ToolBot satisfies the ChatParticipant protocol
 `ToolBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`. `is_human` SHALL always return `False`.

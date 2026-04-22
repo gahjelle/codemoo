@@ -1,10 +1,11 @@
 """Reusable tool definitions: JSON schema and implementation paired together."""
 
 import dataclasses
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
-__all__ = ["ToolDef", "read_file", "reverse_string"]
+__all__ = ["ToolDef", "read_file", "reverse_string", "run_shell"]
 
 
 @dataclasses.dataclass
@@ -72,4 +73,51 @@ reverse_string = ToolDef(
         },
     },
     fn=_reverse,
+)
+
+
+#
+# Run shell command
+#
+def _run_shell(command: str, _timeout: int = 30) -> str:
+    try:
+        result = subprocess.run(  # noqa: S602
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=_timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return f"[timeout after {_timeout}s] Command did not complete: {command}"
+    parts = [f"exit code: {result.returncode}"]
+    if result.stdout:
+        parts.append(f"stdout:\n{result.stdout.rstrip()}")
+    if result.stderr:
+        parts.append(f"stderr:\n{result.stderr.rstrip()}")
+    return "\n".join(parts)
+
+
+run_shell = ToolDef(
+    schema={
+        "type": "function",
+        "function": {
+            "name": "run_shell",
+            "description": (
+                "Execute a shell command and return its exit code, stdout, and stderr."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "The shell command to run.",
+                    }
+                },
+                "required": ["command"],
+            },
+        },
+    },
+    fn=_run_shell,
 )

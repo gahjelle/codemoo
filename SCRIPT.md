@@ -14,6 +14,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | SystemBot | Sona | Sona plays the part with a strong personality                           |
 | ToolBot   | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes |
 | FileBot   | Rune | Files are modern day runes                                              |
+| ShellBot  | Ash  | Ash is a real Unix shell — the bot that runs shell commands             |
 
 
 ### Full Progression
@@ -26,7 +27,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 4   | SystemBot   | Sona    | System prompt / persona                            | "Now we can give it instructions and a role. Same LLM, totally different character." |
 | 5   | ToolBot     | Telo    | Single tool call (e.g. calculator)                 | "Now it can *do* things, not just talk. One tool, one call."                         |
 | 6   | FileBot     | Rune    | `read_file` tool — reads files on demand           | "Now it can look at your code. Ask it anything about a file."                        |
-| 7   | ShellBot    | A       | Execute shell commands                             | "Now it can run code. This is where it gets dangerous — and useful."                 |
+| 7   | ShellBot    | Ash     | Execute shell commands                             | "Now it can run code. This is where it gets dangerous — and useful."                 |
 | 8   | AgentBot    | L       | Agentic loop — calls tools repeatedly until done   | "Now it keeps going until the task is finished. You give a goal, not a command."     |
 | 9   | PlannerBot  |         | Extended thinking / chain-of-thought before acting | "Now it thinks before it acts. Slower, but much smarter on hard problems."           |
 | 10  | SearchBot   |         | Web search tool                                    | "Now it has access to information beyond its training data."                         |

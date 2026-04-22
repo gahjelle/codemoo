@@ -1,10 +1,4 @@
-# Spec: file-bot
-
-## Purpose
-
-TBD — Defines `FileBot`, a chat participant that uses the `read_file` tool to answer questions about file contents.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: FileBot satisfies the ChatParticipant protocol
 `FileBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`. `is_human` SHALL always return `False`.
