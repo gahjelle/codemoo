@@ -1,7 +1,7 @@
 """LLM bot that can read files from disk via a single tool call."""
 
 import dataclasses
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from codemoo.core.backend import (
     Message,
@@ -67,5 +67,5 @@ def _tool_name(tool: ToolDef) -> str:
     fn_block = tool.schema.get("function")
     if not isinstance(fn_block, dict):
         return ""
-    name = fn_block.get("name")
+    name = cast("dict[str, object]", fn_block).get("name")
     return name if isinstance(name, str) else ""
