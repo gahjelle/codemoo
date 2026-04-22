@@ -48,6 +48,13 @@ def main() -> None:
             human_name=human.name,
             tools=[tools.run_shell, tools.read_file, tools.reverse_string],
         ),
+        bots.AgentBot(
+            name="Loom",
+            emoji="\N{CYCLONE}",
+            backend=mistral,
+            human_name=human.name,
+            tools=[tools.run_shell, tools.read_file, tools.reverse_string],
+        ),
     ]
 
     selected = SelectionApp(available_bots).run()
