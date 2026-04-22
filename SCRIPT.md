@@ -12,6 +12,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | LLMBot    | Mono | Mono = single/one — single-turn, no history                             |
 | ChatBot   | Iris | The iris sees the whole scene — Iris sees the full conversation history |
 | SystemBot | Sona | Sona plays the part with a strong personality                           |
+| ToolBot   | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes |
 
 ### Full Progression
 
@@ -21,7 +22,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 2   | LLMBot      | Mono    | Stateless LLM call                                 | "Now it thinks — but only about what you just said."                                 |
 | 3   | ChatBot     | Iris    | Full conversation history                          | "Now it remembers the whole conversation."                                           |
 | 4   | SystemBot   | Sona    | System prompt / persona                            | "Now we can give it instructions and a role. Same LLM, totally different character." |
-| 5   | ToolBot     | T       | Single tool call (e.g. calculator)                 | "Now it can *do* things, not just talk. One tool, one call."                         |
+| 5   | ToolBot     | Telo    | Single tool call (e.g. calculator)                 | "Now it can *do* things, not just talk. One tool, one call."                         |
 | 6   | FileBot     | R       | `read_file` tool — reads files on demand           | "Now it can look at your code. Ask it anything about a file."                        |
 | 7   | ShellBot    | A       | Execute shell commands                             | "Now it can run code. This is where it gets dangerous — and useful."                 |
 | 8   | AgentBot    | L       | Agentic loop — calls tools repeatedly until done   | "Now it keeps going until the task is finished. You give a goal, not a command."     |
@@ -48,7 +49,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 2   | LLMBot      | Mono    | ✨     | `SPARKLES`                     | A flash of intelligence         |
 | 3   | ChatBot     | Iris    | 👁️     | `EYE`                          | "The iris sees the whole scene" |
 | 4   | SystemBot   | Sona    | 🎭     | `PERFORMING ARTS`              | Adopts a persona/role           |
-| 5   | ToolBot     | T       | 🔧     | `WRENCH`                       | Uses a tool                     |
+| 5   | ToolBot     | Telo    | 🔧     | `WRENCH`                       | Uses a tool                     |
 | 6   | FileBot     | R       | 📁     | `FILE FOLDER`                  | Reads files                     |
 | 7   | ShellBot    | A       | 🐚     | `SPIRAL SHELL`                 | Shell pun                       |
 | 8   | AgentBot    | L       | ♾️     | `INFINITY`                     | Loops until done                |

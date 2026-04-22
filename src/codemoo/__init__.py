@@ -2,8 +2,9 @@
 
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
-from codemoo.core.bots import ChatBot, EchoBot, ErrorBot, LLMBot, SystemBot
+from codemoo.core.bots import ChatBot, EchoBot, ErrorBot, LLMBot, SystemBot, ToolBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.core.tools import reverse_string
 from codemoo.llm.backend import create_mistral_backend
 
 
@@ -26,6 +27,13 @@ def main() -> None:
             emoji="\N{PERFORMING ARTS}",
             backend=mistral,
             human_name=human.name,
+        ),
+        ToolBot(
+            name="Telo",
+            emoji="\N{WRENCH}",
+            backend=mistral,
+            human_name=human.name,
+            tools=[reverse_string],
         ),
     ]
 
