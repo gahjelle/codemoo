@@ -5,16 +5,18 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
+from textual.events import Key
 from textual.widgets import Input
 
 from codemoo.chat.bubble import ChatBubble
+from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.status import ThinkingStatus
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 
 
-class ChatApp(App[None]):
+class ChatApp(App[str | None]):
     """Main TUI application that hosts the chat log and input widget."""
 
     CSS_PATH = Path(__file__).parent / "chat.tcss"
@@ -23,11 +25,13 @@ class ChatApp(App[None]):
         self,
         participants: Sequence[ChatParticipant],
         error_bot: ErrorBot,
+        demo_position: tuple[int, int] | None = None,
     ) -> None:
         """Initialise with an ordered list of chat participants and the error bot."""
         super().__init__()
         self._participants = list(participants)
         self._error_bot = error_bot
+        self._demo_position = demo_position
 
         # Build a lookup from sender name → (emoji, is_human, css_class)
         def _bubble_class(p: ChatParticipant) -> str:
@@ -44,6 +48,9 @@ class ChatApp(App[None]):
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log, thinking status bar, and text input field."""
+        if self._demo_position is not None:
+            bot = next(p for p in self._participants if not p.is_human)
+            yield DemoHeader(bot, self._demo_position)
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
         yield Input(placeholder="Type a message and press Enter...")
@@ -118,3 +125,8 @@ class ChatApp(App[None]):
             self._append_to_log(reply)
             replies.append(reply)
         self._history.extend(replies)
+
+    def on_key(self, event: Key) -> None:
+        """Advance to the next bot when Ctrl-N is pressed in demo mode."""
+        if event.key == "ctrl+n" and self._demo_position is not None:
+            self.exit("next")

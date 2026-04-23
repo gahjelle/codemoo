@@ -17,7 +17,7 @@ class _MockBackend:
     def __init__(self, response: str = "error description") -> None:
         self.response = response
 
-    async def complete(self, messages: object) -> str:  # noqa: ARG002
+    async def complete(self, messages: object) -> str:
         return self.response
 
 
@@ -39,7 +39,7 @@ class _EchoParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],  # noqa: ARG002
+        history: list[ChatMessage],
     ) -> ChatMessage | None:
         return ChatMessage(sender=self.name, text=message.text)
 
@@ -61,8 +61,8 @@ class _SilentParticipant:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
-        history: list[ChatMessage],  # noqa: ARG002
+        message: ChatMessage,
+        history: list[ChatMessage],
     ) -> ChatMessage | None:
         return None
 
@@ -87,7 +87,7 @@ class _HistoryCapturingParticipant:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
+        message: ChatMessage,
         history: list[ChatMessage],
     ) -> ChatMessage | None:
         self.received_histories.append(list(history))
@@ -116,7 +116,7 @@ class _MessageCapturingParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],  # noqa: ARG002
+        history: list[ChatMessage],
     ) -> ChatMessage | None:
         self.received_messages.append(message)
         return None
@@ -212,8 +212,8 @@ class _FailingParticipant:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
-        history: list[ChatMessage],  # noqa: ARG002
+        message: ChatMessage,
+        history: list[ChatMessage],
     ) -> ChatMessage | None:
         msg = "simulated LLM failure"
         raise RuntimeError(msg)

@@ -40,13 +40,13 @@ class _SequentialBackend:
         self._steps = list(steps)
         self.step_calls: list[list[Message]] = []
 
-    async def complete(self, messages: list[Message]) -> str:  # noqa: ARG002
+    async def complete(self, messages: list[Message]) -> str:
         pytest.fail("AgentBot should never call complete()")
 
     async def complete_step(
         self,
         messages: list[Message],
-        tools: list[ToolDef],  # noqa: ARG002
+        tools: list[ToolDef],
     ) -> TextResponse | ToolUse:
         self.step_calls.append(list(messages))
         return self._steps.pop(0)

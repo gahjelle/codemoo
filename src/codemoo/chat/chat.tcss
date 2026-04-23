@@ -57,6 +57,14 @@
     align-horizontal: center;
 }
 
+/* DemoHeader: bold, accent-colored bar at the top of the chat in demo mode */
+DemoHeader {
+    padding: 0 1;
+    text-style: bold;
+    color: $accent;
+    background: $panel;
+}
+
 /* ThinkingStatus: subtle italic text, padded to match bubble area */
 ThinkingStatus {
     padding: 0 1;
