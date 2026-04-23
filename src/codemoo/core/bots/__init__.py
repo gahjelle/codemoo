@@ -1,6 +1,7 @@
 """Bot participants for the Codemoo chat loop."""
 
 from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
@@ -13,6 +14,7 @@ from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import read_file, reverse_string, run_shell
 
 __all__ = [
+    "AgentBot",
     "ChatBot",
     "EchoBot",
     "ErrorBot",
@@ -60,6 +62,13 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
         ShellBot(
             name="Ash",
             emoji="\N{SPIRAL SHELL}",
+            backend=backend,
+            human_name=human_name,
+            tools=[run_shell, read_file, reverse_string],
+        ),
+        AgentBot(
+            name="Loom",
+            emoji="\N{CYCLONE}",
             backend=backend,
             human_name=human_name,
             tools=[run_shell, read_file, reverse_string],

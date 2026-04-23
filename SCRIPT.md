@@ -55,7 +55,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 5   | ToolBot     | Telo    | 🔧     | `WRENCH`                       | Uses a tool                     |
 | 6   | FileBot     | Rune    | 📁     | `FILE FOLDER`                  | Reads files                     |
 | 7   | ShellBot    | Ash     | 🐚     | `SPIRAL SHELL`                 | Shell pun                       |
-| 8   | AgentBot    | Loom    | ♾️     | `INFINITY`                     | Loops until done                |
+| 8   | AgentBot    | Loom    | 🌀     | `CYCLONE`                      | Loops until done                |
 | 9   | PlannerBot  |         | 🤔     | `THINKING FACE`                | Thinks before acting            |
 | 10  | SearchBot   |         | 🔍     | `MAGNIFYING GLASS TILTED LEFT` | Searches the web                |
 | 11  | MemoryBot   |         | 💾     | `FLOPPY DISK`                  | Persists across sessions        |

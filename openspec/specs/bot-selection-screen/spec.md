@@ -7,7 +7,7 @@ TBD — defines the startup bot selection screen that allows the user to choose 
 ## Requirements
 
 ### Requirement: Selection screen presents all available bots in a fixed order
-The startup selection screen SHALL display a multi-select list of all available bot participants. The bots SHALL appear in the fixed progression order: EchoBot, LLMBot, ChatBot, SystemBot, ToolBot, FileBot, ShellBot. Each item in the list SHALL show both the instance name and the bot type (e.g. "Coco (EchoBot)").
+The startup selection screen SHALL display a multi-select list of all available bot participants. The bots SHALL appear in the fixed progression order: EchoBot, LLMBot, ChatBot, SystemBot, ToolBot, FileBot, ShellBot, AgentBot. Each item in the list SHALL show both the instance name and the bot type (e.g. "Coco (EchoBot)").
 
 #### Scenario: Bots appear in fixed progression order
 - **WHEN** the selection screen is rendered
@@ -22,7 +22,7 @@ The selection screen SHALL allow the user to toggle any combination of bots on o
 
 #### Scenario: All bots selected
 - **WHEN** the user selects all available bots and confirms
-- **THEN** the chat session SHALL start with all five bot types plus the human participant
+- **THEN** the chat session SHALL start with all eight bot types plus the human participant
 
 #### Scenario: No bots selected
 - **WHEN** the user confirms with no bots selected
@@ -41,7 +41,7 @@ When the user confirms their selection, the selection screen SHALL close and the
 
 #### Scenario: Participant order in chat matches fixed order
 - **WHEN** the user selects a mix of bots and confirms
-- **THEN** the participants passed to the chat session SHALL follow the order: human, EchoBot (if selected), LLMBot (if selected), ChatBot (if selected), SystemBot (if selected), ToolBot (if selected)
+- **THEN** the participants passed to the chat session SHALL follow the order: human, EchoBot (if selected), LLMBot (if selected), ChatBot (if selected), SystemBot (if selected), ToolBot (if selected), FileBot (if selected), ShellBot (if selected), AgentBot (if selected)
 
 ### Requirement: Selection screen is accessed via the select subcommand
 The selection screen SHALL only be shown when the user explicitly runs `codemoo select`. It SHALL NOT appear on bare `codemoo` invocation.
