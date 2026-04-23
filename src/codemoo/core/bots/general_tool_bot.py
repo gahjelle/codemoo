@@ -13,6 +13,8 @@ from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
+_INTERRUPTED = "(tool executed, process interrupted)"
+
 
 @dataclasses.dataclass(eq=False)
 class GeneralToolBot:
@@ -61,7 +63,7 @@ class GeneralToolBot:
                 step.assistant_message,
                 Message(role="tool", content=tool_output, tool_call_id=step.call_id),
             ]
-            text = await self.backend.complete(follow_up)
+            text = await self.backend.complete(follow_up) or _INTERRUPTED
         else:
             text = step.text  # TextResponse
         return ChatMessage(sender=self.name, text=text)

@@ -43,7 +43,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 20  | SearchBot       | Scout   | Web search tool                                      | Now it has access to information beyond its training data                                 |
 | 21  | McpBot          | Mesh    | Adds support for MCP servers                         | Now it plugs into anything. MCP turns every external tool into a first-class citizen      |
 | 22  | CompactBot      | Pith    | Better handling of context                           | Now it manages its own memory. It compresses the past to keep focus on the present        |
-| 23  | CoderBot        | Codemoo | All of the above                                     | "This is Claude Code. Every feature, working together."                                   |
+| 23  | CoderBot        | Codemoo | All of the above                                     | This is Claude Code. Every feature, working together.                                     |
 
 ### Demo Arc
 

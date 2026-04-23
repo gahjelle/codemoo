@@ -81,6 +81,19 @@ def bot_text(text_backend: _MockBackend) -> ToolBot:
 
 
 @pytest.fixture
+def empty_backend() -> _MockBackend:
+    return _MockBackend(
+        step_result=ToolUse(
+            name="reverse_string",
+            arguments={"text": "hello"},
+            call_id="c1",
+            assistant_message=_make_assistant_msg(),
+        ),
+        complete_response="",
+    )
+
+
+@pytest.fixture
 def bot_tool(tool_backend: _MockBackend) -> ToolBot:
     return ToolBot(
         name="Telo",
@@ -148,6 +161,23 @@ async def test_complete_step_receives_tool_list(
 
     _, tools_sent = tool_backend.step_calls[0]
     assert tools_sent == [reverse_string]
+
+
+@pytest.mark.asyncio
+async def test_tool_use_path_empty_complete_uses_fallback(
+    empty_backend: _MockBackend,
+) -> None:
+    bot = ToolBot(
+        name="Telo",
+        emoji="\N{WRENCH}",
+        backend=empty_backend,
+        human_name="You",
+        tools=[reverse_string],
+    )
+    reply = await bot.on_message(_msg("You", "reverse hello"), [])
+
+    assert reply is not None
+    assert reply.text == "(tool executed, process interrupted)"
 
 
 @pytest.mark.asyncio
