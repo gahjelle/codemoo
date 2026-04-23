@@ -1,5 +1,7 @@
 """TUI entry point for the codemoo command."""
 
+import asyncio
+
 import cyclopts
 
 from codemoo.chat.app import ChatApp
@@ -57,6 +59,11 @@ def select() -> None:
 @app.command
 def demo(*, start: str | None = None) -> None:
     """Run the bot progression demo. Use Ctrl-N to advance to the next bot."""
+    asyncio.run(_run_demo(start))
+
+
+async def _run_demo(start: str | None) -> None:
+    """Run the demo loop in a single event loop so shared async resources stay valid."""
     backend, human, available, error_bot, commentator_bot = _setup()
     index = available.index(resolve_bot(start, available)) if start is not None else 0
     demo_bots = available[index:]
@@ -68,11 +75,11 @@ def demo(*, start: str | None = None) -> None:
             backend=backend,
             position=(i + 1, len(demo_bots)),
         )
-        result = ChatApp(
+        result = await ChatApp(
             participants=[human, bot],
             error_bot=error_bot,
             commentator_bot=commentator_bot,
             demo_context=context,
-        ).run()
+        ).run_async()
         if result != "next":
             break

@@ -44,6 +44,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # ARG001/ARG002: Unused function/method argument
 # D100/D103: Test modules and functions are named descriptively; docstrings add no value
+# PLC0415: Imports should be at top of file
 # PLR2004: Magic value used in comparison (OK for tests)
 # S101: Use of `assert` (OK for tests)
 # SLF001: Private member accessed (OK for tests)
@@ -53,6 +54,7 @@ ignore = [
     "ARG002",
     "D100",
     "D103",
+    "PLC0415",
     "PLR2004",
     "S101",
     "SLF001",
@@ -63,6 +65,7 @@ ignore = [
     "ARG002",
     "D100",
     "D103",
+    "PLC0415",
     "PLR2004",
     "S101",
     "SLF001",

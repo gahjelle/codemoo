@@ -67,7 +67,7 @@ def _build_llm_prompt(
             f"Here is its implementation:\n{curr_source}{curr_tools_line}\n\n"
             "Explain in 5-8 lines what this bot does and how it works. "
             "Be code-focused. Show the key line(s) of code. Be concise — "
-            "this must fit on a single screen. Use Markdown."
+            "this must fit on a single screen. Don't use Markdown."
         )
 
     prev_type = type(prev_bot).__name__
@@ -82,7 +82,7 @@ def _build_llm_prompt(
         f"{current_bot.name} source:\n{curr_source}{curr_tools_line}\n\n"
         "Explain the single most important change in 5-8 lines. Be code-focused. "
         "Show the key code difference. Don't explain helper functions in detail — "
-        "focus on the concept. This must fit on a single screen. Use Markdown."
+        "focus on the concept. This must fit on a single screen. Don't use Markdown."
     )
 
 
