@@ -10,6 +10,7 @@ from textual.widgets import Input
 
 from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
+from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
@@ -27,13 +28,13 @@ class ChatApp(App[str | None]):
         participants: Sequence[ChatParticipant],
         error_bot: ErrorBot,
         commentator_bot: CommentatorBot | None = None,
-        demo_position: tuple[int, int] | None = None,
+        demo_context: DemoContext | None = None,
     ) -> None:
         """Initialise with an ordered list of chat participants and the error bot."""
         super().__init__()
         self._participants = list(participants)
         self._error_bot = error_bot
-        self._demo_position = demo_position
+        self._demo_context = demo_context
 
         # Build a lookup from sender name → (emoji, is_human, css_class)
         def _bubble_class(p: ChatParticipant) -> str:
@@ -53,12 +54,17 @@ class ChatApp(App[str | None]):
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log, thinking status bar, and text input field."""
-        if self._demo_position is not None:
+        if self._demo_context is not None:
             bot = next(p for p in self._participants if not p.is_human)
-            yield DemoHeader(bot, self._demo_position)
+            yield DemoHeader(bot, self._demo_context.position)
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
         yield Input(placeholder="Type a message and press Enter...")
+
+    def on_mount(self) -> None:
+        """Push the slide overlay when entering demo mode."""
+        if self._demo_context is not None:
+            self.push_screen(SlideScreen(self._demo_context))
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle Enter in the input box: create a message and dispatch it."""
@@ -133,5 +139,5 @@ class ChatApp(App[str | None]):
 
     def on_key(self, event: Key) -> None:
         """Advance to the next bot when Ctrl-N is pressed in demo mode."""
-        if event.key == "ctrl+n" and self._demo_position is not None:
+        if event.key == "ctrl+n" and self._demo_context is not None:
             self.exit("next")
