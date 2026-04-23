@@ -71,3 +71,14 @@ ignore = [
     "SLF001",
     "UP018",
 ]
+
+[[tool.ty.overrides]]
+# Test doubles for Textual framework objects (MockKey, MockButtonPressed) are
+# duck-typed structs intentionally lighter than the real event classes; and
+# monkey-patching app.exit / screen.dismiss is a deliberate test technique to
+# avoid launching a full Textual event loop. Both patterns are safe in tests.
+include = ["tests/**"]
+
+[tool.ty.overrides.rules]
+invalid-argument-type = "ignore"
+invalid-assignment = "ignore"

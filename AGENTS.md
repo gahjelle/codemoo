@@ -33,7 +33,7 @@ uv run ruff check .
 uv run ruff format .
 
 # Type check
-uv run ty check
+uv run ty check .
 ```
 
 ## Code Style
@@ -42,6 +42,7 @@ uv run ty check
 - Type hints required on all functions
 - Functional Core, Imperative Shell architecture
 - Comments explain why, not what
+- Type checker is `ty` (not mypy) — use `# ty: ignore[<code>]` if suppression is ever needed; never `# type: ignore[mypy-code]`. Tests have a blanket override in `pyproject.toml` for Textual mock patterns, so no per-line ignores are needed there.
 
 ## Textual Widget CSS
 

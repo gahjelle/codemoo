@@ -10,7 +10,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | --------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | ------------------------------- |
 | EchoBot   | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                    |
 | LLMBot    | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence         |
-| ChatBot   | Iris | The iris sees the whole scene — Iris sees the full conversation history | 👁️     | `EYE`             | "The iris sees the whole scene" |
+| ChatBot   | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene" |
 | SystemBot | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role           |
 | ToolBot   | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                     |
 | FileBot   | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files                     |

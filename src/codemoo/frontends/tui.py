@@ -3,6 +3,8 @@
 import asyncio
 
 import cyclopts
+from rich.console import Console
+from rich.table import Table
 
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
@@ -41,6 +43,20 @@ def chat(*, bot: str | None = None) -> None:
         error_bot=error_bot,
         commentator_bot=commentator_bot,
     ).run()
+
+
+@app.command
+def list_bots() -> None:
+    """List all available bots with their index, type, and name."""
+    backend = create_mistral_backend()
+    bots = make_bots(backend, "")
+    table = Table(show_header=True)
+    table.add_column("#", justify="right", style="dim")
+    table.add_column("Type")
+    table.add_column("Bot")
+    for i, bot in enumerate(bots, start=1):
+        table.add_row(str(i), type(bot).__name__, f"{bot.emoji} {bot.name}")
+    Console().print(table)
 
 
 @app.command

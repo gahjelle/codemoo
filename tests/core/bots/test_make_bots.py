@@ -15,7 +15,7 @@ class _MockBackend:
 
 
 def _bots() -> list:
-    return make_bots(_MockBackend(), "You")  # type: ignore[arg-type]
+    return make_bots(_MockBackend(), "You")
 
 
 def test_make_bots_returns_eight_bots() -> None:

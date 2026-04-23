@@ -6,6 +6,7 @@ from codemoo.chat.slides import (
     SlideScreen,
     _build_llm_prompt,
 )
+from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.llm_bot import LLMBot
 
@@ -14,16 +15,16 @@ class _MockBackend:
     async def complete(self, messages: object) -> str:
         return "Generated explanation"
 
-    async def complete_step(self, messages: object, tools: object) -> object:
-        from codemoo.core.backend import TextResponse
-
+    async def complete_step(
+        self, messages: object, tools: object
+    ) -> TextResponse | ToolUse:
         return TextResponse(text="")
 
 
 def _make_bots() -> list[EchoBot | LLMBot]:
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),  # type: ignore[arg-type]
+        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
     ]
 
 
@@ -32,7 +33,7 @@ def _make_context(position: tuple[int, int] = (1, 1)) -> DemoContext:
     return DemoContext(
         all_bots=[bot],
         prev_bot=None,
-        backend=_MockBackend(),  # type: ignore[arg-type]
+        backend=_MockBackend(),
         position=position,
     )
 
@@ -64,7 +65,7 @@ def test_agenda_upcoming_bot_has_upcoming_class() -> None:
 def test_agenda_all_three_states_with_three_bots() -> None:
     bots = [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),  # type: ignore[arg-type]
+        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
         EchoBot(name="Other", emoji="\N{PARROT}"),
     ]
     column = AgendaColumn(bots, current_index=1)
@@ -94,7 +95,7 @@ def test_build_llm_prompt_first_bot_no_comparison() -> None:
 
 def test_build_llm_prompt_comparison_includes_both_bots() -> None:
     prev = EchoBot(name="Coco", emoji="\N{PARROT}")
-    curr = LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())  # type: ignore[arg-type]
+    curr = LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())
     prompt = _build_llm_prompt(curr, prev_bot=prev)
     assert "Coco" in prompt
     assert "Mono" in prompt
@@ -110,7 +111,7 @@ def test_build_llm_prompt_includes_tool_names_when_present() -> None:
     curr = ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
-        backend=_MockBackend(),  # type: ignore[arg-type]
+        backend=_MockBackend(),
         human_name="You",
         tools=[reverse_string],
         instructions="",
@@ -157,14 +158,14 @@ class _MockButtonPressed:
 def _screen_with_mock_dismiss() -> tuple[SlideScreen, list[None]]:
     screen = SlideScreen(_make_context())
     calls: list[None] = []
-    screen.dismiss = lambda result=None: calls.append(result)  # type: ignore[method-assign]
+    screen.dismiss = lambda result=None: calls.append(result)
     return screen, calls
 
 
 def test_slide_screen_enter_key_dismisses() -> None:
     screen, calls = _screen_with_mock_dismiss()
     event = _MockKey("enter")
-    screen.on_key(event)  # type: ignore[arg-type]
+    screen.on_key(event)
     assert calls
     assert event._stopped
 
@@ -172,7 +173,7 @@ def test_slide_screen_enter_key_dismisses() -> None:
 def test_slide_screen_escape_key_dismisses() -> None:
     screen, calls = _screen_with_mock_dismiss()
     event = _MockKey("escape")
-    screen.on_key(event)  # type: ignore[arg-type]
+    screen.on_key(event)
     assert calls
     assert event._stopped
 
@@ -180,19 +181,19 @@ def test_slide_screen_escape_key_dismisses() -> None:
 def test_slide_screen_other_key_does_not_dismiss() -> None:
     screen, calls = _screen_with_mock_dismiss()
     event = _MockKey("ctrl+n")
-    screen.on_key(event)  # type: ignore[arg-type]
+    screen.on_key(event)
     assert not calls
 
 
 def test_slide_screen_ok_button_dismisses() -> None:
     screen, calls = _screen_with_mock_dismiss()
     event = _MockButtonPressed("slide-ok")
-    screen.on_button_pressed(event)  # type: ignore[arg-type]
+    screen.on_button_pressed(event)
     assert calls
 
 
 def test_slide_screen_other_button_does_not_dismiss() -> None:
     screen, calls = _screen_with_mock_dismiss()
     event = _MockButtonPressed("some-other-button")
-    screen.on_button_pressed(event)  # type: ignore[arg-type]
+    screen.on_button_pressed(event)
     assert not calls

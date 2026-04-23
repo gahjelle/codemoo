@@ -33,7 +33,7 @@ class _MistralBackend:
         """Call Mistral chat completion and return the response text."""
         response = await self._client.chat.complete_async(
             model=self._model,
-            messages=_serialize(messages),  # type: ignore[arg-type]
+            messages=_serialize(messages),
         )
         content = response.choices[0].message.content
         return content if isinstance(content, str) else str(content)
@@ -49,8 +49,8 @@ class _MistralBackend:
         """
         response = await self._client.chat.complete_async(
             model=self._model,
-            messages=_serialize(messages),  # type: ignore[arg-type]
-            tools=[t.schema for t in tools] if tools else None,  # type: ignore[arg-type]
+            messages=_serialize(messages),
+            tools=[t.schema for t in tools] if tools else None,
         )
         message = response.choices[0].message
         if message.tool_calls:

@@ -29,7 +29,7 @@ async def tool(query: str) -> None:
     context = [Message(role="user", content=query)]
     step = await mistral.complete_step(context, [tools.read_file])
     if isinstance(step, ToolUse):
-        tool_output = tools.read_file.fn(**step.arguments)  # type: ignore[call-arg]
+        tool_output = tools.read_file.fn(**step.arguments)
         stdout.print(
             f"[dim]tool call: {step.name}({step.arguments}) → {tool_output!r}[/dim]"
         )

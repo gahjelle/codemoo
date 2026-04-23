@@ -1,6 +1,7 @@
 """Demo slide overlay shown before each bot session in demo mode."""
 
 import dataclasses
+from collections.abc import Sequence
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -97,7 +98,7 @@ class AgendaColumn(Widget):
     }
     """
 
-    def __init__(self, all_bots: list[ChatParticipant], current_index: int) -> None:
+    def __init__(self, all_bots: Sequence[ChatParticipant], current_index: int) -> None:
         """Initialise with the full session bot list and the 0-based current index."""
         super().__init__()
         self._all_bots = all_bots

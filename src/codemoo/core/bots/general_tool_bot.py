@@ -57,7 +57,7 @@ class GeneralToolBot:
                         arguments=step.arguments,
                     )
                 )
-            tool_output = tool_map[step.name].fn(**step.arguments)  # type: ignore[call-arg]
+            tool_output = tool_map[step.name].fn(**step.arguments)
             follow_up = [
                 *context,
                 step.assistant_message,

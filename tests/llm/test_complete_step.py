@@ -49,7 +49,7 @@ def mock_complete() -> AsyncMock:
 def backend(mock_complete: AsyncMock) -> _MistralBackend:
     client = MagicMock()
     client.chat.complete_async = mock_complete
-    return _MistralBackend(client=client, model="mistral-small-latest")  # type: ignore[arg-type]
+    return _MistralBackend(client=client, model="mistral-small-latest")
 
 
 @pytest.mark.asyncio

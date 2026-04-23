@@ -25,7 +25,7 @@ def _make_demo_context(position: tuple[int, int] = (1, 8)) -> DemoContext:
     return DemoContext(
         all_bots=[bot],
         prev_bot=None,
-        backend=_MockBackend(),  # type: ignore[arg-type]
+        backend=_MockBackend(),
         position=position,
     )
 
@@ -33,7 +33,7 @@ def _make_demo_context(position: tuple[int, int] = (1, 8)) -> DemoContext:
 def _make_app(demo_context: DemoContext | None = None) -> ChatApp:
     human = HumanParticipant()
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
-    error_bot = ErrorBot(backend=_MockBackend())  # type: ignore[arg-type]
+    error_bot = ErrorBot(backend=_MockBackend())
     return ChatApp(
         participants=[human, bot],
         error_bot=error_bot,
@@ -67,16 +67,16 @@ def test_demo_header_present_with_demo_context() -> None:
 def test_ctrl_n_ignored_without_demo_context() -> None:
     app = _make_app(demo_context=None)
     exits: list[str | None] = []
-    app.exit = lambda result=None: exits.append(result)  # type: ignore[method-assign]
-    app.on_key(_MockKey("ctrl+n"))  # type: ignore[arg-type]
+    app.exit = lambda result=None: exits.append(result)
+    app.on_key(_MockKey("ctrl+n"))
     assert not exits
 
 
 def test_ctrl_n_exits_with_next_in_demo_mode() -> None:
     app = _make_app(demo_context=_make_demo_context())
     exits: list[str | None] = []
-    app.exit = lambda result=None: exits.append(result)  # type: ignore[method-assign]
-    app.on_key(_MockKey("ctrl+n"))  # type: ignore[arg-type]
+    app.exit = lambda result=None: exits.append(result)
+    app.on_key(_MockKey("ctrl+n"))
     assert exits == ["next"]
 
 

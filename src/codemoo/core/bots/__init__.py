@@ -41,7 +41,7 @@ def make_bots(
         LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
         ChatBot(
             name="Iris",
-            emoji="\N{EYE}\N{VARIATION SELECTOR-16}",
+            emoji="\N{NAZAR AMULET}",
             backend=backend,
             human_name=human_name,
         ),
