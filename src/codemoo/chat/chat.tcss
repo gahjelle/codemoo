@@ -79,6 +79,73 @@ ThinkingStatus {
     text-style: italic;
 }
 
+/* Slide overlay modal */
+SlideScreen {
+    background: $background 80%;
+}
+
+#slide-outer {
+    align: center middle;
+    height: 100%;
+}
+
+#slide-layout {
+    width: 90%;
+    height: 85%;
+    background: $surface;
+    border: thick $accent;
+}
+
+/* Agenda column: narrow left strip listing session bots */
+AgendaColumn {
+    border-right: solid $panel;
+    padding: 1 2;
+}
+
+.agenda--past {
+    color: $text-muted;
+    opacity: 50%;
+}
+
+.agenda--current {
+    text-style: bold;
+    color: $accent;
+}
+
+/* Slide content area */
+SlideContent {
+    padding: 1 2;
+}
+
+#slide-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#slide-description {
+    margin-bottom: 1;
+}
+
+#slide-whats-new-header {
+    text-style: bold underline;
+    margin-bottom: 1;
+}
+
+#slide-whats-new {
+    height: 1fr;
+    margin-bottom: 1;
+    border: solid $panel;
+    padding: 0 1;
+    overflow-y: auto;
+}
+
+#slide-ok {
+    dock: bottom;
+    width: auto;
+    align-horizontal: right;
+}
+
 /* Remove default bottom margin on Markdown and its block children (paragraphs etc.) */
 .bubble--human Markdown,
 .bubble--bot Markdown,
