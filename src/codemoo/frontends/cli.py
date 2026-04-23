@@ -1,4 +1,4 @@
-"""A command line interface for running specific demoos."""
+"""Plain CLI entry point for the demoo command."""
 
 import cyclopts
 from rich.console import Console
@@ -8,19 +8,14 @@ from codemoo.core import tools
 from codemoo.core.backend import Message, ToolUse
 from codemoo.llm.backend import create_mistral_backend
 
-app = cyclopts.App()
+app = cyclopts.App(help="Demoo — explore LLM and tool concepts directly.")
 stdout = Console()
-mistral = create_mistral_backend()
-
-
-def main() -> None:
-    """Run the command line interface."""
-    app()
 
 
 @app.command
 async def llm(query: str) -> None:
     """Call an LLM with the given query."""
+    mistral = create_mistral_backend()
     stdout.print(query, style="yellow")
     response = await mistral.complete([Message(role="user", content=query)])
     stdout.print(Markdown(response))
@@ -28,7 +23,8 @@ async def llm(query: str) -> None:
 
 @app.command
 async def tool(query: str) -> None:
-    """Call an LLM with access to the reverse_string tool."""
+    """Call an LLM with access to the read_file tool."""
+    mistral = create_mistral_backend()
     stdout.print(query, style="yellow")
     context = [Message(role="user", content=query)]
     step = await mistral.complete_step(context, [tools.read_file])

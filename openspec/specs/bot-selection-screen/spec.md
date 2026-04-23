@@ -7,15 +7,15 @@ TBD — defines the startup bot selection screen that allows the user to choose 
 ## Requirements
 
 ### Requirement: Selection screen presents all available bots in a fixed order
-The startup selection screen SHALL display a multi-select list of all available bot participants. The bots SHALL appear in the fixed order: EchoBot, LLMBot, ChatBot, SystemBot, ToolBot. Each item in the list SHALL show both the instance name and the bot type (e.g. "Mistral (LLMBot)").
+The startup selection screen SHALL display a multi-select list of all available bot participants. The bots SHALL appear in the fixed progression order: EchoBot, LLMBot, ChatBot, SystemBot, ToolBot, FileBot, ShellBot. Each item in the list SHALL show both the instance name and the bot type (e.g. "Coco (EchoBot)").
 
-#### Scenario: Bots appear in fixed order
+#### Scenario: Bots appear in fixed progression order
 - **WHEN** the selection screen is rendered
-- **THEN** the list SHALL show EchoBot first, LLMBot second, ChatBot third, SystemBot fourth, and ToolBot fifth, regardless of the order they were passed to the screen
+- **THEN** the list SHALL show bots in the defined progression order regardless of the order they were passed to the screen
 
 #### Scenario: Each item shows name and type
-- **WHEN** a bot named "Mistral" of type `LLMBot` is in the available list
-- **THEN** its list entry SHALL display text containing both "Mistral" and "LLMBot"
+- **WHEN** a bot named "Coco" of type `EchoBot` is in the available list
+- **THEN** its list entry SHALL display text containing both "Coco" and "EchoBot"
 
 ### Requirement: User can select zero or more bots before starting the chat
 The selection screen SHALL allow the user to toggle any combination of bots on or off, including selecting none. Confirming with zero bots selected SHALL be valid and SHALL start a session with only the human participant.
@@ -42,3 +42,14 @@ When the user confirms their selection, the selection screen SHALL close and the
 #### Scenario: Participant order in chat matches fixed order
 - **WHEN** the user selects a mix of bots and confirms
 - **THEN** the participants passed to the chat session SHALL follow the order: human, EchoBot (if selected), LLMBot (if selected), ChatBot (if selected), SystemBot (if selected), ToolBot (if selected)
+
+### Requirement: Selection screen is accessed via the select subcommand
+The selection screen SHALL only be shown when the user explicitly runs `codemoo select`. It SHALL NOT appear on bare `codemoo` invocation.
+
+#### Scenario: select subcommand shows the selection screen
+- **WHEN** the user runs `codemoo select`
+- **THEN** `SelectionApp` SHALL be displayed
+
+#### Scenario: Bare invocation does not show the selection screen
+- **WHEN** the user runs `codemoo` with no arguments
+- **THEN** `SelectionApp` SHALL NOT be shown

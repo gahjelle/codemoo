@@ -18,7 +18,7 @@ class _MockBackend:
 
 
 class _FailingBackend:
-    async def complete(self, messages: object) -> str:  # noqa: ARG002
+    async def complete(self, messages: object) -> str:
         msg = "LLM unavailable"
         raise ConnectionError(msg)
 
@@ -30,8 +30,8 @@ class _MockParticipant:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
-        history: list[ChatMessage],  # noqa: ARG002
+        message: ChatMessage,
+        history: list[ChatMessage],
     ) -> None:
         return None
 

@@ -6,7 +6,7 @@ from codemoo.core.bots import ChatBot, EchoBot, LLMBot
 
 
 class _StubBackend:
-    async def complete(self, messages: object) -> str:  # noqa: ARG002
+    async def complete(self, messages: object) -> str:
         return ""
 
 
