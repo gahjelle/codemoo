@@ -20,12 +20,16 @@ class _BubbleContent(Widget):
         self._sender_name = name
         self._sender_emoji = emoji
         self._text = text
+        self._css_class = css_class
 
     def compose(self) -> ComposeResult:
-        """Yield a header label and a Markdown body."""
+        """Yield a header label and a body widget appropriate to the bubble type."""
         header = f"{self._sender_emoji} [bold]{self._sender_name}[/bold]"
         yield Label(header, classes="bubble-header", markup=True)
-        yield Markdown(self._text)
+        if self._css_class == "bubble--commentator":
+            yield Static(self._text, markup=True)
+        else:
+            yield Markdown(self._text)
 
 
 class ChatBubble(Widget):

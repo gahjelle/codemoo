@@ -1,21 +1,4 @@
-# Spec: chat-bubble-display
-
-## Purpose
-
-Defines how individual chat messages are rendered as styled bubble widgets in the chat UI. Covers bubble structure (emoji, name header and Markdown body) and per-participant color coding via CSS classes, including a distinct error style for ErrorBot messages.
-
-## Requirements
-
-### Requirement: Messages are displayed as styled chat bubbles
-The chat UI SHALL render each message as a distinct chat bubble widget. The bubble SHALL display the sender's emoji and name in bold at the top, and the message body rendered as Markdown below.
-
-#### Scenario: Bubble shows emoji and name header
-- **WHEN** a message is appended to the chat log
-- **THEN** the bubble SHALL display the sender's emoji and name in bold on the first line
-
-#### Scenario: Bubble renders Markdown body
-- **WHEN** a message with Markdown content is appended to the chat log
-- **THEN** the bubble body SHALL render the Markdown (including bold, italics, code, and lists)
+## MODIFIED Requirements
 
 ### Requirement: Bubble color is keyed to the participant
 Each participant type SHALL have a distinct bubble background color defined in the external stylesheet. The color SHALL be applied via a CSS class, not an inline style. The bot bubble background color SHALL be chosen to maintain visible contrast against Textual's Markdown code-block rendering. Error bot messages SHALL use a distinct red-tinted background to visually distinguish them from normal bot messages. Commentary messages SHALL use a distinct grey-tinted background that is softer and less prominent than the main bot bubble, signalling that the content is an aside rather than a direct reply.

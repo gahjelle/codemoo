@@ -9,12 +9,15 @@ from codemoo.core.backend import (
     ToolUse,
     build_llm_context,
 )
+from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
 _INSTRUCTIONS = """
-You have access to tools. Use them as many times as needed to fully complete the
-user's request before giving your final answer.
+You're a helpful coding agent that helps the user in understanding the current
+project, maintaining it, and developing it further. You have access to tools.
+Use them as many times as needed to fully complete the user's request before
+giving your final answer.
 """.strip()
 
 
@@ -34,6 +37,7 @@ class AgentBot:
     tools: list[ToolDef]
     instructions: str = _INSTRUCTIONS
     max_messages: int = 20
+    commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False
 
     async def on_message(
@@ -55,6 +59,14 @@ class AgentBot:
             step = await self.backend.complete_step(messages, self.tools)
             if not isinstance(step, ToolUse):
                 return ChatMessage(sender=self.name, text=step.text)
+            if self.commentator is not None:
+                await self.commentator.comment(
+                    ToolCallEvent(
+                        bot_name=self.name,
+                        tool_name=step.name,
+                        arguments=step.arguments,
+                    )
+                )
             tool_output = tool_map[step.name].fn(**step.arguments)  # type: ignore[call-arg]
             messages = [
                 *messages,

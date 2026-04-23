@@ -9,6 +9,7 @@ from codemoo.core.backend import (
     ToolUse,
     build_llm_context,
 )
+from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
@@ -28,6 +29,7 @@ class GeneralToolBot:
     tools: list[ToolDef]
     instructions: str
     max_messages: int = 20
+    commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False
 
     async def on_message(
@@ -45,6 +47,14 @@ class GeneralToolBot:
         step = await self.backend.complete_step(context, self.tools)
         if isinstance(step, ToolUse):
             tool_map = {_tool_name(t): t for t in self.tools}
+            if self.commentator is not None:
+                await self.commentator.comment(
+                    ToolCallEvent(
+                        bot_name=self.name,
+                        tool_name=step.name,
+                        arguments=step.arguments,
+                    )
+                )
             tool_output = tool_map[step.name].fn(**step.arguments)  # type: ignore[call-arg]
             follow_up = [
                 *context,

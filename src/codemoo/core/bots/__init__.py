@@ -3,6 +3,7 @@
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.chat_bot import ChatBot
+from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.file_bot import FileBot
@@ -16,6 +17,7 @@ from codemoo.core.tools import read_file, reverse_string, run_shell, write_file
 __all__ = [
     "AgentBot",
     "ChatBot",
+    "CommentatorBot",
     "EchoBot",
     "ErrorBot",
     "FileBot",
@@ -28,7 +30,11 @@ __all__ = [
 ]
 
 
-def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]:
+def make_bots(
+    backend: ToolLLMBackend,
+    human_name: str,
+    commentator: CommentatorBot | None = None,
+) -> list[ChatParticipant]:
     """Return the full ordered bot progression."""
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
@@ -51,6 +57,7 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
             backend=backend,
             human_name=human_name,
             tools=[reverse_string],
+            commentator=commentator,
         ),
         FileBot(
             name="Rune",
@@ -58,6 +65,7 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
             backend=backend,
             human_name=human_name,
             tools=[read_file, write_file, reverse_string],
+            commentator=commentator,
         ),
         ShellBot(
             name="Ash",
@@ -65,6 +73,7 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
             backend=backend,
             human_name=human_name,
             tools=(all_tools := [run_shell, read_file, write_file, reverse_string]),
+            commentator=commentator,
         ),
         AgentBot(
             name="Loom",
@@ -72,6 +81,7 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
             backend=backend,
             human_name=human_name,
             tools=all_tools,
+            commentator=commentator,
         ),
     ]
 

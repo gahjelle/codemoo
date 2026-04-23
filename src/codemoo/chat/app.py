@@ -11,6 +11,7 @@ from textual.widgets import Input
 from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.status import ThinkingStatus
+from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
@@ -25,6 +26,7 @@ class ChatApp(App[str | None]):
         self,
         participants: Sequence[ChatParticipant],
         error_bot: ErrorBot,
+        commentator_bot: CommentatorBot | None = None,
         demo_position: tuple[int, int] | None = None,
     ) -> None:
         """Initialise with an ordered list of chat participants and the error bot."""
@@ -41,6 +43,9 @@ class ChatApp(App[str | None]):
             p.name: (p.emoji, p.is_human, _bubble_class(p)) for p in participants
         }
         self._sender_info[error_bot.name] = (error_bot.emoji, False, "bubble--error")
+        if commentator_bot is not None:
+            self._sender_info |= commentator_bot.sender_info()
+            commentator_bot.register(self._append_to_log)
         # Keep a reference to the human participant for outgoing message construction
         self._human = next(p for p in participants if p.is_human)
         # Authoritative ordered history of all messages posted in this session
@@ -71,7 +76,7 @@ class ChatApp(App[str | None]):
         self.run_worker(self._dispatch(message, prior_history), exclusive=False)
 
     def _append_to_log(self, message: ChatMessage) -> None:
-        default = ("\N{SPEECH BALLOON}", False, "bubble--bot")
+        default = ("\N{SPEECH BALLOON}", False, "bubble--commentator")
         emoji, is_human, css_class = self._sender_info.get(message.sender, default)
         bubble = ChatBubble(
             message.sender, emoji, message.text, is_human=is_human, css_class=css_class

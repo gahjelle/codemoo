@@ -8,7 +8,8 @@
 /* Shared bubble content styles (fractional widths are structural, defined in DEFAULT_CSS) */
 .bubble--human,
 .bubble--bot,
-.bubble--error {
+.bubble--error,
+.bubble--commentator {
     padding: 0 1;
     margin-bottom: 1;
     border: tall $panel;
@@ -27,6 +28,12 @@
 /* Error bot messages: dark red */
 .bubble--error {
     background: #3a0f0f;
+}
+
+/* Commentator asides: soft grey — visually subordinate to the main conversation */
+.bubble--commentator {
+    background: #2a2a2a;
+    color: $text-muted;
 }
 
 /* Bold sender header inside each bubble */
@@ -76,8 +83,10 @@ ThinkingStatus {
 .bubble--human Markdown,
 .bubble--bot Markdown,
 .bubble--error Markdown,
+.bubble--commentator Markdown,
 .bubble--human MarkdownBlock,
 .bubble--bot MarkdownBlock,
-.bubble--error MarkdownBlock {
+.bubble--error MarkdownBlock,
+.bubble--commentator MarkdownBlock {
     margin-bottom: 0;
 }
