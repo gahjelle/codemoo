@@ -53,11 +53,11 @@ The main area of the slide SHALL display the bot's name and type, a one-line des
 
 #### Scenario: What's new section for first bot
 - **WHEN** the slide is shown for the first bot in the session (index 0)
-- **THEN** the "what's new" section SHALL explain how this bot works (no comparison to a previous bot)
+- **THEN** the "what's new" section SHALL explain how this bot works, formatted as Markdown with at least one fenced code block showing a key line of code
 
 #### Scenario: What's new section for subsequent bots
 - **WHEN** the slide is shown for any bot after the first (index > 0)
-- **THEN** the "what's new" section SHALL explain the key code addition compared to the previous bot
+- **THEN** the "what's new" section SHALL explain the key code addition compared to the previous bot, formatted as Markdown with at least one fenced code block highlighting the key difference
 
 #### Scenario: Loading indicator while LLM generates content
 - **WHEN** the slide is first displayed and the LLM explanation has not yet been received
@@ -65,7 +65,7 @@ The main area of the slide SHALL display the bot's name and type, a one-line des
 
 #### Scenario: LLM content replaces loading indicator when ready
 - **WHEN** the LLM finishes generating the explanation
-- **THEN** the loading indicator SHALL be replaced by the generated text
+- **THEN** the loading indicator SHALL be replaced by the generated Markdown text, rendered as rich text
 
 ### Requirement: Slide is dismissed by OK button, Enter, or Escape
 The presenter SHALL be able to dismiss the slide and proceed to the chat via any of three interactions.
