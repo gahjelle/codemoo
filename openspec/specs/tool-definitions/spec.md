@@ -42,6 +42,17 @@ The `tools` module SHALL export `read_file` in its `__all__` list, alongside the
 - **WHEN** `from codemoo.core.tools import read_file` is executed
 - **THEN** it SHALL succeed and `read_file` SHALL be a `ToolDef` instance
 
+### Requirement: tools module exports write_file
+The `tools` module SHALL export `write_file` in its `__all__` list. When invoked with `path: str` and `content: str` arguments, `fn` SHALL write `content` to the file at `path` (UTF-8) and return a string reporting the number of bytes written.
+
+#### Scenario: write_file is importable from the tools module
+- **WHEN** `from codemoo.core.tools import write_file` is executed
+- **THEN** it SHALL succeed and `write_file` SHALL be a `ToolDef` instance
+
+#### Scenario: write_file writes content and reports bytes
+- **WHEN** `write_file.fn` is called with a valid `path` and `content`
+- **THEN** it SHALL write `content` to disk and return a string containing the byte count
+
 ### Requirement: LLMBackend exposes complete_step for structured single-turn responses
 `LLMBackend` SHALL expose a `complete_step(messages, tools) -> TextResponse | ToolUse` method. It SHALL send one request to the LLM with the provided tools list and return either a `TextResponse(text: str)` if the LLM replied with text, or a `ToolUse(name: str, arguments: dict)` if the LLM requested a tool call. It SHALL NOT invoke the tool function or re-submit to the LLM — that is the caller's responsibility.
 

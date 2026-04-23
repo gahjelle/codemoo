@@ -5,7 +5,7 @@ import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
-__all__ = ["ToolDef", "read_file", "reverse_string", "run_shell"]
+__all__ = ["ToolDef", "read_file", "reverse_string", "run_shell", "write_file"]
 
 
 @dataclasses.dataclass
@@ -44,6 +44,40 @@ read_file = ToolDef(
         },
     },
     fn=_read_file,
+)
+
+
+#
+# Write file
+#
+def _write_file(path: str, content: str) -> str:
+    num_bytes = Path(path).write_text(content, encoding="utf-8")
+    return f"{num_bytes} bytes written"
+
+
+write_file = ToolDef(
+    schema={
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": ("Write the contents to a file at the given path."),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "The file path to write.",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The text content that will be written to file.",
+                    },
+                },
+                "required": ["path", "content"],
+            },
+        },
+    },
+    fn=_write_file,
 )
 
 

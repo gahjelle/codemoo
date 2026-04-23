@@ -11,7 +11,7 @@ from codemoo.core.bots.shell_bot import ShellBot
 from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
-from codemoo.core.tools import read_file, reverse_string, run_shell
+from codemoo.core.tools import read_file, reverse_string, run_shell, write_file
 
 __all__ = [
     "AgentBot",
@@ -57,21 +57,21 @@ def make_bots(backend: ToolLLMBackend, human_name: str) -> list[ChatParticipant]
             emoji="\N{FILE FOLDER}",
             backend=backend,
             human_name=human_name,
-            tools=[read_file, reverse_string],
+            tools=[read_file, write_file, reverse_string],
         ),
         ShellBot(
             name="Ash",
             emoji="\N{SPIRAL SHELL}",
             backend=backend,
             human_name=human_name,
-            tools=[run_shell, read_file, reverse_string],
+            tools=(all_tools := [run_shell, read_file, write_file, reverse_string]),
         ),
         AgentBot(
             name="Loom",
             emoji="\N{CYCLONE}",
             backend=backend,
             human_name=human_name,
-            tools=[run_shell, read_file, reverse_string],
+            tools=all_tools,
         ),
     ]
 

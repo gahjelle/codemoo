@@ -13,12 +13,12 @@ TBD — Defines `FileBot`, a chat participant that uses the `read_file` tool to 
 - **WHEN** `FileBot.is_human` is accessed
 - **THEN** it SHALL return `False`
 
-### Requirement: FileBot is pre-configured with the read_file tool
-`FileBot` SHALL be constructed with a `tools` list containing `read_file`. It SHALL pass this list to `backend.complete_step` on every `on_message` call (via the inherited `GeneralToolBot.on_message`).
+### Requirement: FileBot is pre-configured with read_file and write_file tools
+`FileBot` SHALL be constructed with a `tools` list containing at least `read_file` and `write_file`. It SHALL pass this list to `backend.complete_step` on every `on_message` call (via the inherited `GeneralToolBot.on_message`).
 
-#### Scenario: complete_step is called with the read_file tool
+#### Scenario: complete_step is called with read_file and write_file tools
 - **WHEN** `FileBot.on_message` is called with any message
-- **THEN** `backend.complete_step` SHALL be called with a tools list that includes `read_file`
+- **THEN** `backend.complete_step` SHALL be called with a tools list that includes both `read_file` and `write_file`
 
 ### Requirement: FileBot handles the tool-call round-trip
 `FileBot.on_message` (inherited from `GeneralToolBot`) SHALL call `backend.complete_step(context, self.tools)`. If the result is a `ToolUse`, it SHALL invoke the matched tool's `fn`, append the tool result to context, and call `backend.complete` to obtain the final reply. If the result is a `TextResponse`, it SHALL use that text directly.
@@ -31,8 +31,12 @@ TBD — Defines `FileBot`, a chat participant that uses the `read_file` tool to 
 - **WHEN** `backend.complete_step` returns a `ToolUse` naming `read_file`
 - **THEN** `FileBot` SHALL invoke `read_file.fn`, append the result to context, call `backend.complete`, and return a `ChatMessage` with the final text
 
+#### Scenario: Tool-use response — file is written and result incorporated
+- **WHEN** `backend.complete_step` returns a `ToolUse` naming `write_file`
+- **THEN** `FileBot` SHALL invoke `write_file.fn`, append the result to context, call `backend.complete`, and return a `ChatMessage` with the final text
+
 ### Requirement: FileBot uses file-oriented system instructions
-`FileBot` SHALL include a default `instructions: str` field (re-declared in `FileBot` with `_INSTRUCTIONS` as default) that tells the LLM it can read files by path and should use `read_file` when the user asks about file contents.
+`FileBot` SHALL include a default `instructions: str` field (re-declared in `FileBot` with `_INSTRUCTIONS` as default) that tells the LLM it can read and write files by path and should use `read_file` or `write_file` as appropriate.
 
 #### Scenario: Default system prompt is forwarded to context builder
 - **WHEN** `FileBot.on_message` is called with no custom `instructions`
