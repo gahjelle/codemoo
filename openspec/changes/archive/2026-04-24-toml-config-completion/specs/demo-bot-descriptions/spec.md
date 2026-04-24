@@ -1,10 +1,14 @@
-# Spec: demo-bot-descriptions
+## REMOVED Requirements
 
-## Purpose
+### Requirement: Each bot type has a hard-coded one-liner description
+**Reason**: Descriptions are now stored in `configs/codemoo.toml` under each bot's `[bots.<BotType>]` section and accessed via `config.bots`. `slides_data.py` is deleted.
+**Migration**: Use `config.bots.get(type(bot).__name__)` and read `.description` from the returned `BotConfig`.
 
-TBD — defines how bot-type descriptions and source file mappings are stored for use in the demo slide screen, sourced from `configs/codemoo.toml` via `config.bots`.
+### Requirement: Each bot type has a curated source file list for LLM context
+**Reason**: Source file lists are now stored in `configs/codemoo.toml` under each bot's `sources` field and accessed via `config.bots`. `slides_data.py` is deleted.
+**Migration**: Use `config.bots.get(type(bot).__name__)` and read `.sources` from the returned `BotConfig`.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: slides.py reads descriptions and source lists from config
 `slides.py` SHALL look up bot descriptions and source file lists via `config.bots.get(type(bot).__name__)`. When a bot type is not registered in config (e.g. `ErrorBot`), description SHALL fall back to `""` and source list SHALL fall back to `[f"{classname.lower()}.py"]`.

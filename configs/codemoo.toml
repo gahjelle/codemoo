@@ -6,28 +6,61 @@ bots_dir = "{project_path}/src/codemoo/core/bots"
 #
 # Bots
 #
-[bots.echo_bot]
-type = "EchoBot"
+[bots.EchoBot]
 name = "Coco"
 emoji = "PARROT"
 description = "Repeat your message verbatim — no LLM, just a mirror."
 sources = ["echo_bot.py"]
 
-[bots.llm_bot]
-type = "LlmBot"
+[bots.LlmBot]
 name = "Mono"
 emoji = "SPARKLES"
 description = "Call the LLM once and forget the conversation immediately after."
 sources = ["llm_bot.py"]
+
+[bots.ChatBot]
+name = "Iris"
+emoji = "NAZAR AMULET"
+description = "Keep the full conversation history, remember what you said."
+sources = ["chat_bot.py"]
+
+[bots.SystemBot]
+name = "Sona"
+emoji = "PERFORMING ARTS"
+description = "Add a system prompt to shape the LLM's persona and behavior."
+sources = ["system_bot.py"]
+
+[bots.ToolBot]
+name = "Telo"
+emoji = "WRENCH"
+description = "Call a tool before replying — the first step toward doing things."
+sources = ["tool_bot.py", "general_tool_bot.py"]
+
+[bots.FileBot]
+name = "Rune"
+emoji = "FILE FOLDER"
+description = "Read files from disk to answer questions about your code."
+sources = ["file_bot.py", "general_tool_bot.py"]
+
+[bots.ShellBot]
+name = "Ash"
+emoji = "SPIRAL SHELL"
+description = "Execute shell commands — now it can run code, not just read it."
+sources = ["shell_bot.py", "general_tool_bot.py"]
+
+[bots.AgentBot]
+name = "Loom"
+emoji = "CYCLONE"
+description = "Loop tool calls until done — pursue goals, not single commands."
+sources = ["agent_bot.py"]
 
 
 #
 # Model backends
 #
 [models]
-provider = "mistral"
+backend = "mistral"
 fallbacks = ["mistral"]
 
 [models.backends.mistral]
 model_name = "mistral-small-latest"
-api_key = "MISTRAL_API_KEY"

@@ -2,7 +2,7 @@
 
 import dataclasses
 from collections.abc import Sequence
-from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -11,12 +11,12 @@ from textual.screen import ModalScreen
 from textual.widget import Widget
 from textual.widgets import Button, Label, Markdown
 
-from codemoo.chat.slides_data import BOT_DESCRIPTIONS, BOT_SOURCES
 from codemoo.config import config
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.participant import ChatParticipant
 
-_BOTS_DIR = Path(__file__).parent.parent / "core" / "bots"
+if TYPE_CHECKING:
+    from codemoo.config.schema import BotType
 
 
 @dataclasses.dataclass
@@ -30,7 +30,7 @@ class DemoContext:
 
 
 def _read_source(filename: str) -> str:
-    return (_BOTS_DIR / filename).read_text()
+    return (config.paths.bots_dir / filename).read_text()
 
 
 def _tool_names(bot: ChatParticipant) -> list[str]:
@@ -47,8 +47,9 @@ def _tool_names(bot: ChatParticipant) -> list[str]:
 
 
 def _bot_source_block(bot: ChatParticipant) -> str:
-    bot_type = type(bot)
-    files = BOT_SOURCES.get(bot_type, [f"{bot_type.__name__.lower()}.py"])
+    bot_type_name = type(bot).__name__
+    bot_cfg = config.bots.get(cast("BotType", bot_type_name))
+    files = bot_cfg.sources if bot_cfg else [f"{bot_type_name.lower()}.py"]
     return "\n".join(f"--- {f} ---\n{_read_source(f)}" for f in files)
 
 
@@ -143,7 +144,8 @@ class SlideContent(Widget):
     def compose(self) -> ComposeResult:
         """Yield the title, description, what's-new area, and dismiss button."""
         bot_type = type(self._current_bot).__name__
-        description = BOT_DESCRIPTIONS.get(type(self._current_bot), "")
+        bot_cfg = config.bots.get(cast("BotType", bot_type))
+        description = bot_cfg.description if bot_cfg else ""
         yield Label(
             f"Meet {self._current_bot.name}, the {bot_type}",
             id="slide-title",

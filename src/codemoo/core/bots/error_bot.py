@@ -4,7 +4,6 @@ import dataclasses
 import random
 from typing import ClassVar
 
-from codemoo.config import config
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
@@ -63,6 +62,7 @@ class ErrorBot:
     """
 
     backend: LLMBackend
+    language: str = "English"
     is_human: ClassVar[bool] = False
     name: str = dataclasses.field(init=False)
     emoji: str = dataclasses.field(init=False)
@@ -93,7 +93,7 @@ class ErrorBot:
                 f"{type(exception).__name__}: {exception}. "
                 "Report this to the user in your persona."
             )
-            system = f"{self._persona.instructions} Answer in {config.language}"
+            system = f"{self._persona.instructions} Answer in {self.language}"
             messages = [
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),

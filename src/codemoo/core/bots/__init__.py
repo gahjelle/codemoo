@@ -1,5 +1,6 @@
 """Bot participants for the Codemoo chat loop."""
 
+from codemoo.config import config
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.chat_bot import ChatBot
@@ -36,48 +37,49 @@ def make_bots(
     commentator: CommentatorBot | None = None,
 ) -> list[ChatParticipant]:
     """Return the full ordered bot progression."""
+    bots = config.bots
     return [
-        EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
+        EchoBot(name=bots["EchoBot"].name, emoji=bots["EchoBot"].emoji),
+        LlmBot(name=bots["LlmBot"].name, emoji=bots["LlmBot"].emoji, backend=backend),
         ChatBot(
-            name="Iris",
-            emoji="\N{NAZAR AMULET}",
+            name=bots["ChatBot"].name,
+            emoji=bots["ChatBot"].emoji,
             backend=backend,
             human_name=human_name,
         ),
         SystemBot(
-            name="Sona",
-            emoji="\N{PERFORMING ARTS}",
+            name=bots["SystemBot"].name,
+            emoji=bots["SystemBot"].emoji,
             backend=backend,
             human_name=human_name,
         ),
         ToolBot(
-            name="Telo",
-            emoji="\N{WRENCH}",
+            name=bots["ToolBot"].name,
+            emoji=bots["ToolBot"].emoji,
             backend=backend,
             human_name=human_name,
             tools=[reverse_string],
             commentator=commentator,
         ),
         FileBot(
-            name="Rune",
-            emoji="\N{FILE FOLDER}",
+            name=bots["FileBot"].name,
+            emoji=bots["FileBot"].emoji,
             backend=backend,
             human_name=human_name,
             tools=[read_file, write_file, reverse_string],
             commentator=commentator,
         ),
         ShellBot(
-            name="Ash",
-            emoji="\N{SPIRAL SHELL}",
+            name=bots["ShellBot"].name,
+            emoji=bots["ShellBot"].emoji,
             backend=backend,
             human_name=human_name,
             tools=(all_tools := [run_shell, read_file, write_file, reverse_string]),
             commentator=commentator,
         ),
         AgentBot(
-            name="Loom",
-            emoji="\N{CYCLONE}",
+            name=bots["AgentBot"].name,
+            emoji=bots["AgentBot"].emoji,
             backend=backend,
             human_name=human_name,
             tools=all_tools,
