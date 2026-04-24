@@ -15,5 +15,5 @@ rules:
     - Always include a "Non-goals" section
   tasks:
     - Break tasks into small, actionable chunks
-    - Always include validation tasks: ruff format, ruff check, ty check, and pytest.
-        Run ruff and ty on both src/ and tests/
+    - Always include verification tasks: ruff format, ruff check, ty check, and
+        pytest. Run ruff and ty on both src/ and tests/

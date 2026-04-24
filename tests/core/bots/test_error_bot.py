@@ -97,7 +97,11 @@ async def test_format_error_passes_instructions_to_backend() -> None:
 
     sent_messages = backend.calls[0]
     assert isinstance(sent_messages, list)
-    expected = Message(role="system", content=bot._persona.instructions)
+    from codemoo.config import language_instruction
+
+    expected = Message(
+        role="system", content=bot._persona.instructions + language_instruction()
+    )
     assert sent_messages[0] == expected
 
 

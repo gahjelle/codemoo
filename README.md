@@ -5,6 +5,14 @@ Requirements:
 - `uv`
 - Mistral API key set as `MISTRAL_API_KEY`
 
+## Configuration
+
+| Variable                | Default                | Description                                              |
+| ----------------------- | ---------------------- | -------------------------------------------------------- |
+| `MISTRAL_API_KEY`       | —                      | Mistral API key (required)                               |
+| `CODEMOO_MISTRAL_MODEL` | `mistral-small-latest` | Mistral model used for all LLM calls                     |
+| `CODEMOO_LANGUAGE`      | `English`              | Language for commentary, error messages, and demo slides |
+
 ## Installation
 
 ```console

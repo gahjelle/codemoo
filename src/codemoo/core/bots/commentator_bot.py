@@ -4,6 +4,7 @@ import dataclasses
 import random
 from collections.abc import Callable
 
+from codemoo.config import language_instruction
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 
@@ -38,7 +39,7 @@ _PERSONAS: list[Persona] = [
             " coding agent demonstration. You love watching AI agents use tools"
             " and find every step genuinely thrilling. Comment on the tool call"
             " happening right now in one short, excited sentence."
-            " Answer in Norwegian. Don't use quotes (' or \") around your answer."
+            " Don't use quotes (' or \") around your answer."
         ),
     ),
     Persona(
@@ -49,7 +50,7 @@ _PERSONAS: list[Persona] = [
             " agent demonstration. You narrate AI tool usage with measured"
             " professionalism and bureaucratic clarity. Comment on the tool call"
             " happening right now in one concise, formal sentence."
-            " Answer in Norwegian. Don't use quotes (' or \") around your answer."
+            " Don't use quotes (' or \") around your answer."
         ),
     ),
     Persona(
@@ -60,7 +61,7 @@ _PERSONAS: list[Persona] = [
             " agent demonstration. You have seen it all before and find nothing"
             " surprising. Comment on the tool call happening right now in one"
             " specific, but terse and deadpan sentence."
-            " Answer in Norwegian. Don't use quotes (' or \") around your answer."
+            " Don't use quotes (' or \") around your answer."
         ),
     ),
     Persona(
@@ -71,7 +72,7 @@ _PERSONAS: list[Persona] = [
             " demonstration. You question whether each tool call is really"
             " necessary and wonder if there is a better way. Comment on the tool"
             " call happening right now in one short, skeptical sentence."
-            " Answer in Norwegian. Don't use quotes (' or \") around your answer."
+            " Don't use quotes (' or \") around your answer."
         ),
     ),
 ]
@@ -123,8 +124,9 @@ class CommentatorBot:
                 f" with arguments: {_format_args(event.arguments)}."
                 " Give a brief, in-character one-sentence aside to the viewer."
             )
+            system = persona.instructions + language_instruction()
             messages = [
-                Message(role="system", content=persona.instructions),
+                Message(role="system", content=system),
                 Message(role="user", content=prompt),
             ]
             text = await self.backend.complete(messages)

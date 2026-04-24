@@ -12,6 +12,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Label, Markdown
 
 from codemoo.chat.slides_data import BOT_DESCRIPTIONS, BOT_SOURCES
+from codemoo.config import language_instruction
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.participant import ChatParticipant
 
@@ -69,6 +70,7 @@ def _build_llm_prompt(
             "Explain in 5-8 lines what this bot does and how it works. "
             "Be code-focused. Use Markdown — show the key line(s) of code in a "
             "fenced Python code block. Be concise — this must fit on a single screen."
+            + language_instruction()
         )
 
     prev_type = type(prev_bot).__name__
@@ -84,7 +86,7 @@ def _build_llm_prompt(
         "Explain the single most important change in 5-8 lines. Be code-focused. "
         "Use Markdown — show the key code difference in a fenced Python code block. "
         "Don't explain helper functions in detail — focus on the concept. "
-        "This must fit on a single screen."
+        "This must fit on a single screen." + language_instruction()
     )
 
 
@@ -143,11 +145,10 @@ class SlideContent(Widget):
         bot_type = type(self._current_bot).__name__
         description = BOT_DESCRIPTIONS.get(type(self._current_bot), "")
         yield Label(
-            f"Meet {self._current_bot.name}, a {bot_type}",
+            f"Meet {self._current_bot.name}, the {bot_type}",
             id="slide-title",
         )
         yield Label(description, id="slide-description")
-        yield Label("What\N{APOSTROPHE}s new", id="slide-whats-new-header")
         yield Markdown("Generating\N{HORIZONTAL ELLIPSIS}", id="slide-whats-new")
         yield Button("OK", id="slide-ok", variant="primary")
 
