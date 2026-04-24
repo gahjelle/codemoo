@@ -1,10 +1,13 @@
 """Tests for the demo slide overlay: AgendaColumn, _build_llm_prompt, SlideScreen."""
 
+import pytest
+
 from codemoo.chat.slides import (
     AgendaColumn,
     DemoContext,
     SlideScreen,
     _build_llm_prompt,
+    _parse_numbered_list,
 )
 from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots.echo_bot import EchoBot
@@ -197,3 +200,72 @@ def test_slide_screen_other_button_does_not_dismiss() -> None:
     event = _MockButtonPressed("some-other-button")
     screen.on_button_pressed(event)
     assert not calls
+
+
+# --- _parse_numbered_list ---
+
+
+def test_parse_numbered_list_extracts_items() -> None:
+    text = "1. Hello\n2. World"
+    assert _parse_numbered_list(text, 2) == ["Hello", "World"]
+
+
+def test_parse_numbered_list_returns_none_on_count_mismatch() -> None:
+    text = "1. Hello\n2. World"
+    assert _parse_numbered_list(text, 3) is None
+
+
+def test_parse_numbered_list_ignores_non_numbered_lines() -> None:
+    text = "Here are the translations:\n1. Hei\n2. Verden\nDone."
+    assert _parse_numbered_list(text, 2) == ["Hei", "Verden"]
+
+
+# --- SlideScreen prompt translation ---
+
+
+class _TranslatingBackend:
+    """Backend that returns a numbered list translation."""
+
+    def __init__(self, translations: list[str]) -> None:
+        self._translations = translations
+        self.call_count = 0
+
+    async def complete(self, messages: object) -> str:
+        self.call_count += 1
+        return "\n".join(f"{i}. {t}" for i, t in enumerate(self._translations, start=1))
+
+    async def complete_step(self, messages: object, tools: object) -> object:
+        from codemoo.core.backend import TextResponse
+
+        return TextResponse(text="")
+
+
+def _make_context_with_prompts(
+    prompts: list[str], backend: object | None = None
+) -> DemoContext:
+    bot = EchoBot(name="Coco", emoji="\N{PARROT}")
+    return DemoContext(
+        all_bots=[bot],
+        prev_bot=None,
+        backend=backend or _MockBackend(),
+        position=(1, 1),
+        prompts=list(prompts),
+    )
+
+
+@pytest.mark.asyncio
+async def test_translate_prompts_replaces_prompts_on_success() -> None:
+    backend = _TranslatingBackend(["Hei", "Verden"])
+    ctx = _make_context_with_prompts(["Hello", "World"], backend)
+    screen = SlideScreen(ctx)
+    await screen._translate_prompts()
+    assert ctx.prompts == ["Hei", "Verden"]
+
+
+@pytest.mark.asyncio
+async def test_translate_prompts_keeps_originals_on_count_mismatch() -> None:
+    backend = _TranslatingBackend(["Hei"])  # returns 1 item, expected 2
+    ctx = _make_context_with_prompts(["Hello", "World"], backend)
+    screen = SlideScreen(ctx)
+    await screen._translate_prompts()
+    assert ctx.prompts == ["Hello", "World"]

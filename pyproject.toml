@@ -84,3 +84,8 @@ include = ["tests/**"]
 [tool.ty.overrides.rules]
 invalid-argument-type = "ignore"
 invalid-assignment = "ignore"
+
+[tool.uv.workspace]
+members = [
+    "tull",
+]

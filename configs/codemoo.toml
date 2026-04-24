@@ -11,48 +11,88 @@ name = "Coco"
 emoji = "PARROT"
 description = "Repeat your message verbatim — no LLM, just a mirror."
 sources = ["echo_bot.py"]
+prompts = [
+    "Hello!",
+    "How can I reverse a text string in Python?",
+]
 
 [bots.LlmBot]
 name = "Mono"
 emoji = "SPARKLES"
 description = "Call the LLM once and forget the conversation immediately after."
 sources = ["llm_bot.py"]
+prompts = [
+    "Hello!",
+    "How can I reverse a text string in Python?",
+    "How about in C#?",
+]
 
 [bots.ChatBot]
 name = "Iris"
 emoji = "NAZAR AMULET"
 description = "Keep the full conversation history, remember what you said."
 sources = ["chat_bot.py"]
+prompts = [
+    "How can I reverse a text string in Python?",
+    "How about in C#?",
+    "Suggest three things to see in Oslo",
+]
 
 [bots.SystemBot]
 name = "Sona"
 emoji = "PERFORMING ARTS"
 description = "Add a system prompt to shape the LLM's persona and behavior."
 sources = ["system_bot.py"]
+prompts = [
+    "How can I reverse a text string in Python?",
+    "How about in C#?",
+    "Suggest three things to see in Oslo",
+    "List all ways to reverse strings in Python",
+    "How do I spell 'Guido van Rossum created Python' backwards?",
+]
 
 [bots.ToolBot]
 name = "Telo"
 emoji = "WRENCH"
 description = "Call a tool before replying — the first step toward doing things."
 sources = ["tool_bot.py", "general_tool_bot.py"]
+prompts = [
+    "How do I spell 'Guido van Rossum created Python' backwards?",
+    "What is today's date?",
+]
 
 [bots.FileBot]
 name = "Rune"
 emoji = "FILE FOLDER"
 description = "Read files from disk to answer questions about your code."
 sources = ["file_bot.py", "general_tool_bot.py"]
+prompts = [
+    "Read SCRIPT.md and summarize it in three sentences.",
+    "Write the content of SCRIPT.md into ANOTHER_SCRIPT.md",
+    "What is the first sentence inside NO_FILE.txt?",
+    "Read a.txt and b.txt and compare them",
+]
 
 [bots.ShellBot]
 name = "Ash"
 emoji = "SPIRAL SHELL"
 description = "Execute shell commands — now it can run code, not just read it."
 sources = ["shell_bot.py", "general_tool_bot.py"]
+prompts = [
+    "List all files in the current directory",
+    "How many Python files are there inside src/?",
+    "Count the total number of lines in all Markdown files in this directory. Which one is largest?",
+]
 
 [bots.AgentBot]
 name = "Loom"
 emoji = "CYCLONE"
 description = "Loop tool calls until done — pursue goals, not single commands."
 sources = ["agent_bot.py"]
+prompts = [
+    "Count the number of lines in each file inside src/. Which one is largest? Make a list of the files where the number of lines is a fibonacci number",
+    "Create a new directory named 'tull'. Use 'uv init --package' to start a new project inside that directory. Implement a simple Eliza-clone in Python in the project, and tell me how I can run it.",
+]
 
 
 #

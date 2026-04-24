@@ -29,6 +29,16 @@ def test_invalid_emoji_name_raises() -> None:
         _bot_config(emoji="NOT_A_REAL_EMOJI")
 
 
+def test_prompts_field_is_parsed() -> None:
+    cfg = _bot_config(prompts=["Hello", "World"])
+    assert cfg.prompts == ["Hello", "World"]
+
+
+def test_prompts_defaults_to_empty_list() -> None:
+    cfg = _bot_config()
+    assert cfg.prompts == []
+
+
 def test_unknown_bot_type_key_raises(tmp_path: Path) -> None:
     with pytest.raises(ValidationError):
         CodemooConfig(
