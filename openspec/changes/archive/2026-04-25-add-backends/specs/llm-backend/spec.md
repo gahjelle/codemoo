@@ -1,24 +1,4 @@
-# Spec: llm-backend
-
-## Purpose
-
-Defines the `Message` value type and `Role` type alias, the `LLMBackend` structural protocol, and concrete backend factories (starting with Mistral) that connect the chat system to external language model APIs.
-
-## Requirements
-
-### Requirement: Message is an immutable value type with role and content
-The system SHALL provide a `Message` dataclass with a `role` field typed as `Role` (a `Literal["user", "assistant", "system"]` type alias) and a `content: str` field. It SHALL be frozen (immutable after construction). Both types SHALL live in `core/backend.py`.
-
-#### Scenario: Message fields are accessible and immutable
-- **WHEN** a `Message` is created with a role and content
-- **THEN** those fields SHALL be readable and SHALL NOT be modifiable after construction
-
-### Requirement: LLMBackend protocol defines a single async complete method
-The system SHALL define an `LLMBackend` structural protocol in `core/backend.py` with a single async method `complete(messages: list[Message]) -> str`. Any object implementing this interface SHALL be usable as a backend without explicit subclassing.
-
-#### Scenario: Protocol is satisfied by any matching implementation
-- **WHEN** an object exposes an async `complete(messages: list[Message]) -> str` method
-- **THEN** it SHALL satisfy the `LLMBackend` protocol
+## MODIFIED Requirements
 
 ### Requirement: Mistral backend factory creates a working LLMBackend
 The system SHALL provide a `create_mistral_backend(model: str) -> ToolLLMBackend` factory function in `llm/mistral.py` (not `llm/backend.py`) that reads `MISTRAL_API_KEY` from the environment and returns a `ToolLLMBackend` instance backed by the Mistral chat completion API. The model SHALL be passed explicitly by the caller (read from `config.models.backends["mistral"].model_name`). If `MISTRAL_API_KEY` is not set, it SHALL raise `BackendUnavailableError`.
@@ -30,6 +10,8 @@ The system SHALL provide a `create_mistral_backend(model: str) -> ToolLLMBackend
 #### Scenario: Backend calls Mistral API with provided messages
 - **WHEN** `complete(messages)` is called on a Mistral backend
 - **THEN** it SHALL call the Mistral chat completion API with the given messages and the configured model, and return the response text
+
+## ADDED Requirements
 
 ### Requirement: resolve_backend is the canonical public entry point for backend creation
 The `llm/factory.py` module SHALL export `resolve_backend(config) -> tuple[ToolLLMBackend, BackendInfo]` as the canonical way to obtain a backend in frontend code. Direct calls to `create_mistral_backend` and similar factories SHALL be internal to the `llm` package.

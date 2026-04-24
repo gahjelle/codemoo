@@ -26,7 +26,9 @@ def test_timeout_returns_message_not_exception() -> None:
 
 
 def test_schema_top_level_fields() -> None:
-    schema = run_shell.schema
+    from codemoo.llm.mistral import _tool_schema
+
+    schema = _tool_schema(run_shell)
     assert schema["type"] == "function"
     fn_block = cast("dict[str, object]", schema["function"])
     assert fn_block["name"] == "run_shell"

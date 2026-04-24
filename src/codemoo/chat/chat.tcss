@@ -79,6 +79,14 @@ ThinkingStatus {
     text-style: italic;
 }
 
+/* BackendStatus: dim footer showing active backend and model */
+BackendStatus {
+    padding: 0 1;
+    color: $text-muted;
+    background: $panel;
+    text-align: right;
+}
+
 /* Slide overlay modal */
 SlideScreen {
     background: $background 80%;

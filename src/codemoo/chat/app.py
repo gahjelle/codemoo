@@ -8,6 +8,7 @@ from textual.containers import VerticalScroll
 from textual.events import Key
 from textual.widgets import Input
 
+from codemoo.chat.backend_status import BackendStatus
 from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.slides import DemoContext, SlideScreen
@@ -16,6 +17,7 @@ from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
+from codemoo.llm.factory import BackendInfo
 
 
 class ChatApp(App[str | None]):
@@ -29,12 +31,14 @@ class ChatApp(App[str | None]):
         error_bot: ErrorBot,
         commentator_bot: CommentatorBot | None = None,
         demo_context: DemoContext | None = None,
+        backend_info: BackendInfo | None = None,
     ) -> None:
         """Initialise with an ordered list of chat participants and the error bot."""
         super().__init__()
         self._participants = list(participants)
         self._error_bot = error_bot
         self._demo_context = demo_context
+        self._backend_info = backend_info
 
         # Build a lookup from sender name → (emoji, is_human, css_class)
         def _bubble_class(p: ChatParticipant) -> str:
@@ -53,13 +57,15 @@ class ChatApp(App[str | None]):
         self._history: list[ChatMessage] = []
 
     def compose(self) -> ComposeResult:
-        """Yield the scrollable log, thinking status bar, and text input field."""
+        """Yield the scrollable log, thinking status bar, input, and backend footer."""
         if self._demo_context is not None:
             bot = next(p for p in self._participants if not p.is_human)
             yield DemoHeader(bot, self._demo_context.position)
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
         yield Input(placeholder="Type a message and press Enter...")
+        if self._backend_info is not None:
+            yield BackendStatus(self._backend_info)
 
     def on_mount(self) -> None:
         """Push the slide overlay when entering demo mode."""

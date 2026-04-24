@@ -17,34 +17,40 @@ from codemoo.core.bots import make_bots, resolve_bot
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
-from codemoo.llm.backend import create_mistral_backend
+from codemoo.llm.factory import BackendInfo, resolve_backend
 
 _SetupResult = tuple[
-    ToolLLMBackend, HumanParticipant, list[ChatParticipant], ErrorBot, CommentatorBot
+    ToolLLMBackend,
+    BackendInfo,
+    HumanParticipant,
+    list[ChatParticipant],
+    ErrorBot,
+    CommentatorBot,
 ]
 
 app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 
 
 def _setup() -> _SetupResult:
-    backend = create_mistral_backend(model=config.models.backends["mistral"].model_name)
+    backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
     available = make_bots(backend, human.name, commentator=commentator_bot)
-    return backend, human, available, error_bot, commentator_bot
+    return backend, backend_info, human, available, error_bot, commentator_bot
 
 
 @app.default
 def chat(*, bot: str | None = None) -> None:
     """Launch the chat with the most capable bot, or a specific one via --bot."""
-    _, human, available, error_bot, commentator_bot = _setup()
+    _, backend_info, human, available, error_bot, commentator_bot = _setup()
     chosen = resolve_bot(bot, available) if bot is not None else available[-1]
     ChatApp(
         participants=[human, chosen],
         error_bot=error_bot,
         commentator_bot=commentator_bot,
+        backend_info=backend_info,
     ).run()
 
 
@@ -57,7 +63,7 @@ def show_config(section: str | None = None) -> None:
 @app.command
 def list_bots() -> None:
     """List all available bots with their index, type, and name."""
-    backend = create_mistral_backend(model=config.models.backends["mistral"].model_name)
+    backend, _, _, _, _, _ = _setup()
     bots = make_bots(backend, "")
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
@@ -71,13 +77,14 @@ def list_bots() -> None:
 @app.command
 def select() -> None:
     """Choose bots interactively before starting the chat."""
-    _, human, available, error_bot, commentator_bot = _setup()
+    _, backend_info, human, available, error_bot, commentator_bot = _setup()
     selected = SelectionApp(available).run()
     participants: list[ChatParticipant] = [human, *(selected or [])]
     ChatApp(
         participants=participants,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
+        backend_info=backend_info,
     ).run()
 
 
@@ -89,7 +96,7 @@ def demo(*, start: str | None = None) -> None:
 
 async def _run_demo(start: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
-    backend, human, available, error_bot, commentator_bot = _setup()
+    backend, backend_info, human, available, error_bot, commentator_bot = _setup()
     index = available.index(resolve_bot(start, available)) if start is not None else 0
     demo_bots = available[index:]
     for i, bot in enumerate(demo_bots):
@@ -105,6 +112,7 @@ async def _run_demo(start: str | None) -> None:
             error_bot=error_bot,
             commentator_bot=commentator_bot,
             demo_context=context,
+            backend_info=backend_info,
         ).run_async()
         if result != "next":
             break

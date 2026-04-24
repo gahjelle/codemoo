@@ -37,13 +37,7 @@ def _tool_names(bot: ChatParticipant) -> list[str]:
     tools = getattr(bot, "tools", None)
     if not tools:
         return []
-    names = []
-    for tool in tools:
-        fn_block = tool.schema.get("function", {})
-        name = fn_block.get("name", "")
-        if isinstance(name, str) and name:
-            names.append(name)
-    return names
+    return [tool.name for tool in tools if tool.name]
 
 
 def _bot_source_block(bot: ChatParticipant) -> str:

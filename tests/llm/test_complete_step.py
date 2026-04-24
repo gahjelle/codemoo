@@ -5,7 +5,7 @@ import pytest
 
 from codemoo.core.backend import Message, TextResponse, ToolUse
 from codemoo.core.tools import ToolDef, reverse_string
-from codemoo.llm.backend import _MistralBackend
+from codemoo.llm.mistral import _MistralBackend, _tool_schema
 
 
 def _make_text_response(text: str) -> MagicMock:
@@ -94,7 +94,12 @@ async def test_complete_step_tool_use_does_not_invoke_fn(
         invoked.append(kwargs)
         return "result"
 
-    spy_tool = ToolDef(schema=reverse_string.schema, fn=spy_fn)
+    spy_tool = ToolDef(
+        name=reverse_string.name,
+        description=reverse_string.description,
+        parameters=reverse_string.parameters,
+        fn=spy_fn,
+    )
     mock_complete.return_value = _make_tool_response(
         "reverse_string", {"text": "hello"}
     )
@@ -132,4 +137,4 @@ async def test_complete_step_passes_tool_schemas(
     await backend.complete_step([Message(role="user", content="hi")], [reverse_string])
 
     _, kwargs = mock_complete.call_args
-    assert kwargs["tools"] == [reverse_string.schema]
+    assert kwargs["tools"] == [_tool_schema(reverse_string)]

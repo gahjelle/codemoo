@@ -3,7 +3,8 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from codemoo.core.backend import Message
-from codemoo.llm.backend import _MistralBackend, create_mistral_backend
+from codemoo.llm.exceptions import BackendUnavailableError
+from codemoo.llm.mistral import _MistralBackend, create_mistral_backend
 
 
 def test_message_is_immutable() -> None:
@@ -22,7 +23,7 @@ def test_create_mistral_backend_raises_without_api_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
-    with pytest.raises(ValueError, match="MISTRAL_API_KEY"):
+    with pytest.raises(BackendUnavailableError, match="MISTRAL_API_KEY"):
         create_mistral_backend(model="mistral-small-latest")
 
 
