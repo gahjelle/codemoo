@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.core.backend import Message
-from codemoo.core.bots.llm_bot import LLMBot
+from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.message import ChatMessage
 
 
@@ -32,17 +32,17 @@ def mock_backend() -> _MockBackend:
 
 
 @pytest.fixture
-def llm_bot(mock_backend: _MockBackend) -> LLMBot:
-    return LLMBot(name="LLMBot", emoji="\N{ROBOT FACE}", backend=mock_backend)
+def llm_bot(mock_backend: _MockBackend) -> LlmBot:
+    return LlmBot(name="LLMBot", emoji="\N{ROBOT FACE}", backend=mock_backend)
 
 
-def test_llm_bot_is_not_human(llm_bot: LLMBot) -> None:
+def test_llm_bot_is_not_human(llm_bot: LlmBot) -> None:
     assert llm_bot.is_human is False
 
 
 @pytest.mark.asyncio
 async def test_llm_bot_sends_only_current_message(
-    llm_bot: LLMBot, mock_backend: _MockBackend
+    llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
     history = [_msg("You", "earlier message")]
     await llm_bot.on_message(_msg("You", "latest"), history)
@@ -53,7 +53,7 @@ async def test_llm_bot_sends_only_current_message(
 
 @pytest.mark.asyncio
 async def test_llm_bot_returns_response_as_chat_message(
-    llm_bot: LLMBot, mock_backend: _MockBackend
+    llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
     mock_backend.response = "I am a bot"
     reply = await llm_bot.on_message(_msg("You", "hi"), [])

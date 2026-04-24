@@ -8,7 +8,7 @@ from codemoo.chat.slides import (
 )
 from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.llm_bot import LLMBot
+from codemoo.core.bots.llm_bot import LlmBot
 
 
 class _MockBackend:
@@ -21,10 +21,10 @@ class _MockBackend:
         return TextResponse(text="")
 
 
-def _make_bots() -> list[EchoBot | LLMBot]:
+def _make_bots() -> list[EchoBot | LlmBot]:
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
     ]
 
 
@@ -65,7 +65,7 @@ def test_agenda_upcoming_bot_has_upcoming_class() -> None:
 def test_agenda_all_three_states_with_three_bots() -> None:
     bots = [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
         EchoBot(name="Other", emoji="\N{PARROT}"),
     ]
     column = AgendaColumn(bots, current_index=1)
@@ -95,7 +95,7 @@ def test_build_llm_prompt_first_bot_no_comparison() -> None:
 
 def test_build_llm_prompt_comparison_includes_both_bots() -> None:
     prev = EchoBot(name="Coco", emoji="\N{PARROT}")
-    curr = LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())
+    curr = LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())
     prompt = _build_llm_prompt(curr, prev_bot=prev)
     assert "Coco" in prompt
     assert "Mono" in prompt

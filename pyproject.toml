@@ -13,8 +13,10 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "configaroo>=0.6.1",
     "cyclopts>=4.10.2",
     "mistralai>=2.4.0",
+    "pydantic>=2.13.3",
     "rich>=15.0.0",
     "textual>=8.2.1",
 ]

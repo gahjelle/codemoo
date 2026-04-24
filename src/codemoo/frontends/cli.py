@@ -4,6 +4,7 @@ import cyclopts
 from rich.console import Console
 from rich.markdown import Markdown
 
+from codemoo.config import config
 from codemoo.core import tools
 from codemoo.core.backend import Message, ToolUse
 from codemoo.llm.backend import create_mistral_backend
@@ -15,7 +16,7 @@ stdout = Console()
 @app.command
 async def llm(query: str) -> None:
     """Call an LLM with the given query."""
-    mistral = create_mistral_backend()
+    mistral = create_mistral_backend(model=config.models.backends["mistral"].model_name)
     stdout.print(query, style="yellow")
     response = await mistral.complete([Message(role="user", content=query)])
     stdout.print(Markdown(response))
@@ -24,7 +25,7 @@ async def llm(query: str) -> None:
 @app.command
 async def tool(query: str) -> None:
     """Call an LLM with access to the read_file tool."""
-    mistral = create_mistral_backend()
+    mistral = create_mistral_backend(model=config.models.backends["mistral"].model_name)
     stdout.print(query, style="yellow")
     context = [Message(role="user", content=query)]
     step = await mistral.complete_step(context, [tools.read_file])

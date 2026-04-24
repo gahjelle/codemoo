@@ -2,7 +2,7 @@
 
 from codemoo.chat.selection import _bot_label
 from codemoo.core.backend import LLMBackend
-from codemoo.core.bots import ChatBot, EchoBot, LLMBot
+from codemoo.core.bots import ChatBot, EchoBot, LlmBot
 
 
 class _StubBackend:
@@ -14,8 +14,8 @@ _BACKEND: LLMBackend = _StubBackend()
 
 
 def test_label_includes_name_and_type() -> None:
-    bot = LLMBot(name="Llm", emoji="\N{SPARKLES}", backend=_BACKEND)
-    assert _bot_label(bot) == "\N{SPARKLES} Llm (LLMBot)"
+    bot = LlmBot(name="Llm", emoji="\N{SPARKLES}", backend=_BACKEND)
+    assert _bot_label(bot) == "\N{SPARKLES} Llm (LlmBot)"
 
 
 def test_label_echo_bot() -> None:

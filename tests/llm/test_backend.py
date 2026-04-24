@@ -23,14 +23,14 @@ def test_create_mistral_backend_raises_without_api_key(
 ) -> None:
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     with pytest.raises(ValueError, match="MISTRAL_API_KEY"):
-        create_mistral_backend()
+        create_mistral_backend(model="mistral-small-latest")
 
 
 def test_create_mistral_backend_returns_llm_backend_protocol(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
-    backend = create_mistral_backend()
+    backend = create_mistral_backend(model="mistral-small-latest")
     assert callable(getattr(backend, "complete", None))
 
 
@@ -42,31 +42,10 @@ def test_create_mistral_backend_accepts_custom_model(
     assert backend is not None
 
 
-def test_create_mistral_backend_uses_env_model(
+def test_create_mistral_backend_default_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
-    monkeypatch.setenv("CODEMOO_MISTRAL_MODEL", "mistral-large-latest")
-    backend = create_mistral_backend()
-    assert isinstance(backend, _MistralBackend)
-    assert backend._model == "mistral-large-latest"
-
-
-def test_create_mistral_backend_default_model_when_env_unset(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
-    monkeypatch.delenv("CODEMOO_MISTRAL_MODEL", raising=False)
-    backend = create_mistral_backend()
-    assert isinstance(backend, _MistralBackend)
-    assert backend._model == "mistral-small-latest"
-
-
-def test_create_mistral_backend_explicit_model_overrides_env(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
-    monkeypatch.setenv("CODEMOO_MISTRAL_MODEL", "mistral-large-latest")
     backend = create_mistral_backend(model="mistral-small-latest")
     assert isinstance(backend, _MistralBackend)
     assert backend._model == "mistral-small-latest"

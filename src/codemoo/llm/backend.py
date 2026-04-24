@@ -88,13 +88,14 @@ class _MistralBackend:
 
 
 def create_mistral_backend(
-    model: str | None = None,
+    model: str,
     timeout_ms: int = 120_000,
 ) -> ToolLLMBackend:
     """Create a Mistral-backed ToolLLMBackend.
 
-    Reads MISTRAL_API_KEY from the environment. Reads CODEMOO_MISTRAL_MODEL
-    for the default model name, falling back to "mistral-small-latest".
+    Reads MISTRAL_API_KEY from the environment.
+    Pass model from config.models.backends["mistral"].model_name for TOML-driven
+    model selection.
     """
     api_key = os.environ.get("MISTRAL_API_KEY")
     if not api_key:
@@ -103,9 +104,6 @@ def create_mistral_backend(
             "Set it to your Mistral API key before using this backend."
         )
         raise ValueError(msg)
-    resolved_model = model or os.environ.get(
-        "CODEMOO_MISTRAL_MODEL", "mistral-small-latest"
-    )
     return _MistralBackend(
-        client=Mistral(api_key=api_key, timeout_ms=timeout_ms), model=resolved_model
+        client=Mistral(api_key=api_key, timeout_ms=timeout_ms), model=model
     )

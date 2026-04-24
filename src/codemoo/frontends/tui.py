@@ -2,6 +2,7 @@
 
 import asyncio
 
+import configaroo
 import cyclopts
 from rich.console import Console
 from rich.table import Table
@@ -9,6 +10,7 @@ from rich.table import Table
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
 from codemoo.chat.slides import DemoContext
+from codemoo.config import config
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots import make_bots, resolve_bot
@@ -25,10 +27,11 @@ app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 
 
 def _setup() -> _SetupResult:
-    backend = create_mistral_backend()
+    backend = create_mistral_backend(model=config.models.backends["mistral"].model_name)
     human = HumanParticipant()
-    error_bot = bot_module.ErrorBot(backend=backend)
-    commentator_bot = bot_module.CommentatorBot(backend=backend)
+    language = config.language
+    error_bot = bot_module.ErrorBot(backend=backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
     available = make_bots(backend, human.name, commentator=commentator_bot)
     return backend, human, available, error_bot, commentator_bot
 
@@ -46,9 +49,15 @@ def chat(*, bot: str | None = None) -> None:
 
 
 @app.command
+def show_config(section: str | None = None) -> None:
+    """Show the Codemoo configuration."""
+    configaroo.print_configuration(config, section=section)
+
+
+@app.command
 def list_bots() -> None:
     """List all available bots with their index, type, and name."""
-    backend = create_mistral_backend()
+    backend = create_mistral_backend(model=config.models.backends["mistral"].model_name)
     bots = make_bots(backend, "")
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
