@@ -100,7 +100,13 @@ prompts = [
 #
 [models]
 backend = "mistral"
-fallbacks = ["mistral"]
+fallbacks = ["mistral", "openrouter", "anthropic"]
 
 [models.backends.mistral]
 model_name = "mistral-small-latest"
+
+[models.backends.anthropic]
+model_name = "claude-haiku-4-5-20251001"
+
+[models.backends.openrouter]
+model_name = "z-ai/glm-4.5-air:free"

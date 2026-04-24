@@ -18,7 +18,9 @@ def test_read_file_nonexistent_raises(tmp_path: Path) -> None:
 
 
 def test_read_file_schema_top_level_fields() -> None:
-    schema = read_file.schema
+    from codemoo.llm.mistral import _tool_schema
+
+    schema = _tool_schema(read_file)
     assert schema["type"] == "function"
     fn_block = cast("dict[str, object]", schema["function"])
     assert fn_block["name"] == "read_file"

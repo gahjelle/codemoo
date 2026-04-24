@@ -1,4 +1,4 @@
-"""Concrete LLM backend implementations and factory functions."""
+"""Mistral LLM backend implementation."""
 
 import json
 import os
@@ -7,6 +7,7 @@ from mistralai.client import Mistral
 
 from codemoo.core.backend import Message, TextResponse, ToolLLMBackend, ToolUse
 from codemoo.core.tools import ToolDef
+from codemoo.llm.exceptions import BackendUnavailableError
 
 
 def _serialize(messages: list[Message]) -> list[dict[str, object]]:
@@ -20,6 +21,26 @@ def _serialize(messages: list[Message]) -> list[dict[str, object]]:
             msg["tool_calls"] = json.loads(m.tool_calls_json)
         result.append(msg)
     return result
+
+
+def _tool_schema(tool: ToolDef) -> dict[str, object]:
+    """Convert a ToolDef to the Mistral/OpenAI function-calling wire format."""
+    properties = {
+        p.name: {"type": p.type, "description": p.description} for p in tool.parameters
+    }
+    required = [p.name for p in tool.parameters if p.required]
+    return {
+        "type": "function",
+        "function": {
+            "name": tool.name,
+            "description": tool.description,
+            "parameters": {
+                "type": "object",
+                "properties": properties,
+                "required": required,
+            },
+        },
+    }
 
 
 class _MistralBackend:
@@ -43,14 +64,11 @@ class _MistralBackend:
         messages: list[Message],
         tools: list[ToolDef],
     ) -> TextResponse | ToolUse:
-        """Call Mistral with tools; return TextResponse or ToolUse.
-
-        Does NOT invoke the tool or re-submit. The caller drives re-submission.
-        """
+        """Call Mistral with tools; return TextResponse or ToolUse."""
         response = await self._client.chat.complete_async(
             model=self._model,
             messages=_serialize(messages),
-            tools=[t.schema for t in tools] if tools else None,
+            tools=[_tool_schema(t) for t in tools] if tools else None,
         )
         message = response.choices[0].message
         if message.tool_calls:
@@ -93,9 +111,8 @@ def create_mistral_backend(
 ) -> ToolLLMBackend:
     """Create a Mistral-backed ToolLLMBackend.
 
-    Reads MISTRAL_API_KEY from the environment.
-    Pass model from config.models.backends["mistral"].model_name for TOML-driven
-    model selection.
+    Reads MISTRAL_API_KEY from the environment. Raises BackendUnavailableError
+    if the key is absent.
     """
     api_key = os.environ.get("MISTRAL_API_KEY")
     if not api_key:
@@ -103,7 +120,7 @@ def create_mistral_backend(
             "MISTRAL_API_KEY environment variable is not set. "
             "Set it to your Mistral API key before using this backend."
         )
-        raise ValueError(msg)
+        raise BackendUnavailableError(msg)
     return _MistralBackend(
         client=Mistral(api_key=api_key, timeout_ms=timeout_ms), model=model
     )

@@ -16,7 +16,7 @@ type BotType = Literal[
     "ShellBot",
     "AgentBot",
 ]
-type ModelBackend = Literal["mistral"]
+type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
 
 
 class StrictModel(BaseModel):

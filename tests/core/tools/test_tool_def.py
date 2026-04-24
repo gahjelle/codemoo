@@ -1,14 +1,20 @@
 from typing import cast
 
-from codemoo.core.tools import ToolDef, reverse_string
+from codemoo.core.tools import ToolDef, ToolParam, reverse_string
+from codemoo.llm.mistral import _tool_schema
 
 
-def test_tool_def_exposes_schema_and_fn() -> None:
+def test_tool_def_exposes_name_and_fn() -> None:
     def my_fn(x: str) -> str:
         return x
 
-    t = ToolDef(schema={"type": "function"}, fn=my_fn)
-    assert t.schema == {"type": "function"}
+    t = ToolDef(
+        name="my_tool",
+        description="A test tool.",
+        parameters=[ToolParam(name="x", description="Input.")],
+        fn=my_fn,
+    )
+    assert t.name == "my_tool"
     assert t.fn is my_fn
 
 
@@ -26,11 +32,13 @@ def test_reverse_string_unicode() -> None:
 
 
 def test_reverse_string_schema_top_level_fields() -> None:
-    schema = reverse_string.schema
+    schema = _tool_schema(reverse_string)
     assert schema["type"] == "function"
-    fn_block = cast("dict[str, object]", schema["function"])
+    fn_block = schema["function"]
+    assert isinstance(fn_block, dict)
     assert fn_block["name"] == "reverse_string"
     assert "description" in fn_block
-    params = cast("dict[str, object]", fn_block["parameters"])
+    params = fn_block["parameters"]
+    assert isinstance(params, dict)
     assert "text" in cast("dict[str, object]", params["properties"])
     assert params["required"] == ["text"]

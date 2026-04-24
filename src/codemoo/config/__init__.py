@@ -14,6 +14,8 @@ config = (
             "LANGUAGE": "language",
             "BACKEND": "models.backend",
             "MISTRAL_MODEL": "models.backends.mistral.model_name",
+            "OPENROUTER_MODEL": "models.backends.openrouter.model_name",
+            "ANTHROPIC_MODEL": "models.backends.anthropic.model_name",
         },
         prefix="CODEMOO_",
     )

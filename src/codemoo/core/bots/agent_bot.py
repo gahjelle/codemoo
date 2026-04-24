@@ -1,7 +1,7 @@
 """LLM bot that loops tool calls until the model produces a plain text reply."""
 
 import dataclasses
-from typing import ClassVar, cast
+from typing import ClassVar
 
 from codemoo.core.backend import (
     Message,
@@ -52,7 +52,7 @@ class AgentBot:
             max_messages=self.max_messages,
             system=self.instructions,
         )
-        tool_map = {_tool_name(t): t for t in self.tools}
+        tool_map = {t.name: t for t in self.tools}
         messages: list[Message] = list(context)
 
         while True:
@@ -73,12 +73,3 @@ class AgentBot:
                 step.assistant_message,
                 Message(role="tool", content=tool_output, tool_call_id=step.call_id),
             ]
-
-
-def _tool_name(tool: ToolDef) -> str:
-    """Extract the function name from a tool's schema."""
-    fn_block = tool.schema.get("function")
-    if not isinstance(fn_block, dict):
-        return ""
-    name = cast("dict[str, object]", fn_block).get("name")
-    return name if isinstance(name, str) else ""

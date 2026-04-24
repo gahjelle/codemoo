@@ -1,10 +1,4 @@
-# Spec: tool-definitions
-
-## Purpose
-
-Defines the `ToolDef` abstraction, the `reverse_string` built-in tool, and the `complete_step` backend method that enables structured single-turn LLM responses with tool-calling support.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ToolDef pairs a structured definition with a callable
 The `tools` module SHALL export a `ToolDef` dataclass with fields `name: str`, `description: str`, `parameters: list[ToolParam]`, and `fn: Callable[..., str]`. The `schema: dict` field SHALL be removed. The return type of `fn` SHALL always be `str`.
@@ -50,13 +44,12 @@ The `tools` module SHALL export `write_file` in its `__all__` list. When invoked
 - **WHEN** `write_file.fn` is called with a valid `path` and `content`
 - **THEN** it SHALL write `content` to disk and return a string containing the byte count
 
-### Requirement: LLMBackend exposes complete_step for structured single-turn responses
-`LLMBackend` SHALL expose a `complete_step(messages, tools) -> TextResponse | ToolUse` method. It SHALL send one request to the LLM with the provided tools list and return either a `TextResponse(text: str)` if the LLM replied with text, or a `ToolUse(name: str, arguments: dict)` if the LLM requested a tool call. It SHALL NOT invoke the tool function or re-submit to the LLM — that is the caller's responsibility.
+## REMOVED Requirements
 
-#### Scenario: LLM replies with text — TextResponse is returned
-- **WHEN** the LLM responds with a plain text message (no tool call)
-- **THEN** `complete_step` SHALL return a `TextResponse` with the response text
+### Requirement: ToolDef pairs a JSON schema with a callable
+**Reason**: Replaced by structured `ToolDef` with `name`, `description`, and `parameters` fields. The raw `schema: dict` was Mistral/OpenAI-specific and prevented backend-neutral tool definitions.
+**Migration**: Replace `tool.schema` with `_tool_schema(tool)` inside the relevant backend module. Replace `tool.schema.get("function", {}).get("name", "")` with `tool.name`.
 
-#### Scenario: LLM requests a tool call — ToolUse is returned
-- **WHEN** the LLM responds with a tool-call request
-- **THEN** `complete_step` SHALL return a `ToolUse` with the tool name and argument dict, without invoking the tool
+### Requirement: reverse_string schema is a valid JSON-schema function definition
+**Reason**: The `schema` field is removed from `ToolDef`. Wire format conversion is now the responsibility of each backend module via `_tool_schema(tool)`.
+**Migration**: Use `_tool_schema(reverse_string)` in the backend module to obtain the wire-format dict.
