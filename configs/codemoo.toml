@@ -68,9 +68,9 @@ description = "Read files from disk to answer questions about your code."
 sources = ["file_bot.py", "general_tool_bot.py"]
 prompts = [
     "Read SCRIPT.md and summarize it in three sentences.",
-    "Write the content of SCRIPT.md into ANOTHER_SCRIPT.md",
+    "Create a limerick about these bots and write it to POEM.md",
+    "Read AGENTS.md and README.md and compare them",
     "What is the first sentence inside NO_FILE.txt?",
-    "Read a.txt and b.txt and compare them",
 ]
 
 [bots.ShellBot]
@@ -79,6 +79,7 @@ emoji = "SPIRAL SHELL"
 description = "Execute shell commands — now it can run code, not just read it."
 sources = ["shell_bot.py", "general_tool_bot.py"]
 prompts = [
+    "What is today's date? Use a tool",
     "List all files in the current directory",
     "How many Python files are there inside src/?",
     "Count the total number of lines in all Markdown files in this directory. Which one is largest?",
@@ -90,8 +91,9 @@ emoji = "CYCLONE"
 description = "Loop tool calls until done — pursue goals, not single commands."
 sources = ["agent_bot.py"]
 prompts = [
-    "Count the number of lines in each file inside src/. Which one is largest? Make a list of the files where the number of lines is a fibonacci number",
-    "Create a new directory named 'tull'. Use 'uv init --package' to start a new project inside that directory. Implement a simple Eliza-clone in Python in the project, and tell me how I can run it.",
+    "Which tools do you have access to?",
+    "Count the number of lines in each file inside src/ (exclude binaries). Which one is largest? Make a list of the files where the number of lines is a fibonacci number greater than 1",
+    "Create a new directory named 'eliza'. Use 'uv init --package' to start a new project inside that directory. Implement a simple Eliza-clone in Python in the project, and tell me how I can run it.",
 ]
 
 
