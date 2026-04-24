@@ -70,9 +70,10 @@ class ChatApp(App[str | None]):
             yield BackendStatus(self._backend_info)
 
     def on_mount(self) -> None:
-        """Push the slide overlay when entering demo mode."""
+        """Push the slide overlay when entering demo mode and focus the input."""
         if self._demo_context is not None:
             self.push_screen(SlideScreen(self._demo_context))
+        self.query_one(Input).focus()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle Enter in the input box: create a message and dispatch it."""
