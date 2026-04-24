@@ -7,7 +7,7 @@ from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.file_bot import FileBot
-from codemoo.core.bots.llm_bot import LLMBot
+from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.bots.shell_bot import ShellBot
 from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
@@ -21,7 +21,7 @@ __all__ = [
     "EchoBot",
     "ErrorBot",
     "FileBot",
-    "LLMBot",
+    "LlmBot",
     "ShellBot",
     "SystemBot",
     "ToolBot",
@@ -38,7 +38,7 @@ def make_bots(
     """Return the full ordered bot progression."""
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
         ChatBot(
             name="Iris",
             emoji="\N{NAZAR AMULET}",

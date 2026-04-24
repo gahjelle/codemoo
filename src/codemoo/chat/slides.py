@@ -12,7 +12,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Label, Markdown
 
 from codemoo.chat.slides_data import BOT_DESCRIPTIONS, BOT_SOURCES
-from codemoo.config import language_instruction
+from codemoo.config import config
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.participant import ChatParticipant
 
@@ -69,8 +69,8 @@ def _build_llm_prompt(
             f"Here is its implementation:\n{curr_source}{curr_tools_line}\n\n"
             "Explain in 5-8 lines what this bot does and how it works. "
             "Be code-focused. Use Markdown — show the key line(s) of code in a "
-            "fenced Python code block. Be concise — this must fit on a single screen."
-            + language_instruction()
+            "fenced Python code block. Be concise — this must fit on a single screen. "
+            f"Answer in {config.language}."
         )
 
     prev_type = type(prev_bot).__name__
@@ -86,7 +86,7 @@ def _build_llm_prompt(
         "Explain the single most important change in 5-8 lines. Be code-focused. "
         "Use Markdown — show the key code difference in a fenced Python code block. "
         "Don't explain helper functions in detail — focus on the concept. "
-        "This must fit on a single screen." + language_instruction()
+        f"This must fit on a single screen. Answer in {config.language}."
     )
 
 

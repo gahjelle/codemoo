@@ -4,7 +4,7 @@ import dataclasses
 import random
 from typing import ClassVar
 
-from codemoo.config import language_instruction
+from codemoo.config import config
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
@@ -93,7 +93,7 @@ class ErrorBot:
                 f"{type(exception).__name__}: {exception}. "
                 "Report this to the user in your persona."
             )
-            system = self._persona.instructions + language_instruction()
+            system = f"{self._persona.instructions} Answer in {config.language}"
             messages = [
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),

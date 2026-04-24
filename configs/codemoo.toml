@@ -1,0 +1,33 @@
+language = "English"
+
+[paths]
+bots_dir = "{project_path}/src/codemoo/core/bots"
+
+#
+# Bots
+#
+[bots.echo_bot]
+type = "EchoBot"
+name = "Coco"
+emoji = "PARROT"
+description = "Repeat your message verbatim — no LLM, just a mirror."
+sources = ["echo_bot.py"]
+
+[bots.llm_bot]
+type = "LlmBot"
+name = "Mono"
+emoji = "SPARKLES"
+description = "Call the LLM once and forget the conversation immediately after."
+sources = ["llm_bot.py"]
+
+
+#
+# Model backends
+#
+[models]
+provider = "mistral"
+fallbacks = ["mistral"]
+
+[models.backends.mistral]
+model_name = "mistral-small-latest"
+api_key = "MISTRAL_API_KEY"

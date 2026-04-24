@@ -2,7 +2,7 @@ import pytest
 
 from codemoo.core.bots import resolve_bot
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.llm_bot import LLMBot
+from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.participant import ChatParticipant
 
 
@@ -15,7 +15,7 @@ def _make_bots() -> list[ChatParticipant]:
     backend = _MockBackend()
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LLMBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
     ]
 
 

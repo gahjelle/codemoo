@@ -4,14 +4,14 @@ from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.file_bot import FileBot
-from codemoo.core.bots.llm_bot import LLMBot
+from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.bots.shell_bot import ShellBot
 from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 
 BOT_DESCRIPTIONS: dict[type, str] = {
     EchoBot: "Repeat your message verbatim — no LLM, just a mirror.",
-    LLMBot: "Call the LLM once and forget the conversation immediately after.",
+    LlmBot: "Call the LLM once and forget the conversation immediately after.",
     ChatBot: "Keep the full conversation history, remember what you said.",
     SystemBot: "Add a system prompt to shape the LLM's persona and behavior.",
     ToolBot: "Call a tool before replying — the first step toward doing things.",
@@ -22,7 +22,7 @@ BOT_DESCRIPTIONS: dict[type, str] = {
 
 BOT_SOURCES: dict[type, list[str]] = {
     EchoBot: ["echo_bot.py"],
-    LLMBot: ["llm_bot.py"],
+    LlmBot: ["llm_bot.py"],
     ChatBot: ["chat_bot.py"],
     SystemBot: ["system_bot.py"],
     ToolBot: ["tool_bot.py", "general_tool_bot.py"],

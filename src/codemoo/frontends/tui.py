@@ -2,6 +2,7 @@
 
 import asyncio
 
+import configaroo
 import cyclopts
 from rich.console import Console
 from rich.table import Table
@@ -9,6 +10,7 @@ from rich.table import Table
 from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
 from codemoo.chat.slides import DemoContext
+from codemoo.config import config
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots import make_bots, resolve_bot
@@ -43,6 +45,12 @@ def chat(*, bot: str | None = None) -> None:
         error_bot=error_bot,
         commentator_bot=commentator_bot,
     ).run()
+
+
+@app.command
+def show_config(section: str | None = None) -> None:
+    """Show the Codemoo configuration."""
+    configaroo.print_configuration(config, section=section)
 
 
 @app.command

@@ -8,7 +8,7 @@ from codemoo.core.message import ChatMessage
 
 
 @dataclasses.dataclass(eq=False)
-class LLMBot:
+class LlmBot:
     """Chat participant that responds using only the current message.
 
     The full conversation history is ignored; only the triggering message

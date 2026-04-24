@@ -4,7 +4,7 @@ import dataclasses
 import random
 from collections.abc import Callable
 
-from codemoo.config import language_instruction
+from codemoo.config import config
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 
@@ -124,7 +124,7 @@ class CommentatorBot:
                 f" with arguments: {_format_args(event.arguments)}."
                 " Give a brief, in-character one-sentence aside to the viewer."
             )
-            system = persona.instructions + language_instruction()
+            system = f"{persona.instructions} Answer in {config.language}"
             messages = [
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),

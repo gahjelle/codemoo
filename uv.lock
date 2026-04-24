@@ -47,8 +47,10 @@ name = "codemoo"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "configaroo" },
     { name = "cyclopts" },
     { name = "mistralai" },
+    { name = "pydantic" },
     { name = "rich" },
     { name = "textual" },
 ]
@@ -65,8 +67,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "configaroo", specifier = ">=0.6.1" },
     { name = "cyclopts", specifier = ">=4.10.2" },
     { name = "mistralai", specifier = ">=2.4.0" },
+    { name = "pydantic", specifier = ">=2.13.3" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "textual", specifier = ">=8.2.1" },
 ]
@@ -88,6 +92,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697, upload-time = "2022-10-25T02:36:22.414Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
+]
+
+[[package]]
+name = "configaroo"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "pyplugs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3b/17/77829673e2c0114b9d1e0e332cc7bad443592d7980d29932d8a50f92205e/configaroo-0.6.1.tar.gz", hash = "sha256:0266f7c3ce56854faf10b91e7e59d4f1bdbd23fbc9953f227b661dd0da607cf1", size = 14457, upload-time = "2025-09-10T09:58:09.377Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/89/ce6abb23ce8ce4bb5e16e31cd2568ad6e1002e69e8466445753d5d64ef37/configaroo-0.6.1-py3-none-any.whl", hash = "sha256:a631195dbfdfae06db192f3adfcdf280b627f7fc2091dd3cadafca4b6e0f9a13", size = 9056, upload-time = "2025-09-10T09:58:08.61Z" },
 ]
 
 [[package]]
@@ -535,6 +552,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c3/b2/bc9c9196916376152d655522fdcebac55e66de6603a76a02bca1b6414f6c/pygments-2.20.0.tar.gz", hash = "sha256:6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f", size = 4955991, upload-time = "2026-03-29T13:29:33.898Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/7e/a72dd26f3b0f4f2bf1dd8923c85f7ceb43172af56d63c7383eb62b332364/pygments-2.20.0-py3-none-any.whl", hash = "sha256:81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176", size = 1231151, upload-time = "2026-03-29T13:29:30.038Z" },
+]
+
+[[package]]
+name = "pyplugs"
+version = "0.5.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/06/66f6660905d774af2d40e980985be59b4d4911986acd59ee458ae8b88425/pyplugs-0.5.4.tar.gz", hash = "sha256:c7234da2f8435147d3f10e3ad1b78a96b16e117504dbccc82cc01bc012450f34", size = 9101, upload-time = "2025-08-04T11:46:22.591Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/1c/b8f505eb1509de96ff393a69f4fea7416999e9a080778ae303e320f70369/pyplugs-0.5.4-py3-none-any.whl", hash = "sha256:ddd9609e161dd1308cecbd6f056761d1b5986cf89e3906c3b1dbc2a3e7f02723", size = 6787, upload-time = "2025-08-04T11:46:21.503Z" },
 ]
 
 [[package]]
