@@ -1,4 +1,4 @@
-"""Tests for ChatApp demo_context parameter and Ctrl-N key handling."""
+"""Tests for ChatApp demo_context parameter and Ctrl-N / Ctrl-E key handling."""
 
 import pytest
 
@@ -20,13 +20,17 @@ class _MockBackend:
         return TextResponse(text="")
 
 
-def _make_demo_context(position: tuple[int, int] = (1, 8)) -> DemoContext:
+def _make_demo_context(
+    position: tuple[int, int] = (1, 8),
+    prompts: list[str] | None = None,
+) -> DemoContext:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     return DemoContext(
         all_bots=[bot],
         prev_bot=None,
         backend=_MockBackend(),
         position=position,
+        prompts=prompts or [],
     )
 
 
@@ -78,6 +82,74 @@ def test_ctrl_n_exits_with_next_in_demo_mode() -> None:
     app.exit = lambda result=None: exits.append(result)
     app.on_key(_MockKey("ctrl+n"))
     assert exits == ["next"]
+
+
+# --- Ctrl-E key handler ---
+
+
+class _MockInput:
+    value: str = ""
+
+
+class _MockHeader:
+    last_remaining: int = -1
+
+    def update_prompt_state(self, remaining: int) -> None:
+        self.last_remaining = remaining
+
+
+def _patch_query_one(app: ChatApp) -> tuple[_MockInput, _MockHeader]:
+    """Replace query_one on the app instance with a fake that returns mock widgets."""
+    from textual.widgets import Input as _Input
+
+    mock_input = _MockInput()
+    mock_header = _MockHeader()
+
+    def _query_one(widget_type: object) -> object:
+        if widget_type is _Input:
+            return mock_input
+        return mock_header
+
+    app.query_one = _query_one  # type: ignore[method-assign]
+    return mock_input, mock_header
+
+
+def test_ctrl_space_ignored_without_demo_context() -> None:
+    app = _make_app(demo_context=None)
+    mock_input, _ = _patch_query_one(app)
+    app.on_key(_MockKey("ctrl+e"))
+    assert mock_input.value == ""
+
+
+def test_ctrl_space_inserts_first_prompt() -> None:
+    app = _make_app(demo_context=_make_demo_context(prompts=["First", "Second"]))
+    mock_input, _ = _patch_query_one(app)
+    app.on_key(_MockKey("ctrl+e"))
+    assert mock_input.value == "First"
+
+
+def test_ctrl_space_inserts_second_prompt_on_second_press() -> None:
+    app = _make_app(demo_context=_make_demo_context(prompts=["First", "Second"]))
+    mock_input, _ = _patch_query_one(app)
+    app.on_key(_MockKey("ctrl+e"))
+    app.on_key(_MockKey("ctrl+e"))
+    assert mock_input.value == "Second"
+
+
+def test_ctrl_space_does_nothing_when_exhausted() -> None:
+    app = _make_app(demo_context=_make_demo_context(prompts=["Only"]))
+    mock_input, _ = _patch_query_one(app)
+    app.on_key(_MockKey("ctrl+e"))
+    mock_input.value = ""
+    app.on_key(_MockKey("ctrl+e"))
+    assert mock_input.value == ""
+
+
+def test_ctrl_space_updates_header_remaining_count() -> None:
+    app = _make_app(demo_context=_make_demo_context(prompts=["A", "B", "C"]))
+    _, mock_header = _patch_query_one(app)
+    app.on_key(_MockKey("ctrl+e"))
+    assert mock_header.last_remaining == 2
 
 
 # --- SlideScreen push on mount: one async test for the slide overlay behavior ---

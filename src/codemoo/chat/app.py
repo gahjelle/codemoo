@@ -55,12 +55,14 @@ class ChatApp(App[str | None]):
         self._human = next(p for p in participants if p.is_human)
         # Authoritative ordered history of all messages posted in this session
         self._history: list[ChatMessage] = []
+        self._prompt_index = 0
 
     def compose(self) -> ComposeResult:
         """Yield the scrollable log, thinking status bar, input, and backend footer."""
         if self._demo_context is not None:
             bot = next(p for p in self._participants if not p.is_human)
-            yield DemoHeader(bot, self._demo_context.position)
+            prompt_count = len(self._demo_context.prompts)
+            yield DemoHeader(bot, self._demo_context.position, prompt_count)
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
         yield Input(placeholder="Type a message and press Enter...")
@@ -144,6 +146,21 @@ class ChatApp(App[str | None]):
         self._history.extend(replies)
 
     def on_key(self, event: Key) -> None:
-        """Advance to the next bot when Ctrl-N is pressed in demo mode."""
-        if event.key == "ctrl+n" and self._demo_context is not None:
+        """Handle demo-mode keys: Ctrl-N advances bot, Ctrl-E inserts a prompt."""
+        if self._demo_context is None:
+            return
+        if event.key == "ctrl+n":
             self.exit("next")
+        elif event.key == "ctrl+e":
+            self._insert_next_prompt()
+
+    def _insert_next_prompt(self) -> None:
+        if self._demo_context is None:
+            return
+        prompts = self._demo_context.prompts
+        if self._prompt_index >= len(prompts):
+            return
+        self.query_one(Input).value = prompts[self._prompt_index]
+        self._prompt_index += 1
+        remaining = len(prompts) - self._prompt_index
+        self.query_one(DemoHeader).update_prompt_state(remaining)

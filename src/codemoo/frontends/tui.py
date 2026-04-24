@@ -1,6 +1,7 @@
 """TUI entry point for the codemoo command."""
 
 import asyncio
+from typing import TYPE_CHECKING, cast
 
 import configaroo
 import cyclopts
@@ -18,6 +19,9 @@ from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
+
+if TYPE_CHECKING:
+    from codemoo.config.schema import BotType
 
 _SetupResult = tuple[
     ToolLLMBackend,
@@ -101,11 +105,14 @@ async def _run_demo(start: str | None) -> None:
     demo_bots = available[index:]
     for i, bot in enumerate(demo_bots):
         prev_bot = demo_bots[i - 1] if i > 0 else None
+        bot_cfg = config.bots.get(cast("BotType", type(bot).__name__))
+        prompts = list(bot_cfg.prompts) if bot_cfg else []
         context = DemoContext(
             all_bots=demo_bots,
             prev_bot=prev_bot,
             backend=backend,
             position=(i + 1, len(demo_bots)),
+            prompts=prompts,
         )
         result = await ChatApp(
             participants=[human, bot],

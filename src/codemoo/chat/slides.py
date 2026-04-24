@@ -1,6 +1,7 @@
 """Demo slide overlay shown before each bot session in demo mode."""
 
 import dataclasses
+import re
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
 
@@ -27,6 +28,17 @@ class DemoContext:
     prev_bot: ChatParticipant | None
     backend: LLMBackend
     position: tuple[int, int]
+    prompts: list[str] = dataclasses.field(default_factory=list)
+
+
+def _parse_numbered_list(text: str, expected: int) -> list[str] | None:
+    """Extract items from a numbered list response; return None on count mismatch."""
+    items = [
+        re.sub(r"^\d+\.\s*", "", line).strip()
+        for line in text.splitlines()
+        if re.match(r"^\d+\.", line.strip())
+    ]
+    return items if len(items) == expected else None
 
 
 def _read_source(filename: str) -> str:
@@ -178,6 +190,27 @@ class SlideScreen(ModalScreen[None]):
                 ),
                 id="slide-layout",
             )
+
+    def on_mount(self) -> None:
+        """Launch prompt translation in the background while the slide is visible."""
+        if config.language != "English" and self._demo_ctx.prompts:
+            self.run_worker(self._translate_prompts(), exclusive=False)
+
+    async def _translate_prompts(self) -> None:
+        numbered = "\n".join(
+            f"{i}. {p}" for i, p in enumerate(self._demo_ctx.prompts, start=1)
+        )
+        prompt = (
+            f"Translate the following numbered prompts to {config.language}. "
+            "Return them as a numbered list in the same format, with no extra text.\n\n"
+            f"{numbered}"
+        )
+        response = await self._demo_ctx.backend.complete(
+            [Message(role="user", content=prompt)]
+        )
+        translated = _parse_numbered_list(response, len(self._demo_ctx.prompts))
+        if translated is not None:
+            self._demo_ctx.prompts = translated
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Dismiss the slide when OK is clicked."""

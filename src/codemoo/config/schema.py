@@ -38,6 +38,7 @@ class BotConfig(StrictModel):
     emoji: str
     description: str
     sources: list[str]
+    prompts: list[str] = []
 
     @field_validator("emoji", mode="before")
     @classmethod
