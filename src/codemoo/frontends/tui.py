@@ -41,7 +41,7 @@ def _setup() -> _SetupResult:
     language = config.language
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
-    available = make_bots(backend, human.name, commentator=commentator_bot)
+    available = make_bots(backend, human.name, config.bots, commentator=commentator_bot)
     return backend, backend_info, human, available, error_bot, commentator_bot
 
 
@@ -68,7 +68,7 @@ def show_config(section: str | None = None) -> None:
 def list_bots() -> None:
     """List all available bots with their index, type, and name."""
     backend, _, _, _, _, _ = _setup()
-    bots = make_bots(backend, "")
+    bots = make_bots(backend, "", config.bots)
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Type")

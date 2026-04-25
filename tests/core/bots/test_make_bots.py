@@ -1,3 +1,4 @@
+from codemoo.config import config
 from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots import make_bots
 from codemoo.core.bots.agent_bot import AgentBot
@@ -15,7 +16,7 @@ class _MockBackend:
 
 
 def _bots() -> list:
-    return make_bots(_MockBackend(), "You")
+    return make_bots(_MockBackend(), "You", config.bots)
 
 
 def test_make_bots_returns_eight_bots() -> None:
