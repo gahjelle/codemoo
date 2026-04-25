@@ -128,6 +128,7 @@ class ChatApp(App[str | None]):
                     continue
                 if status and not participant.is_human:
                     status.set_bot(participant.emoji, participant.name)
+                reply = None
                 try:
                     reply = await participant.on_message(message, running_history)
                     # Capture thinking time for successful replies
