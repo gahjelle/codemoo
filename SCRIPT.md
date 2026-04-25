@@ -16,6 +16,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | FileBot   | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files                     |
 | ShellBot  | Ash  | Ash is a real Unix shell, and it's almost Bash                          | 🐚     | `SPIRAL SHELL`    | Shell pun                       |
 | AgentBot  | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                |
+| GuardBot  | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions        |
 
 ### Full Progression (not all implemented yet)
 
@@ -33,7 +34,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 10  | ProjectBot      | Lore    | Reads AGENTS.md for project context                  | Now it reads the room. It understands your project before touching anything               |
 | 11  | MemoryBot       | Aura    | Persists state across turns                          | Now it remembers *you* across sessions. It builds a model of your project                 |
 | 12  | RetryBot        | Undo    | Catches errors and retries gracefully                | Now it bounces back. Errors don't stop it — it catches, adjusts, and tries again          |
-| 13  | PlanBot         | Drew    | Plans before acting                                  | Now it thinks before it acts. Slower, but much smarter on hard problems                   |
+| 13  | PlanBot         | Draw    | Plans before acting                                  | Now it thinks before it acts. Slower, but much smarter on hard problems                   |
 | 14  | CommandBot      | Exec    | Slash-command interface                              | Now you can direct it with /commands. One keystroke, one repeatable action                |
 | 15  | SkillBot        | Coda    | Loads SKILL.md modules before acting                 | Now it loads a playbook before acting. Teach it a workflow once, use it everywhere        |
 | 16  | MultiToolBot    | Omni    | Parallel tool calls in a single turn                 | Now it does multiple things at once. Speed unlocked                                       |
@@ -43,7 +44,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 20  | SearchBot       | Scout   | Web search tool                                      | Now it has access to information beyond its training data                                 |
 | 21  | McpBot          | Mesh    | Adds support for MCP servers                         | Now it plugs into anything. MCP turns every external tool into a first-class citizen      |
 | 22  | CompactBot      | Pith    | Better handling of context                           | Now it manages its own memory. It compresses the past to keep focus on the present        |
-| 23  | CoderBot        | Codemoo | All of the above                                     | This is Claude Code. Every feature, working together.                                     |
+| 23  | CodemooBot      | Codemoo | All of the above                                     | This is Claude Code. Every feature, working together.                                     |
 
 ### Demo Arc
 
