@@ -11,3 +11,4 @@ class ChatMessage:
     sender: str
     text: str
     timestamp: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
+    thinking_time: int | None = None

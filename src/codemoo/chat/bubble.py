@@ -15,16 +15,26 @@ class _BubbleContent(Widget):
     }
     """
 
-    def __init__(self, name: str, emoji: str, text: str, css_class: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        emoji: str,
+        text: str,
+        thinking_time: int | None,
+        css_class: str,
+    ) -> None:
         super().__init__(classes=css_class)
         self._sender_name = name
         self._sender_emoji = emoji
         self._text = text
+        self._thinking_time = thinking_time
         self._css_class = css_class
 
     def compose(self) -> ComposeResult:
         """Yield a header label and a body widget appropriate to the bubble type."""
         header = f"{self._sender_emoji} [bold]{self._sender_name}[/bold]"
+        if self._thinking_time is not None:
+            header += f" [dim]({self._thinking_time}s)[/dim]"
         yield Label(header, classes="bubble-header", markup=True)
         if self._css_class == "bubble--commentator":
             yield Static(self._text, markup=True)
@@ -54,12 +64,13 @@ class ChatBubble(Widget):
     }
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         name: str,
         emoji: str,
         text: str,
         *,
+        thinking_time: int | None = None,
         is_human: bool,
         css_class: str | None = None,
     ) -> None:
@@ -68,6 +79,7 @@ class ChatBubble(Widget):
         self._sender_name = name
         self._sender_emoji = emoji
         self._text = text
+        self._thinking_time = thinking_time
         self._is_human = is_human
         self._css_class = css_class
 
@@ -77,7 +89,11 @@ class ChatBubble(Widget):
             "bubble--human" if self._is_human else "bubble--bot"
         )
         content = _BubbleContent(
-            self._sender_name, self._sender_emoji, self._text, css_class
+            self._sender_name,
+            self._sender_emoji,
+            self._text,
+            self._thinking_time,
+            css_class,
         )
         spacer = Static("", classes="bubble-spacer")
         if self._is_human:

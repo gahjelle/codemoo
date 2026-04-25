@@ -1,5 +1,6 @@
 """Textual TUI application wiring together chat participants."""
 
+import dataclasses
 from collections.abc import AsyncGenerator, Sequence
 from pathlib import Path
 
@@ -94,7 +95,12 @@ class ChatApp(App[str | None]):
         default = ("\N{SPEECH BALLOON}", False, "bubble--commentator")
         emoji, is_human, css_class = self._sender_info.get(message.sender, default)
         bubble = ChatBubble(
-            message.sender, emoji, message.text, is_human=is_human, css_class=css_class
+            message.sender,
+            emoji,
+            message.text,
+            thinking_time=message.thinking_time,
+            is_human=is_human,
+            css_class=css_class,
         )
         log = self.query_one("#log", VerticalScroll)
         log.mount(bubble)
@@ -124,11 +130,19 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 try:
                     reply = await participant.on_message(message, running_history)
+                    # Capture thinking time for successful replies
+                    thinking_time = status.clear() if status else None
+                    if thinking_time is not None and reply is not None:
+                        reply = dataclasses.replace(reply, thinking_time=thinking_time)
                 except Exception as exc:  # noqa: BLE001
+                    # Clear status but don't capture time for failed bots
+                    if status:
+                        status.clear()
                     yield await self._error_bot.format_error(participant, exc)
                     continue
                 finally:
-                    if status:
+                    # Ensure status is cleared even if no exception but reply is None
+                    if status and reply is None:
                         status.clear()
                 if reply is not None:
                     queue.append(reply)
