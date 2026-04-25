@@ -43,12 +43,14 @@ def test_unknown_bot_type_key_raises(tmp_path: Path) -> None:
     with pytest.raises(ValidationError):
         CodemooConfig(
             language="English",
+            main_bot="EchoBot",
             paths=PathsConfig(bots_dir=tmp_path),
             bots={
                 "UnknownBot": BotConfig(
                     name="X", emoji="PARROT", description="", sources=[]
                 )
             },
+            scripts={"default": ["EchoBot"]},
             models=ModelsConfig(
                 backend="mistral",
                 fallbacks=["mistral"],

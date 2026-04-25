@@ -26,7 +26,7 @@ The `make_bots()` function currently:
 
 ### 1. Config Injection Approach
 **Decision**: Pass config as explicit parameter to `make_bots()` instead of global import
-**Rationale**: 
+**Rationale**:
 - Eliminates global state dependency
 - Makes dependencies explicit
 - Improves testability (easy to mock/pass different configs)

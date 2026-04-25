@@ -1,7 +1,17 @@
 language = "English"
+main_bot = "AgentBot"
 
 [paths]
 bots_dir = "{project_path}/src/codemoo/core/bots"
+
+
+#
+# Scripts
+#
+[scripts]
+default = ["EchoBot", "LlmBot", "ChatBot", "SystemBot", "ToolBot", "FileBot", "ShellBot", "AgentBot"]
+focused = ["LlmBot", "ChatBot", "AgentBot"]
+
 
 #
 # Bots

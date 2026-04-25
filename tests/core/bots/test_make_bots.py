@@ -16,7 +16,12 @@ class _MockBackend:
 
 
 def _bots() -> list:
-    return make_bots(_MockBackend(), "You", config.bots)
+    return make_bots(
+        _MockBackend(),
+        human_name="You",
+        cfg=config.bots,
+        bot_order=config.scripts["default"],
+    )
 
 
 def test_make_bots_returns_eight_bots() -> None:

@@ -31,61 +31,75 @@ __all__ = [
 ]
 
 
-def make_bots(
+def _make_bot(  # noqa: PLR0911
+    bot_type: BotType,
+    cfg: BotConfig,
     backend: ToolLLMBackend,
     human_name: str,
+    commentator: CommentatorBot | None,
+) -> ChatParticipant:
+    """Construct a single bot by type."""
+    match bot_type:
+        case "EchoBot":
+            return EchoBot(name=cfg.name, emoji=cfg.emoji)
+        case "LlmBot":
+            return LlmBot(name=cfg.name, emoji=cfg.emoji, backend=backend)
+        case "ChatBot":
+            return ChatBot(
+                name=cfg.name, emoji=cfg.emoji, backend=backend, human_name=human_name
+            )
+        case "SystemBot":
+            return SystemBot(
+                name=cfg.name, emoji=cfg.emoji, backend=backend, human_name=human_name
+            )
+        case "ToolBot":
+            return ToolBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=[reverse_string],
+                commentator=commentator,
+            )
+        case "FileBot":
+            return FileBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=[read_file, write_file, reverse_string],
+                commentator=commentator,
+            )
+        case "ShellBot":
+            return ShellBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=[run_shell, read_file, write_file, reverse_string],
+                commentator=commentator,
+            )
+        case "AgentBot":
+            return AgentBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=[run_shell, read_file, write_file, reverse_string],
+                commentator=commentator,
+            )
+
+
+def make_bots(
+    backend: ToolLLMBackend,
+    *,
+    human_name: str,
     cfg: dict[BotType, BotConfig],
+    bot_order: list[BotType],
     commentator: CommentatorBot | None = None,
 ) -> list[ChatParticipant]:
-    """Return the full ordered bot progression."""
-    return [
-        EchoBot(name=cfg["EchoBot"].name, emoji=cfg["EchoBot"].emoji),
-        LlmBot(name=cfg["LlmBot"].name, emoji=cfg["LlmBot"].emoji, backend=backend),
-        ChatBot(
-            name=cfg["ChatBot"].name,
-            emoji=cfg["ChatBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-        ),
-        SystemBot(
-            name=cfg["SystemBot"].name,
-            emoji=cfg["SystemBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-        ),
-        ToolBot(
-            name=cfg["ToolBot"].name,
-            emoji=cfg["ToolBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-            tools=[reverse_string],
-            commentator=commentator,
-        ),
-        FileBot(
-            name=cfg["FileBot"].name,
-            emoji=cfg["FileBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-            tools=[read_file, write_file, reverse_string],
-            commentator=commentator,
-        ),
-        ShellBot(
-            name=cfg["ShellBot"].name,
-            emoji=cfg["ShellBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-            tools=(all_tools := [run_shell, read_file, write_file, reverse_string]),
-            commentator=commentator,
-        ),
-        AgentBot(
-            name=cfg["AgentBot"].name,
-            emoji=cfg["AgentBot"].emoji,
-            backend=backend,
-            human_name=human_name,
-            tools=all_tools,
-            commentator=commentator,
-        ),
-    ]
+    """Return bots instantiated in the order given by bot_order."""
+    return [_make_bot(t, cfg[t], backend, human_name, commentator) for t in bot_order]
 
 
 def resolve_bot(spec: str, bots: list[ChatParticipant]) -> ChatParticipant:

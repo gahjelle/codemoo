@@ -16,6 +16,7 @@ type BotType = Literal[
     "ShellBot",
     "AgentBot",
 ]
+type ScriptName = Literal["default", "focused"]
 type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
 
 
@@ -69,6 +70,8 @@ class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
     language: str
+    main_bot: BotType
     paths: PathsConfig
     bots: dict[BotType, BotConfig]
+    scripts: dict[ScriptName, list[BotType]]
     models: ModelsConfig

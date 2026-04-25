@@ -1,10 +1,4 @@
-# Spec: frontend-tui
-
-## Purpose
-
-TBD — defines the CLI entry point and startup modes for the `codemoo` command, including the default chat mode, bot selection, and demo progression.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Default invocation launches chat with the bot specified by main_bot config
 When `codemoo` is run with no arguments, the application SHALL launch `ChatApp` with the bot whose type matches `config.main_bot`, resolved from the available bot list.
@@ -16,36 +10,6 @@ When `codemoo` is run with no arguments, the application SHALL launch `ChatApp` 
 #### Scenario: --bot overrides main_bot
 - **WHEN** the user runs `codemoo --bot EchoBot`
 - **THEN** `ChatApp` SHALL open with `EchoBot`, regardless of `config.main_bot`
-
-### Requirement: --bot option selects a specific bot for the default chat mode
-The `codemoo` command SHALL accept a `--bot <spec>` option that resolves a single bot via the bot-spec-resolver and launches `ChatApp` with that bot.
-
-#### Scenario: Bot selected by name
-- **WHEN** the user runs `codemoo --bot Ash`
-- **THEN** `ChatApp` SHALL open with the human participant and the bot whose name is "Ash"
-
-#### Scenario: Bot selected by type name
-- **WHEN** the user runs `codemoo --bot ShellBot`
-- **THEN** `ChatApp` SHALL open with the human participant and the bot of type `ShellBot`
-
-#### Scenario: Bot selected by 1-based index
-- **WHEN** the user runs `codemoo --bot 7`
-- **THEN** `ChatApp` SHALL open with the human participant and the 7th bot in the progression
-
-#### Scenario: Unknown bot spec raises an error
-- **WHEN** the user runs `codemoo --bot UnknownBot`
-- **THEN** the application SHALL exit with an error message listing valid bot names, types, and indices
-
-### Requirement: select subcommand presents the interactive bot picker
-`codemoo select` SHALL launch `SelectionApp`, allowing the user to choose any combination of bots before starting the chat session.
-
-#### Scenario: select subcommand shows the selection screen
-- **WHEN** the user runs `codemoo select`
-- **THEN** `SelectionApp` SHALL be displayed with the full bot list
-
-#### Scenario: Confirmed selection launches chat
-- **WHEN** the user confirms a selection in `SelectionApp`
-- **THEN** `ChatApp` SHALL start with the human participant and the chosen bots
 
 ### Requirement: demo subcommand accepts --script, --start, and --end options
 `codemoo demo` SHALL accept three optional keyword arguments: `--script <name>` (defaults to `"default"`), `--start <bot-spec>`, and `--end <bot-spec>`. All three are optional and may be combined.
@@ -70,16 +34,7 @@ The `codemoo` command SHALL accept a `--bot <spec>` option that resolves a singl
 - **WHEN** the user runs `codemoo demo --script nonexistent`
 - **THEN** cyclopts SHALL reject the argument and list valid script names
 
-### Requirement: list-bots subcommand is registered on the CLI
-The `codemoo` command SHALL expose a `list-bots` subcommand alongside `select`, `demo`, and `list-scripts`.
-
-#### Scenario: list-bots subcommand is accessible
-- **WHEN** the user runs `codemoo list-bots`
-- **THEN** the command SHALL execute the list-bots logic without error
-
-#### Scenario: list-bots appears in help output
-- **WHEN** the user runs `codemoo --help`
-- **THEN** `list-bots` SHALL appear in the list of available subcommands
+## ADDED Requirements
 
 ### Requirement: list-scripts subcommand is registered on the CLI
 The `codemoo` command SHALL expose a `list-scripts` subcommand alongside `list-bots`, `select`, and `demo`.
