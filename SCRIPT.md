@@ -6,7 +6,7 @@ The demo walks through a sequence of bots, each adding one capability, culminati
 
 Each bot has a memorable name, playing on the feature it introduces.
 
-| Bot       | Name | Name rationale                                                          | Emoji | `\N{}` name       |                                 |
+| Bot       | Name | Name rationale                                                          | Emoji | `\N{}` name       | Emoji rationale                 |
 | --------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | ------------------------------- |
 | EchoBot   | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                    |
 | LLMBot    | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence         |
