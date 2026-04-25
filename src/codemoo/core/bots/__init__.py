@@ -8,6 +8,7 @@ from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.file_bot import FileBot
+from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.bots.shell_bot import ShellBot
 from codemoo.core.bots.system_bot import SystemBot
@@ -22,6 +23,7 @@ __all__ = [
     "EchoBot",
     "ErrorBot",
     "FileBot",
+    "GuardBot",
     "LlmBot",
     "ShellBot",
     "SystemBot",
@@ -81,6 +83,15 @@ def _make_bot(  # noqa: PLR0911
             )
         case "AgentBot":
             return AgentBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=[run_shell, read_file, write_file, reverse_string],
+                commentator=commentator,
+            )
+        case "GuardBot":
+            return GuardBot(
                 name=cfg.name,
                 emoji=cfg.emoji,
                 backend=backend,

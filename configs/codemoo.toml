@@ -1,5 +1,5 @@
 language = "English"
-main_bot = "AgentBot"
+main_bot = "GuardBot"
 
 [paths]
 bots_dir = "{project_path}/src/codemoo/core/bots"
@@ -9,8 +9,8 @@ bots_dir = "{project_path}/src/codemoo/core/bots"
 # Scripts
 #
 [scripts]
-default = ["EchoBot", "LlmBot", "ChatBot", "SystemBot", "ToolBot", "FileBot", "ShellBot", "AgentBot"]
-focused = ["LlmBot", "ChatBot", "AgentBot"]
+default = ["EchoBot", "LlmBot", "ChatBot", "SystemBot", "ToolBot", "FileBot", "ShellBot", "AgentBot", "GuardBot"]
+focused = ["LlmBot", "ChatBot", "AgentBot", "GuardBot"]
 
 
 #
@@ -104,6 +104,17 @@ prompts = [
     "Which tools do you have access to?",
     "Count the number of lines in each file inside src/ (exclude binaries). Which one is largest? Make a list of the files where the number of lines is a fibonacci number greater than 1",
     "Create a new directory named 'eliza'. Use 'uv init --package' to start a new project inside that directory. Implement a simple Eliza-clone in Python in the project, and tell me how I can run it.",
+]
+
+[bots.GuardBot]
+name = "Cato"
+emoji = "LOCK"
+description = "Pause before dangerous tool calls — nothing destructive without your say-so."
+sources = ["guard_bot.py"]
+prompts = [
+    "Which tools do you have access to? Which ones require approval before running?",
+    "Read AGENTS.md and summarize it, then write the summary to summary.md",
+    "Create a new directory named 'sandbox' and initialize a uv project inside it",
 ]
 
 

@@ -1,7 +1,8 @@
 """Textual TUI application wiring together chat participants."""
 
+import asyncio
 import dataclasses
-from collections.abc import AsyncGenerator, Sequence
+from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from pathlib import Path
 
 from textual.app import App, ComposeResult
@@ -9,6 +10,7 @@ from textual.containers import VerticalScroll
 from textual.events import Key
 from textual.widgets import Input
 
+from codemoo.chat.approval import ApprovalModal
 from codemoo.chat.backend_status import BackendStatus
 from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
@@ -16,6 +18,7 @@ from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.bots.guard_bot import ApprovalRequest, GuardDecision
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 from codemoo.llm.factory import BackendInfo
@@ -52,6 +55,9 @@ class ChatApp(App[str | None]):
         if commentator_bot is not None:
             self._sender_info |= commentator_bot.sender_info()
             commentator_bot.register(self._append_to_log)
+        for participant in participants:
+            if hasattr(participant, "register_guard"):
+                participant.register_guard(self._make_guard_ask_fn())  # ty: ignore[call-non-callable]
         # Keep a reference to the human participant for outgoing message construction
         self._human = next(p for p in participants if p.is_human)
         # Authoritative ordered history of all messages posted in this session
@@ -160,6 +166,19 @@ class ChatApp(App[str | None]):
             self._append_to_log(reply)
             replies.append(reply)
         self._history.extend(replies)
+
+    def _make_guard_ask_fn(
+        self,
+    ) -> Callable[[ApprovalRequest], Awaitable[GuardDecision]]:
+        """Return an async callable that shows ApprovalModal and awaits the result."""
+
+        async def ask_fn(request: ApprovalRequest) -> GuardDecision:
+            loop = asyncio.get_running_loop()
+            future: asyncio.Future[GuardDecision] = loop.create_future()
+            self.push_screen(ApprovalModal(request), future.set_result)
+            return await future
+
+        return ask_fn
 
     def on_key(self, event: Key) -> None:
         """Handle demo-mode keys: Ctrl-N advances bot, Ctrl-E inserts a prompt."""

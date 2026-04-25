@@ -327,6 +327,26 @@ def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
         assert emoji == persona.emoji
 
 
+@pytest.mark.asyncio
+async def test_display_header_truncates_long_values_with_ellipsis() -> None:
+    backend = _MockBackend(response="Nice!")
+    bot = CommentatorBot(backend=backend)
+    received: list[ChatMessage] = []
+    bot.register(received.append)
+
+    event = ToolCallEvent(
+        bot_name="Loom",
+        tool_name="write_file",
+        arguments={"path": "f.py", "content": "x" * 200},
+    )
+    await bot.comment(event)
+
+    assert len(received) == 1
+    text = received[0].text
+    assert "[dim]" in text
+    assert "\N{HORIZONTAL ELLIPSIS}" in text
+
+
 def test_streik_fallback_has_no_dim_prefix() -> None:
     """Streik posts just the call sig with no [dim] markup."""
 

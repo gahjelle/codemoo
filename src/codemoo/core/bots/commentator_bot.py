@@ -6,6 +6,7 @@ from collections.abc import Callable
 
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
+from codemoo.core.tools.formatting import format_tool_call
 
 
 @dataclasses.dataclass(frozen=True)
@@ -27,7 +28,7 @@ class Persona:
 
 
 _STREIK_NAME = "Streik"
-_STREIK_EMOJI = "\N{PLACARD}"
+_STREIK_EMOJI = "\N{PUBLIC ADDRESS LOUDSPEAKER}"
 
 _PERSONAS: list[Persona] = [
     Persona(
@@ -54,7 +55,7 @@ _PERSONAS: list[Persona] = [
     ),
     Persona(
         name="Sølve",
-        emoji="\N{ROCK}",
+        emoji="\N{MOYAI}",
         instructions=(
             "You are Sølve, a dry and unimpressed commentator in a live coding"
             " agent demonstration. You have seen it all before and find nothing"
@@ -65,7 +66,7 @@ _PERSONAS: list[Persona] = [
     ),
     Persona(
         name="Rike",
-        emoji="\N{FACE WITH ONE EYEBROW RAISED}",
+        emoji="\N{EYES}",
         instructions=(
             "You are Rike, a skeptical commentator in a live coding agent"
             " demonstration. You question whether each tool call is really"
@@ -75,16 +76,6 @@ _PERSONAS: list[Persona] = [
         ),
     ),
 ]
-
-
-def _format_args(arguments: dict[str, object]) -> str:
-    """Format tool arguments as a function-call signature string."""
-    if not arguments:
-        return ""
-    parts = [
-        f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}" for k, v in arguments.items()
-    ]
-    return ", ".join(parts)
 
 
 @dataclasses.dataclass(eq=False)
@@ -117,11 +108,11 @@ class CommentatorBot:
     async def comment(self, event: ToolCallEvent) -> None:
         """Generate and post a persona-driven aside for the given event."""
         persona = random.choice(_PERSONAS)  # noqa: S311
-        call_sig = f"call {event.tool_name}({_format_args(event.arguments)})"
+        full_sig = format_tool_call(event.tool_name, event.arguments)
         try:
             prompt = (
                 f"{event.bot_name} is calling the '{event.tool_name}' tool"
-                f" with arguments: {_format_args(event.arguments)}."
+                f" with arguments: {full_sig}."
                 " Give a brief, in-character one-sentence aside to the viewer."
             )
             system = f"{persona.instructions} Answer in {self.language}"
@@ -131,15 +122,12 @@ class CommentatorBot:
             ]
             text = await self.backend.complete(messages)
         except Exception:  # noqa: BLE001
-            fallback = (
-                f"{event.bot_name} calls"
-                f" {event.tool_name}({_format_args(event.arguments)})"
-            )
+            fallback = f"{event.bot_name} calls {full_sig}"
             self._post_fn(ChatMessage(sender=_STREIK_NAME, text=fallback))
             return
-        short_sig = (call_sig[: min(70, len(call_sig) - 1)] + call_sig[-1]).replace(
-            "\n", " "
+        display_sig = format_tool_call(
+            event.tool_name, event.arguments, max_value_len=40
         )
         self._post_fn(
-            ChatMessage(sender=persona.name, text=f"[dim]{short_sig}[/]\n{text}")
+            ChatMessage(sender=persona.name, text=f"[dim]{display_sig}[/]\n{text}")
         )

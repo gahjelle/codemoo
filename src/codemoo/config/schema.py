@@ -15,6 +15,7 @@ type BotType = Literal[
     "FileBot",
     "ShellBot",
     "AgentBot",
+    "GuardBot",
 ]
 type ScriptName = Literal["default", "focused"]
 type ModelBackend = Literal["mistral", "anthropic", "openrouter"]

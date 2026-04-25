@@ -43,7 +43,7 @@ _PERSONAS: list[Persona] = [
     ),
     Persona(
         name="Murphy",
-        emoji="\N{CLOUD WITH RAIN}\N{VARIATION SELECTOR-16}",
+        emoji="\N{CLOUD WITH RAIN}",
         instructions=(
             "You are Murphy, a fatalistic and dry error handler in a chat application. "
             "Everything that could go wrong did, and you saw it coming. "

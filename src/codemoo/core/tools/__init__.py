@@ -8,11 +8,14 @@ from pathlib import Path
 __all__ = [
     "ToolDef",
     "ToolParam",
+    "format_tool_call",
     "read_file",
     "reverse_string",
     "run_shell",
     "write_file",
 ]
+
+from codemoo.core.tools.formatting import format_tool_call
 
 
 @dataclasses.dataclass
@@ -33,6 +36,7 @@ class ToolDef:
     description: str
     parameters: list[ToolParam]
     fn: Callable[..., str]
+    requires_approval: bool = False
 
 
 #
@@ -71,6 +75,7 @@ write_file = ToolDef(
         ),
     ],
     fn=_write_file,
+    requires_approval=True,
 )
 
 
@@ -117,4 +122,5 @@ run_shell = ToolDef(
     description="Execute a shell command and return its exit code, stdout, and stderr.",
     parameters=[ToolParam(name="command", description="The shell command to run.")],
     fn=_run_shell,
+    requires_approval=True,
 )

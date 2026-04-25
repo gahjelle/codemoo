@@ -1,6 +1,13 @@
 from typing import cast
 
-from codemoo.core.tools import ToolDef, ToolParam, reverse_string
+from codemoo.core.tools import (
+    ToolDef,
+    ToolParam,
+    read_file,
+    reverse_string,
+    run_shell,
+    write_file,
+)
 from codemoo.llm.mistral import _tool_schema
 
 
@@ -16,6 +23,35 @@ def test_tool_def_exposes_name_and_fn() -> None:
     )
     assert t.name == "my_tool"
     assert t.fn is my_fn
+
+
+def test_tool_def_requires_approval_defaults_to_false() -> None:
+    def my_fn(x: str) -> str:
+        return x
+
+    t = ToolDef(
+        name="my_tool",
+        description="A test tool.",
+        parameters=[],
+        fn=my_fn,
+    )
+    assert t.requires_approval is False
+
+
+def test_run_shell_requires_approval() -> None:
+    assert run_shell.requires_approval is True
+
+
+def test_write_file_requires_approval() -> None:
+    assert write_file.requires_approval is True
+
+
+def test_read_file_does_not_require_approval() -> None:
+    assert read_file.requires_approval is False
+
+
+def test_reverse_string_does_not_require_approval() -> None:
+    assert reverse_string.requires_approval is False
 
 
 def test_reverse_string_ascii() -> None:

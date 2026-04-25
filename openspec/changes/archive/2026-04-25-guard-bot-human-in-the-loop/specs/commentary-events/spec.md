@@ -1,10 +1,4 @@
-# Spec: commentary-events
-
-## Purpose
-
-TBD — defines the `ToolCallEvent` data structure and the protocol by which bots emit events to a commentator before invoking tools.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ToolCallEvent carries tool invocation details
 A `ToolCallEvent` SHALL be a frozen dataclass with three fields: `bot_name: str` (the name of the bot invoking the tool), `tool_name: str` (the name of the tool being called), and `arguments: dict[str, object]` (the arguments passed to the tool). It SHALL be the event type emitted by `AgentBot`, `GeneralToolBot`, and `GuardBot` before each tool invocation.
@@ -29,6 +23,8 @@ A `ToolCallEvent` SHALL be a frozen dataclass with three fields: `bot_name: str`
 #### Scenario: Comment does not affect tool output
 - **WHEN** `commentator.comment()` completes (or fails silently)
 - **THEN** the bot SHALL proceed to call the tool function and use its output unchanged
+
+## ADDED Requirements
 
 ### Requirement: CommentatorBot uses format_tool_call for all tool call formatting
 `CommentatorBot` SHALL use `format_tool_call()` from `core/tools/formatting.py` in place of the private `_format_args` function and inline `short_sig` slicing. The display signature shown in the `[dim]` header SHALL use `max_value_len=40`. The LLM prompt describing the tool call SHALL use no truncation, so the model receives full argument values.
