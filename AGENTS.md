@@ -44,6 +44,20 @@ uv run ty check .
 - Comments explain why, not what
 - Type checker is `ty` (not mypy) — use `# ty: ignore[<code>]` if suppression is ever needed; never `# type: ignore[mypy-code]`. Tests have a blanket override in `pyproject.toml` for Textual mock patterns, so no per-line ignores are needed there.
 
+## Demo Environment
+
+The `demo/` folder is a purpose-built environment for live demonstrations — not
+production code. It contains intentional issues that must stay in place:
+
+- **`demo/greeter.py`** opens `names.txt` with `encoding="ascii"`. This causes a
+  `UnicodeDecodeError` at runtime and is the bug the demo asks AgentBot (Loom) to
+  diagnose and fix. Do not change this encoding.
+- **`demo/README.md`** claims the script "sorts names alphabetically." The code does
+  not sort. This discrepancy is intentional — it makes the FileBot comparison prompt
+  reveal a real difference between the README and the code.
+
+When modifying `demo/` files for other reasons, preserve these intentional issues.
+
 ## Textual Widget CSS
 
 Widget CSS follows a structural/visual split:

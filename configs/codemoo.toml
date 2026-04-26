@@ -77,10 +77,10 @@ emoji = "FILE FOLDER"
 description = "Read files from disk to answer questions about your code."
 sources = ["file_bot.py", "general_tool_bot.py"]
 prompts = [
-    "Read SCRIPT.md and summarize it in three sentences.",
-    "Create a limerick about these bots and write it to POEM.md",
-    "Read AGENTS.md and README.md and compare them",
-    "What is the first sentence inside NO_FILE.txt?",
+    "Read greeter.py — what is this project about?",
+    "Write a short code review to review.txt",
+    "Compare README.md and greeter.py — does the code match the description?",
+    "What is the first line of archive.txt?",
 ]
 
 [bots.ShellBot]
@@ -89,10 +89,10 @@ emoji = "SPIRAL SHELL"
 description = "Execute shell commands — now it can run code, not just read it."
 sources = ["shell_bot.py", "general_tool_bot.py"]
 prompts = [
-    "What is today's date? Use a tool",
-    "List all files in the current directory",
-    "How many Python files are there inside src/?",
-    "Count the total number of lines in all Markdown files in this directory. Which one is largest?",
+    "Run greeter.py with uv",
+    "Run the tests: uv run pytest test_greeter.py",
+    "Use cat to list both README.md and greeter.py and compare them — does the code match the description?",
+    "How many names are in names.txt?",
 ]
 
 [bots.AgentBot]
@@ -102,8 +102,7 @@ description = "Loop tool calls until done — pursue goals, not single commands.
 sources = ["agent_bot.py"]
 prompts = [
     "Which tools do you have access to?",
-    "Count the number of lines in each file inside src/ (exclude binaries). Which one is largest? Make a list of the files where the number of lines is a fibonacci number greater than 1",
-    "Create a new directory named 'eliza'. Use 'uv init --package' to start a new project inside that directory. Implement a simple Eliza-clone in Python in the project, and tell me how I can run it.",
+    "greeter.py is crashing when run (uv run greeter.py). Fix the bug and verify with the tests (uv run pytest).",
 ]
 
 [bots.GuardBot]
@@ -112,9 +111,8 @@ emoji = "LOCK"
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
 sources = ["guard_bot.py"]
 prompts = [
-    "Which tools do you have access to? Which ones require approval before running?",
-    "Read AGENTS.md and summarize it, then write the summary to summary.md",
-    "Create a new directory named 'sandbox' and initialize a uv project inside it",
+    "Read greeter.py and write a short summary to summary.md",
+    "Run the tests with uv run pytest. If they pass, commit the changes.",
 ]
 
 

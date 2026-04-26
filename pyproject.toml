@@ -37,6 +37,12 @@ dev = [
     "ty>=0.0.26",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+exclude = ["demo/"]
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -86,8 +92,3 @@ include = ["tests/**"]
 [tool.ty.overrides.rules]
 invalid-argument-type = "ignore"
 invalid-assignment = "ignore"
-
-[tool.uv.workspace]
-members = [
-    "tull",
-]

@@ -48,9 +48,16 @@ Each bot has a memorable name, playing on the feature it introduces.
 
 ### Demo Arc
 
+*Implemented:*
 - **Act 1 — The Loop** (Coco → Mono → Iris): "An LLM isn't an agent. A loop is."
 - **Act 2 — Control** (Sona → Telo): "Instructions and tools — the two levers."
-- **Act 3 — Access** (Rune → Ash): "Reading and running. Now it touches the real world."
-- **Act 4 — Agency** (Loom → PlannerBot): "Goals, not commands. Planning, not just reacting."
-- **Act 5 — Knowledge** (SearchBot → MemoryBot): "The world and memory. It knows more than its weights."
-- **Act 6 — Scale** (ParallelBot → Codemoo): "Parallelism and sub-agents. Complexity handled."
+- **Act 3 — Access** (Rune → Ash): "Reading and running — and where each breaks."
+- **Act 4 — Agency** (Loom → Cato): "Goals, not commands. And guardrails, not blind trust."
+
+*Planned:*
+- **Act 5 — Context** (Lore → Aura): "It knows your project. It knows you."
+- **Act 6 — Resilience** (Undo → Draw): "It bounces back. It thinks before it acts."
+- **Act 7 — Workflow** (Exec → Coda): "Repeatable commands. Reusable playbooks."
+- **Act 8 — Scale** (Omni → Dual → Enum): "Parallel, self-critical, and orchestrated."
+- **Act 9 — Integration** (Cast → Scout → Mesh → Pith): "Structured, searchable, extensible, and compact."
+- **Act 10 — Complete** (Codemoo): "Every feature, working together."
