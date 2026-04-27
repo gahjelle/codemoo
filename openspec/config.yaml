@@ -11,9 +11,11 @@ schema: spec-driven
 
 rules:
   proposal:
-    - Keep proposals under 800 words
-    - Always include a "Non-goals" section
+    - "Keep proposals under 800 words"
+    - "Always include a 'Non-goals' section"
   tasks:
-    - Break tasks into small, actionable chunks
-    - Always include verification tasks: ruff format, ruff check, ty check, and
-        pytest. Run ruff and ty on both src/ and tests/
+    - "Break tasks into small, actionable chunks"
+    - "Always include verification tasks: ruff format, ruff check, ty check, and
+      pytest. Run ruff and ty on both src/ and tests/"
+    - "Always include documentation tasks: Read README.md, PLANS.md, BOTS.md and
+      AGENTS.md and update whatever is necessary."
