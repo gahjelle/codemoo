@@ -9,7 +9,17 @@ bots_dir = "{project_path}/src/codemoo/core/bots"
 # Scripts
 #
 [scripts]
-default = ["EchoBot", "LlmBot", "ChatBot", "SystemBot", "ToolBot", "FileBot", "ShellBot", "AgentBot", "GuardBot"]
+default = [
+    "EchoBot",
+    "LlmBot",
+    "ChatBot",
+    "SystemBot",
+    "ToolBot",
+    "FileBot",
+    "ShellBot",
+    "AgentBot",
+    "GuardBot",
+]
 focused = ["LlmBot", "ChatBot", "AgentBot", "GuardBot"]
 
 
@@ -21,21 +31,14 @@ name = "Coco"
 emoji = "PARROT"
 description = "Repeat your message verbatim — no LLM, just a mirror."
 sources = ["echo_bot.py"]
-prompts = [
-    "Hello!",
-    "How can I reverse a text string in Python?",
-]
+prompts = ["Hello!", "How can I reverse a text string in Python?"]
 
 [bots.LlmBot]
 name = "Mono"
 emoji = "SPARKLES"
 description = "Call the LLM once and forget the conversation immediately after."
 sources = ["llm_bot.py"]
-prompts = [
-    "Hello!",
-    "How can I reverse a text string in Python?",
-    "How about in C#?",
-]
+prompts = ["Hello!", "How can I reverse a text string in Python?", "How about in C#?"]
 
 [bots.ChatBot]
 name = "Iris"
@@ -112,7 +115,7 @@ description = "Pause before dangerous tool calls — nothing destructive without
 sources = ["guard_bot.py"]
 prompts = [
     "Read greeter.py and write a short summary to summary.md",
-    "Run the tests with uv run pytest. If they pass, commit the changes.",
+    "Run the tests with uv run pytest. If they pass, commit the changes. If they don't, then fix the code first.",
 ]
 
 

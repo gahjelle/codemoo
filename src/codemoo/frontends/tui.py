@@ -73,12 +73,9 @@ def show_config(section: str | None = None) -> None:
 
 
 @app.command
-def list_bots() -> None:
+def list_bots(*, script: ScriptName = "default") -> None:
     """List all available bots with their index, type, and name."""
-    backend, _, _, _, _, _ = _setup()
-    bots = make_bots(
-        backend, human_name="", cfg=config.bots, bot_order=config.scripts["default"]
-    )
+    _, _, _, bots, _, _ = _setup(script)
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Type")
