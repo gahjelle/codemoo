@@ -7,7 +7,7 @@ TBD — Defines `ReadBot`, a chat participant that uses `read_file` and `list_fi
 ## Requirements
 
 ### Requirement: ReadBot satisfies the ChatParticipant protocol
-`ReadBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`. `is_human` SHALL always return `False`.
+`ReadBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`. `is_human` SHALL always return `False`.
 
 #### Scenario: ReadBot.is_human returns False
 - **WHEN** `ReadBot.is_human` is accessed
@@ -18,7 +18,7 @@ TBD — Defines `ReadBot`, a chat participant that uses `read_file` and `list_fi
 **Migration**: Any config or test referencing FileBot with write_file must be updated. write_file is now exclusively a ChangeBot/AgentBot/GuardBot tool.
 
 ### Requirement: ReadBot handles the tool-call round-trip
-`ReadBot.on_message` (inherited from `GeneralToolBot`) SHALL call `backend.complete_step(context, self.tools)`. If the result is a `ToolUse`, it SHALL invoke the matched tool's `fn`, append the tool result to context, and call `backend.complete` to obtain the final reply. If the result is a `TextResponse`, it SHALL use that text directly.
+`ReadBot.on_message` (inherited from `SingleTurnToolBot`) SHALL call `backend.complete_step(context, self.tools)`. If the result is a `ToolUse`, it SHALL invoke the matched tool's `fn`, append the tool result to context, and call `backend.complete` to obtain the final reply. If the result is a `TextResponse`, it SHALL use that text directly.
 
 #### Scenario: Text response — no tool invocation
 - **WHEN** `backend.complete_step` returns a `TextResponse`

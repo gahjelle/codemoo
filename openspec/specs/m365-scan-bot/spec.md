@@ -2,12 +2,12 @@
 
 ## Purpose
 
-TBD — defines `ScanBot`, a chat participant that inherits from `GeneralToolBot` and is pre-configured with M365 read tools (SharePoint, email, calendar). It enables the LLM to explore the user's M365 environment without making any changes.
+TBD — defines `ScanBot`, a chat participant that inherits from `SingleTurnToolBot` and is pre-configured with M365 read tools (SharePoint, email, calendar). It enables the LLM to explore the user's M365 environment without making any changes.
 
 ## Requirements
 
 ### Requirement: ScanBot satisfies the ChatParticipant protocol
-`ScanBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`.
+`ScanBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`.
 
 #### Scenario: ScanBot.is_human returns False
 - **WHEN** `ScanBot.is_human` is accessed
@@ -36,7 +36,7 @@ TBD — defines `ScanBot`, a chat participant that inherits from `GeneralToolBot
 - **THEN** `build_llm_context` SHALL be called with a non-empty `system` argument that references SharePoint, email, or calendar
 
 ### Requirement: ScanBot handles the tool-call round-trip
-`ScanBot.on_message` (inherited from `GeneralToolBot`) SHALL handle both `TextResponse` and `ToolUse`, invoking the matched tool and re-submitting the result before returning a final reply.
+`ScanBot.on_message` (inherited from `SingleTurnToolBot`) SHALL handle both `TextResponse` and `ToolUse`, invoking the matched tool and re-submitting the result before returning a final reply.
 
 #### Scenario: Tool-use response — SharePoint document is read
 - **WHEN** `backend.complete_step` returns a `ToolUse` naming `read_sharepoint`

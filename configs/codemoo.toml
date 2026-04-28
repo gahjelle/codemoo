@@ -105,7 +105,7 @@ type = "ToolBot"
 name = "Telo"
 emoji = "WRENCH"
 description = "Call a tool before replying — the first step toward doing things."
-sources = ["tool_bot.py", "general_tool_bot.py"]
+sources = ["tool_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string"]
 prompts = [
     "How do I spell 'Guido van Rossum created Python' backwards?",
@@ -117,7 +117,7 @@ type = "ReadBot"
 name = "Rune"
 emoji = "FILE FOLDER"
 description = "Read files from disk to answer questions about your code."
-sources = ["read_bot.py", "general_tool_bot.py"]
+sources = ["read_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "read_file", "list_files"]
 prompts = [
     "Read greeter.py — what is this project about?",
@@ -131,7 +131,7 @@ type = "ChangeBot"
 name = "Axel"
 emoji = "HAMMER"
 description = "Execute shell commands and write files — now it can change things."
-sources = ["change_bot.py", "general_tool_bot.py"]
+sources = ["change_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
 prompts = [
     "Run greeter.py with uv",
@@ -173,7 +173,7 @@ type = "ScanBot"
 name = "Roam"
 emoji = "PEDESTRIAN"
 description = "Read SharePoint docs, email, and calendar — observational M365 access."
-sources = ["scan_bot.py", "general_tool_bot.py"]
+sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "list_email", "list_calendar"]
 prompts = [
     "What files are in the demo SharePoint site?",
@@ -186,7 +186,7 @@ type = "ScanBot"
 name = "Roam"
 emoji = "PEDESTRIAN"
 description = "Read email and calendar — M365 access without SharePoint."
-sources = ["scan_bot.py", "general_tool_bot.py"]
+sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "read_email", "list_email", "list_calendar"]
 prompts = [
     "Read my latest email",
@@ -199,7 +199,7 @@ type = "SendBot"
 name = "Aero"
 emoji = "OUTBOX TRAY"
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
-sources = ["send_bot.py", "general_tool_bot.py"]
+sources = ["send_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "send_email", "create_calendar_event", "post_teams_message", "write_sharepoint"]
 prompts = [
     "Send a summary email of today's demo to me",
@@ -212,7 +212,7 @@ type = "SendBot"
 name = "Aero"
 emoji = "OUTBOX TRAY"
 description = "Send email and create calendar events."
-sources = ["send_bot.py", "general_tool_bot.py"]
+sources = ["send_bot.py", "single_turn_tool_bot.py"]
 tools = ["reverse_string", "send_email", "create_calendar_event"]
 prompts = [
     "Send a summary email of today's demo to me",

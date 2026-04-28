@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from codemoo.core.bots.general_tool_bot import GeneralToolBot
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 
 _INSTRUCTIONS = """
 You can perform Microsoft 365 actions using your tools: send emails, create calendar
@@ -13,7 +13,7 @@ real consequences — confirm intent when uncertain.
 
 
 @dataclasses.dataclass(eq=False)
-class SendBot(GeneralToolBot):
+class SendBot(SingleTurnToolBot):
     """Chat participant that performs M365 actions before replying.
 
     Demonstrates consequential M365 tool use: ask the LLM → detect an action request

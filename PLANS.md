@@ -15,7 +15,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- Rename GeneralToolBot to SingleCallToolBot
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file
@@ -32,6 +31,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - ~~Dedicated demo folder with artifacts~~
 - ~~M365 Copilot parallel demo path (ScanBot/Roam, SendBot/Aero, MSAL auth, TOOL_REGISTRY, mode plumbing)~~
 - ~~FileBot renamed to ReadBot (read-only); ShellBot renamed to ChangeBot (shell + write)~~
+- ~~GeneralToolBot renamed to SingleTurnToolBot~~
 - ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
 - ~~Scripts become structured objects with `mode` and `bots` fields~~
 

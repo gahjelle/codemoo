@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Defines `ChangeBot`, a chat participant that inherits from `GeneralToolBot` and is pre-configured with `run_shell` and `write_file` tools. It represents the first bot in the progression where the LLM can permanently alter state — executing commands and writing files.
+Defines `ChangeBot`, a chat participant that inherits from `SingleTurnToolBot` and is pre-configured with `run_shell` and `write_file` tools. It represents the first bot in the progression where the LLM can permanently alter state — executing commands and writing files.
 
 ## Requirements
 
 ### Requirement: ChangeBot satisfies the ChatParticipant protocol
-`ChangeBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`.
+`ChangeBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`.
 
 #### Scenario: ChangeBot.is_human returns False
 - **WHEN** `ChangeBot.is_human` is accessed

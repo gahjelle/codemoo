@@ -16,7 +16,7 @@ from codemoo.core.bots.commentator_bot import (
     ToolCallEvent,
 )
 from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.bots.general_tool_bot import GeneralToolBot
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import HumanParticipant
 from codemoo.core.tools import run_shell
@@ -140,7 +140,7 @@ async def test_streik_fallback_text_contains_tool_name_and_bot_name() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6.4 GeneralToolBot calls commentator before tool fn
+# 6.4 SingleTurnToolBot calls commentator before tool fn
 # ---------------------------------------------------------------------------
 
 _TOOL_USE = ToolUse(
@@ -172,7 +172,7 @@ class _SingleStepBackend:
 
 
 @pytest.mark.asyncio
-async def test_general_tool_bot_calls_commentator_before_tool() -> None:
+async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
     call_order: list[str] = []
 
     mock_commentator = AsyncMock()
@@ -184,7 +184,7 @@ async def test_general_tool_bot_calls_commentator_before_tool() -> None:
         call_order.append("tool")
         return "output"
 
-    bot = GeneralToolBot(
+    bot = SingleTurnToolBot(
         name="Ash",
         emoji="🐚",
         backend=_SingleStepBackend(_TOOL_USE),

@@ -2,19 +2,19 @@
 
 ## Purpose
 
-TBD — defines `ChangeBot`, a chat participant that inherits from `GeneralToolBot` and is pre-configured with `run_shell` and `write_file` tools. It represents the first bot in the progression where the LLM can permanently alter state — executing commands and writing files.
+TBD — defines `ChangeBot`, a chat participant that inherits from `SingleTurnToolBot` and is pre-configured with `run_shell` and `write_file` tools. It represents the first bot in the progression where the LLM can permanently alter state — executing commands and writing files.
 
 ## Requirements
 
 ### Requirement: ChangeBot satisfies the ChatParticipant protocol
-`ChangeBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`.
+`ChangeBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`.
 
 #### Scenario: ChangeBot.is_human returns False
 - **WHEN** `ChangeBot.is_human` is accessed
 - **THEN** it SHALL return `False`
 
 ### Requirement: ChangeBot is pre-configured with run_shell and write_file tools
-`ChangeBot` SHALL be constructed with a `tools` list containing `run_shell` and `write_file`. It SHALL pass this list to `backend.complete_step` on every `on_message` call via the inherited `GeneralToolBot.on_message`.
+`ChangeBot` SHALL be constructed with a `tools` list containing `run_shell` and `write_file`. It SHALL pass this list to `backend.complete_step` on every `on_message` call via the inherited `SingleTurnToolBot.on_message`.
 
 #### Scenario: complete_step is called with run_shell and write_file tools
 - **WHEN** `ChangeBot.on_message` is called with any message
@@ -28,7 +28,7 @@ TBD — defines `ChangeBot`, a chat participant that inherits from `GeneralToolB
 - **THEN** `build_llm_context` SHALL be called with a non-empty `system` argument referencing shell execution or file writing
 
 ### Requirement: ChangeBot handles the tool-call round-trip
-`ChangeBot.on_message` (inherited from `GeneralToolBot`) SHALL handle both `TextResponse` and `ToolUse` from `backend.complete_step`, invoking the matched tool and re-submitting the result before returning a final reply.
+`ChangeBot.on_message` (inherited from `SingleTurnToolBot`) SHALL handle both `TextResponse` and `ToolUse` from `backend.complete_step`, invoking the matched tool and re-submitting the result before returning a final reply.
 
 #### Scenario: Text response — no tool invocation
 - **WHEN** `backend.complete_step` returns a `TextResponse`

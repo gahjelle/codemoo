@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from codemoo.core.bots.general_tool_bot import GeneralToolBot
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 
 _INSTRUCTIONS = """
 You can execute shell commands and write files using your tools. When the user asks
@@ -12,7 +12,7 @@ appropriate tool before answering. These actions change state — proceed carefu
 
 
 @dataclasses.dataclass(eq=False)
-class ChangeBot(GeneralToolBot):
+class ChangeBot(SingleTurnToolBot):
     """Chat participant that executes shell commands and writes files before replying.
 
     Demonstrates consequential tool use: ask the LLM → detect a shell or write

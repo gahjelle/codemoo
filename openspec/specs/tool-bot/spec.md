@@ -7,21 +7,21 @@ Defines `ToolBot`, the fifth bot in the Codemoo demo chain. It adds single-tool-
 ## Requirements
 
 ### Requirement: ToolBot satisfies the ChatParticipant protocol
-`ToolBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`. `is_human` SHALL always return `False`.
+`ToolBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`. `is_human` SHALL always return `False`.
 
 #### Scenario: ToolBot.is_human returns False
 - **WHEN** `ToolBot.is_human` is accessed
 - **THEN** it SHALL return `False`
 
 ### Requirement: ToolBot accepts a list of ToolDefs at construction
-`ToolBot` SHALL accept a `tools: list[ToolDef]` field at construction (inherited from `GeneralToolBot`). This list SHALL be passed to `backend.complete_step` on every `on_message` call.
+`ToolBot` SHALL accept a `tools: list[ToolDef]` field at construction (inherited from `SingleTurnToolBot`). This list SHALL be passed to `backend.complete_step` on every `on_message` call.
 
 #### Scenario: Empty tool list is valid
 - **WHEN** `ToolBot` is constructed with an empty `tools` list
 - **THEN** it SHALL construct without error and behave like a ChatBot with a system prompt
 
 ### Requirement: ToolBot handles the tool-call round-trip explicitly in on_message
-`ToolBot.on_message` (inherited from `GeneralToolBot`) SHALL call `backend.complete_step(context, self.tools)`. If the result is a `ToolUse`, it SHALL look up the matching `ToolDef` by name, invoke `fn` with the provided arguments, append a tool-result message to the context, and call `backend.complete(context)` to obtain the final reply. If the result is a `TextResponse`, it SHALL use that text directly.
+`ToolBot.on_message` (inherited from `SingleTurnToolBot`) SHALL call `backend.complete_step(context, self.tools)`. If the result is a `ToolUse`, it SHALL look up the matching `ToolDef` by name, invoke `fn` with the provided arguments, append a tool-result message to the context, and call `backend.complete(context)` to obtain the final reply. If the result is a `TextResponse`, it SHALL use that text directly.
 
 #### Scenario: Text response — no tool invocation
 - **WHEN** `backend.complete_step` returns a `TextResponse`

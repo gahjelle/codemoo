@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from codemoo.core.bots.general_tool_bot import GeneralToolBot
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 
 _INSTRUCTIONS = """
 You can read Microsoft 365 data using your tools. When the user asks about documents,
@@ -13,7 +13,7 @@ or modify anything.
 
 
 @dataclasses.dataclass(eq=False)
-class ScanBot(GeneralToolBot):
+class ScanBot(SingleTurnToolBot):
     """Chat participant that reads M365 data before replying.
 
     Demonstrates read-only M365 tool use: ask the LLM → detect a read request

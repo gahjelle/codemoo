@@ -17,7 +17,7 @@ _INTERRUPTED = "(tool executed, process interrupted)"
 
 
 @dataclasses.dataclass(eq=False)
-class GeneralToolBot:
+class SingleTurnToolBot:
     """Base class for bots that do a single tool-call round-trip before replying.
 
     Subclasses re-declare `instructions` with their own default constant to supply

@@ -15,7 +15,7 @@ TBD — defines how bot-type descriptions and source file mappings are stored fo
 
 #### Scenario: Source files for ToolBot include base class file
 - **WHEN** the LLM prompt is built for a `ToolBot` instance
-- **THEN** the prompt SHALL include the contents of both `tool_bot.py` and `general_tool_bot.py` as specified in `config.bots["ToolBot"].sources`
+- **THEN** the prompt SHALL include the contents of both `tool_bot.py` and `single_turn_tool_bot.py` as specified in `config.bots["ToolBot"].sources`
 
 #### Scenario: Unregistered bot type falls back gracefully
 - **WHEN** a bot whose class name is not in `config.bots` is passed to `_bot_source_block`

@@ -2,7 +2,7 @@
 
 import dataclasses
 
-from codemoo.core.bots.general_tool_bot import GeneralToolBot
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 
 _INSTRUCTIONS = """
 You can read files and list directory contents using your tools. When the user asks
@@ -12,7 +12,7 @@ tool to retrieve that information before answering.
 
 
 @dataclasses.dataclass(eq=False)
-class ReadBot(GeneralToolBot):
+class ReadBot(SingleTurnToolBot):
     """Chat participant that reads files and lists directories before replying.
 
     Demonstrates read-only tool use: ask the LLM → detect a read or list request

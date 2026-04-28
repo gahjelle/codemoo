@@ -23,7 +23,7 @@ to fully complete the user's request before giving your final answer.
 class AgentBot:
     """Chat participant that loops tool calls until the LLM decides it is done.
 
-    Unlike GeneralToolBot (one optional tool call), AgentBot feeds each tool
+    Unlike SingleTurnToolBot (one optional tool call), AgentBot feeds each tool
     result back into context and calls complete_step again, continuing until
     the model returns a plain TextResponse.
     """

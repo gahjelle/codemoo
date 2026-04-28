@@ -2,12 +2,12 @@
 
 ## Purpose
 
-TBD — defines `SendBot`, a chat participant that inherits from `GeneralToolBot` and is pre-configured with M365 action tools (send email, create calendar events, post to Teams, write SharePoint). All its tools require approval, making GuardBot the natural next step in the M365 progression.
+TBD — defines `SendBot`, a chat participant that inherits from `SingleTurnToolBot` and is pre-configured with M365 action tools (send email, create calendar events, post to Teams, write SharePoint). All its tools require approval, making GuardBot the natural next step in the M365 progression.
 
 ## Requirements
 
 ### Requirement: SendBot satisfies the ChatParticipant protocol
-`SendBot` SHALL implement the `ChatParticipant` protocol by inheriting from `GeneralToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `GeneralToolBot`.
+`SendBot` SHALL implement the `ChatParticipant` protocol by inheriting from `SingleTurnToolBot`. It SHALL expose `name: str`, `emoji: str`, and `is_human: bool = False`, and an async `on_message(message, history) -> ChatMessage | None` method inherited from `SingleTurnToolBot`.
 
 #### Scenario: SendBot.is_human returns False
 - **WHEN** `SendBot.is_human` is accessed
