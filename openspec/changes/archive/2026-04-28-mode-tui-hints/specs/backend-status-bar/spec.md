@@ -1,10 +1,4 @@
-# Spec: backend-status-bar
-
-## Purpose
-
-TBD — Defines the `BackendStatus` widget that displays the active backend name and model in the chat UI.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: BackendStatus widget shows the active backend name and model
 The chat UI SHALL display a `BackendStatus` widget at the bottom of `ChatApp`, below the text input field. It SHALL always be visible (not only in demo mode) and SHALL show the active backend name and model name in its right section, e.g. `mistral  •  mistral-small-latest`. The left section SHALL show the active mode name (see `mode-status-bar` spec).

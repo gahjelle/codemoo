@@ -79,12 +79,30 @@ ThinkingStatus {
     text-style: italic;
 }
 
-/* BackendStatus: dim footer showing active backend and model */
+/* BackendStatus: dim footer showing active mode (left) and backend/model (right) */
 BackendStatus {
+    width: 1fr;
     padding: 0 1;
     color: $text-muted;
     background: $panel;
+}
+
+#mode-label {
+    width: auto;
+}
+
+#backend-label {
+    width: 1fr;
     text-align: right;
+}
+
+/* Per-mode background tints — subtle shift from the neutral dark background */
+.mode-code {
+    background: #1e1035;
+}
+
+.mode-business {
+    background: #0d250d;
 }
 
 /* Slide overlay modal */

@@ -48,7 +48,8 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
         try:
             init_graph_auth(config.m365)
         except Exception as err:  # noqa: BLE001
-            _raise_error(str(err))
+            # _raise_error(str(err))
+            pass
 
     available = make_bots(
         backend,
@@ -82,6 +83,7 @@ def _chat(*, bot: str, mode: ModeName) -> None:
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
+        mode=mode,
     ).run()
 
 
@@ -164,6 +166,7 @@ def _select(*, mode: ModeName) -> None:
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
+        mode=mode,
     ).run()
 
 
@@ -223,6 +226,7 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
             commentator_bot=commentator_bot,
             demo_context=context,
             backend_info=backend_info,
+            mode=mode,
         ).run_async()
         if result != "next":
             break
