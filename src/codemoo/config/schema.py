@@ -20,7 +20,7 @@ type BotType = Literal[
     "SendBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
-type ModeName = Literal["code", "m365"]
+type ModeName = Literal["code", "business"]
 type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
 
 

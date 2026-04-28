@@ -23,7 +23,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Update prompts to "trust the tool"
 - Make demoo a more explicit tool, showing the actual JSON flowing back and forth. This can be used to demonstrate the tool calls better
 - Simplify current context management. Maybe replace build_llm_context() with plain history? Then a ContextBot can fix things later.
-- Refactor m365 auth and graph_read to use caching instead of globals
+- Refactor ~~m365 auth~~ and graph_read to use caching instead of globals
 - Refactor core.tools to use more files (and maybe formatting can go into common?)
 
 ## Done
@@ -34,9 +34,9 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - ~~GeneralToolBot renamed to SingleTurnToolBot~~
 - ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
 - ~~Scripts become structured objects with `mode` and `bots` fields~~
+- ~~Entra app registration setup guide for M365 demo tenants~~
 
 ## Next steps
 
 - ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
 - AgentBot mode-specific system prompt tuning (currently mode-agnostic)
-- Entra app registration setup guide for M365 demo tenants

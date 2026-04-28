@@ -1,7 +1,7 @@
 """TUI entry point for the codemoo command."""
 
 import asyncio
-from typing import Literal
+from typing import NoReturn
 
 import configaroo
 import cyclopts
@@ -31,7 +31,9 @@ _SetupResult = tuple[
     CommentatorBot,
 ]
 
-app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
+# One app defaults to code mode, while the other defaults to business mode
+code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
+business_app = cyclopts.App(help="Enterproose - demo enterprise agents step by step.")
 
 
 def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupResult:
@@ -40,10 +42,14 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
     language = config.language
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
-    if mode == "m365":
+    if mode == "business":
         from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
 
-        init_graph_auth(config.m365)
+        try:
+            init_graph_auth(config.m365)
+        except Exception as err:  # noqa: BLE001
+            _raise_error(str(err))
+
     available = make_bots(
         backend,
         human_name=human.name,
@@ -55,9 +61,20 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
     return backend, backend_info, human, available, error_bot, commentator_bot
 
 
-@app.default
-def chat(*, bot: str = config.main_bot, mode: Literal["code", "m365"] = "code") -> None:
-    """Launch the chat with the most capable bot, or a specific one via --bot."""
+@code_app.default
+def code_chat(*, bot: str = config.main_bot, mode: ModeName = "code") -> None:
+    """Launch the code chat with the most capable bot, or a specific one via --bot."""
+    return _chat(bot=bot, mode=mode)
+
+
+@business_app.default
+def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") -> None:
+    """Launch the business chat with the main bot, or a specific one via --bot."""
+    return _chat(bot=bot, mode=mode)
+
+
+def _chat(*, bot: str, mode: ModeName) -> None:
+    """Launch the chat in any mode."""
     _, backend_info, human, available, error_bot, commentator_bot = _setup(mode=mode)
     chosen = resolve_bot(bot, available)
     ChatApp(
@@ -68,13 +85,15 @@ def chat(*, bot: str = config.main_bot, mode: Literal["code", "m365"] = "code") 
     ).run()
 
 
-@app.command
+@code_app.command
+@business_app.command
 def show_config(section: str | None = None) -> None:
     """Show the Codemoo configuration."""
     configaroo.print_configuration(config, section=section)
 
 
-@app.command
+@code_app.command
+@business_app.command
 def list_bots(*, script: ScriptName = "default") -> None:
     """List all available bots with their index, type, and name."""
     _, _, _, bots, _, _ = _setup(script)
@@ -87,7 +106,8 @@ def list_bots(*, script: ScriptName = "default") -> None:
     Console().print(table)
 
 
-@app.command
+@code_app.command
+@business_app.command
 def list_scripts() -> None:
     """List all configured scripts with their ordered bot types."""
     table = Table(show_header=True)
@@ -99,8 +119,19 @@ def list_scripts() -> None:
     Console().print(table)
 
 
-@app.command
-def select(*, mode: Literal["code", "m365"] = "code") -> None:
+@code_app.command(name="select")
+def code_select(*, mode: ModeName = "code") -> None:
+    """Choose bots interactively before starting the code chat."""
+    return _select(mode=mode)
+
+
+@business_app.command(name="select")
+def business_select(*, mode: ModeName = "business") -> None:
+    """Choose bots interactively before starting the business chat."""
+    return _select(mode=mode)
+
+
+def _select(*, mode: ModeName) -> None:
     """Choose bots interactively before starting the chat."""
     # Derive available bots as the union of all bots across scripts with the given mode
     mode_bot_keys: list[str] = []
@@ -136,16 +167,26 @@ def select(*, mode: Literal["code", "m365"] = "code") -> None:
     ).run()
 
 
-@app.command
-def demo(
+@code_app.command(name="demo")
+def code_demo(
     *, script: ScriptName = "default", start: str | None = None, end: str | None = None
 ) -> None:
     """Run the bot progression demo. Use Ctrl-N to advance to the next bot."""
     try:
         asyncio.run(_run_demo(script, start, end))
-    except ValueError as e:
-        Console(stderr=True).print(Panel(str(e), title="Error", border_style="red"))
-        raise SystemExit(1) from None
+    except ValueError as err:
+        _raise_error(str(err))
+
+
+@business_app.command(name="demo")
+def business_demo(
+    *, script: ScriptName = "m365", start: str | None = None, end: str | None = None
+) -> None:
+    """Run the bot progression demo. Use Ctrl-N to advance to the next bot."""
+    try:
+        asyncio.run(_run_demo(script, start, end))
+    except ValueError as err:
+        _raise_error(str(err))
 
 
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
@@ -185,3 +226,11 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
         ).run_async()
         if result != "next":
             break
+
+
+def _raise_error(text: str) -> NoReturn:
+    """Raise an error, mimicking how Cyclopts show errors."""
+    Console(stderr=True).print(
+        Panel(text, title="Error", border_style="red", title_align="left")
+    )
+    raise SystemExit(1) from None

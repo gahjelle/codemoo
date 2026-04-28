@@ -27,7 +27,7 @@ mode = "code"
 bots = ["LlmBot", "ChatBot", "AgentBot", "GuardBot"]
 
 [scripts.m365]
-mode = "m365"
+mode = "business"
 bots = [
     "EchoBot",
     "LlmBot",
@@ -41,7 +41,7 @@ bots = [
 ]
 
 [scripts.m365_lite]
-mode = "m365"
+mode = "business"
 bots = [
     "EchoBot",
     "LlmBot",

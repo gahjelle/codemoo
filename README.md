@@ -21,7 +21,7 @@ uv tool install . --editable
 Codemoo can run in two different modes:
 
 - **`code`** is the default mode where it is your friendly coding assistant (similar to Claude Code, OpenCode, Codex, and GitHub Copilot).
-- **`m365`** requires access to [Microsoft Graph](#microsoft-graph) and gives Codemoo access to your E-mail, Teams, Calendar and Sharepoint, very much like M365 Copilot.
+- **`business`** requires access to [Microsoft Graph](#microsoft-graph) and gives Codemoo access to your E-mail, Teams, Calendar and Sharepoint, very much like M365 Copilot.
 
 **General Setup**
 
@@ -63,17 +63,18 @@ Launch the chat with the most capable bot:
 uv run codemoo
 ```
 
+The business chat is named Enterproose, and can be run in the same way as Codemoo (requires an Entra app registration and correctly set [environment variables](#configuration).):
+
+```console
+uv run enterproose
+uv run codemoo --mode business
+```
+
 Use `--bot` to start with a specific bot by name, type, or 1-based index:
 
 ```console
 uv run codemoo --bot rune
 uv run codemoo --bot 6
-```
-
-Use `--mode` to switch to the M365 Copilot path (requires an Entra app registration and correctly set [environment variables](#configuration).):
-
-```console
-uv run codemoo --mode m365
 ```
 
 To pick a bot interactively before starting:
@@ -141,7 +142,7 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 8   | 🌀 Loom     | Agent — full agentic loop with planning          |
 | 9   | 🔒 Cato     | Guard — human-in-the-loop before risky actions   |
 
-**M365 path** (`--script m365`):
+**Business path** (`--script m365`):
 
 | #   | Bot        | Capability                                            |
 | --- | ---------- | ----------------------------------------------------- |
@@ -159,7 +160,7 @@ See [BOTS.md](BOTS.md) for more information about the bots.
 
 ## Microsoft Graph
 
-If you run in `m365` mode, you need to set up access to your Microsoft Graph tenant.
+If you run in `business` mode, you need to set up access to your Microsoft Graph tenant.
 
 ### Register an Entra app
 
@@ -201,7 +202,7 @@ export CODEMOO_M365_SHAREPOINT_SITE=/sites/<your-site>
 
 ### Authenticate
 
-The first time you run in `m365` mode, Codemoo will print a device code and a URL:
+The first time you run in `business` mode, Codemoo will print a device code and a URL:
 
 ```plain
 To sign in, use a web browser to open the page https://microsoft.com/devicelogin
