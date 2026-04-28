@@ -73,3 +73,4 @@ class ApprovalModal(ModalScreen[GuardDecision]):
         """Dismiss with a reason (or plain deny if empty)."""
         reason = event.value.strip()
         self.dismiss(Denied(reason=reason or None))
+        event.stop()

@@ -49,7 +49,10 @@ class ApprovalRequest:
 def _denial_message(decision: Denied) -> str:
     if decision.reason:
         return f"Tool call denied: {decision.reason}"
-    return "The user denied this tool call."
+    return (
+        "The user denied this tool call."
+        " Do not attempt it again — move on to the next step."
+    )
 
 
 @dataclasses.dataclass(eq=False)

@@ -4,8 +4,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Bugs
 
-- When Cato asks for permission in several tools, some modals are shown twice
-
 ## Questions
 
 - Should tool output be added to conversation history?
@@ -35,6 +33,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
 - ~~Scripts become structured objects with `mode` and `bots` fields~~
 - ~~Entra app registration setup guide for M365 demo tenants~~
+- ~~Bug: When Cato asks for permission in several tools, some modals are shown twice~~
 
 ## Next steps
 

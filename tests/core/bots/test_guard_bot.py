@@ -202,7 +202,10 @@ async def test_plain_deny_produces_standard_message() -> None:
     second_call = backend.step_calls[1]
     tool_msgs = [m for m in second_call if m.role == "tool"]
     assert len(tool_msgs) == 1
-    assert tool_msgs[0].content == "The user denied this tool call."
+    assert (
+        tool_msgs[0].content == "The user denied this tool call."
+        " Do not attempt it again — move on to the next step."
+    )
 
 
 # ---------------------------------------------------------------------------
