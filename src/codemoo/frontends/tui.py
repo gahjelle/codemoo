@@ -1,7 +1,7 @@
 """TUI entry point for the codemoo command."""
 
 import asyncio
-from typing import TYPE_CHECKING, cast
+from typing import Literal
 
 import configaroo
 import cyclopts
@@ -13,7 +13,7 @@ from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
 from codemoo.chat.slides import DemoContext
 from codemoo.config import config
-from codemoo.config.schema import ScriptName
+from codemoo.config.schema import ModeName, ScriptName
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots import make_bots, resolve_bot
@@ -21,9 +21,6 @@ from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
-
-if TYPE_CHECKING:
-    from codemoo.config.schema import BotType
 
 _SetupResult = tuple[
     ToolLLMBackend,
@@ -37,26 +34,31 @@ _SetupResult = tuple[
 app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 
 
-def _setup(script: ScriptName = "default") -> _SetupResult:
+def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupResult:
     backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
+    if mode == "m365":
+        from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
+
+        init_graph_auth(config.m365)
     available = make_bots(
         backend,
         human_name=human.name,
         cfg=config.bots,
-        bot_order=config.scripts[script],
+        bot_order=config.scripts[script].bots,
+        mode=mode,
         commentator=commentator_bot,
     )
     return backend, backend_info, human, available, error_bot, commentator_bot
 
 
 @app.default
-def chat(*, bot: str = config.main_bot) -> None:
+def chat(*, bot: str = config.main_bot, mode: Literal["code", "m365"] = "code") -> None:
     """Launch the chat with the most capable bot, or a specific one via --bot."""
-    _, backend_info, human, available, error_bot, commentator_bot = _setup()
+    _, backend_info, human, available, error_bot, commentator_bot = _setup(mode=mode)
     chosen = resolve_bot(bot, available)
     ChatApp(
         participants=[human, chosen],
@@ -90,16 +92,40 @@ def list_scripts() -> None:
     """List all configured scripts with their ordered bot types."""
     table = Table(show_header=True)
     table.add_column("Script")
+    table.add_column("Mode")
     table.add_column("Bots")
-    for name, bot_order in config.scripts.items():
-        table.add_row(name, ", ".join(bot_order))
+    for name, script_cfg in config.scripts.items():
+        table.add_row(name, script_cfg.mode, ", ".join(script_cfg.bots))
     Console().print(table)
 
 
 @app.command
-def select() -> None:
+def select(*, mode: Literal["code", "m365"] = "code") -> None:
     """Choose bots interactively before starting the chat."""
-    _, backend_info, human, available, error_bot, commentator_bot = _setup()
+    # Derive available bots as the union of all bots across scripts with the given mode
+    mode_bot_keys: list[str] = []
+    seen: set[str] = set()
+    for script_cfg in config.scripts.values():
+        if script_cfg.mode == mode:
+            for key in script_cfg.bots:
+                if key not in seen:
+                    seen.add(key)
+                    mode_bot_keys.append(key)
+
+    backend, backend_info = resolve_backend(config)
+    human = HumanParticipant()
+    language = config.language
+    error_bot = bot_module.ErrorBot(backend=backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
+    available = make_bots(
+        backend,
+        human_name=human.name,
+        cfg=config.bots,
+        bot_order=mode_bot_keys,
+        mode=mode,
+        commentator=commentator_bot,
+    )
+
     selected = SelectionApp(available).run()
     participants: list[ChatParticipant] = [human, *(selected or [])]
     ChatApp(
@@ -124,7 +150,11 @@ def demo(
 
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
-    backend, backend_info, human, available, error_bot, commentator_bot = _setup(script)
+    mode: ModeName = config.scripts[script].mode
+    backend, backend_info, human, available, error_bot, commentator_bot = _setup(
+        script, mode
+    )
+    bot_order = config.scripts[script].bots
     start_index = (
         available.index(resolve_bot(start, available)) if start is not None else 0
     )
@@ -134,9 +164,10 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
         else len(available) - 1
     )
     demo_bots = available[start_index : end_index + 1]
+    demo_keys = bot_order[start_index : end_index + 1]
     for i, bot in enumerate(demo_bots):
         prev_bot = demo_bots[i - 1] if i > 0 else None
-        bot_cfg = config.bots.get(cast("BotType", type(bot).__name__))
+        bot_cfg = config.bots.get(demo_keys[i])
         prompts = list(bot_cfg.prompts) if bot_cfg else []
         context = DemoContext(
             all_bots=demo_bots,

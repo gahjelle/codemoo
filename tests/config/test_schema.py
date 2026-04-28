@@ -1,21 +1,19 @@
 """Tests for config schema validators."""
 
-from pathlib import Path
-
 import pytest
 from pydantic import ValidationError
 
-from codemoo.config.schema import (
-    BackendConfig,
-    BotConfig,
-    CodemooConfig,
-    ModelsConfig,
-    PathsConfig,
-)
+from codemoo.config.schema import BotConfig
 
 
 def _bot_config(**kwargs: object) -> BotConfig:
-    defaults = {"name": "X", "emoji": "PARROT", "description": "", "sources": []}
+    defaults = {
+        "type": "EchoBot",
+        "name": "X",
+        "emoji": "PARROT",
+        "description": "",
+        "sources": [],
+    }
     return BotConfig(**defaults | kwargs)
 
 
@@ -39,21 +37,12 @@ def test_prompts_defaults_to_empty_list() -> None:
     assert cfg.prompts == []
 
 
-def test_unknown_bot_type_key_raises(tmp_path: Path) -> None:
+def test_unknown_bot_type_in_botconfig_raises() -> None:
     with pytest.raises(ValidationError):
-        CodemooConfig(
-            language="English",
-            main_bot="EchoBot",
-            paths=PathsConfig(bots_dir=tmp_path),
-            bots={
-                "UnknownBot": BotConfig(
-                    name="X", emoji="PARROT", description="", sources=[]
-                )
-            },
-            scripts={"default": ["EchoBot"]},
-            models=ModelsConfig(
-                backend="mistral",
-                fallbacks=["mistral"],
-                backends={"mistral": BackendConfig(model_name="m")},
-            ),
+        BotConfig(
+            type="UnknownBotClass",  # type: ignore[arg-type]
+            name="X",
+            emoji="PARROT",
+            description="",
+            sources=[],
         )

@@ -12,12 +12,15 @@ type BotType = Literal[
     "ChatBot",
     "SystemBot",
     "ToolBot",
-    "FileBot",
-    "ShellBot",
+    "ReadBot",
+    "ChangeBot",
     "AgentBot",
     "GuardBot",
+    "ScanBot",
+    "SendBot",
 ]
-type ScriptName = Literal["default", "focused"]
+type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
+type ModeName = Literal["code", "m365"]
 type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
 
 
@@ -31,15 +34,18 @@ class PathsConfig(StrictModel):
     """Configure paths."""
 
     bots_dir: Path
+    m365_token_path: Path
 
 
 class BotConfig(StrictModel):
     """Configure one bot."""
 
+    type: BotType
     name: str
     emoji: str
     description: str
     sources: list[str]
+    tools: list[str] = []
     prompts: list[str] = []
 
     @field_validator("emoji", mode="before")
@@ -67,12 +73,30 @@ class ModelsConfig(StrictModel):
     backends: dict[ModelBackend, BackendConfig]
 
 
+class ScriptConfig(StrictModel):
+    """Configure one demo script."""
+
+    mode: ModeName
+    bots: list[str]
+
+
+class M365Config(StrictModel):
+    """Configure Microsoft 365 / Graph API access."""
+
+    tenant_id: str
+    client_id: str
+    sharepoint_host: str
+    sharepoint_site: str
+    graph_base_url: str
+
+
 class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
     language: str
     main_bot: BotType
     paths: PathsConfig
-    bots: dict[BotType, BotConfig]
-    scripts: dict[ScriptName, list[BotType]]
+    bots: dict[str, BotConfig]
+    scripts: dict[ScriptName, ScriptConfig]
     models: ModelsConfig
+    m365: M365Config

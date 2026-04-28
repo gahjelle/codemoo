@@ -1,4 +1,4 @@
-"""Single-round-trip tool-call loop shared by ToolBot, FileBot, and ShellBot."""
+"""Single-round-trip tool-call loop shared by ToolBot and its subclasses."""
 
 import dataclasses
 from typing import ClassVar

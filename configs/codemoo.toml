@@ -3,30 +3,63 @@ main_bot = "GuardBot"
 
 [paths]
 bots_dir = "{project_path}/src/codemoo/core/bots"
-
+m365_token_path = "{cache_path}/token_cache.bin"
 
 #
 # Scripts
 #
-[scripts]
-default = [
+[scripts.default]
+mode = "code"
+bots = [
     "EchoBot",
     "LlmBot",
     "ChatBot",
     "SystemBot",
     "ToolBot",
-    "FileBot",
-    "ShellBot",
+    "ReadBot",
+    "ChangeBot",
     "AgentBot",
     "GuardBot",
 ]
-focused = ["LlmBot", "ChatBot", "AgentBot", "GuardBot"]
+
+[scripts.focused]
+mode = "code"
+bots = ["LlmBot", "ChatBot", "AgentBot", "GuardBot"]
+
+[scripts.m365]
+mode = "m365"
+bots = [
+    "EchoBot",
+    "LlmBot",
+    "ChatBot",
+    "SystemBot",
+    "ToolBot",
+    "ScanBot",
+    "SendBot",
+    "AgentBot_m365",
+    "GuardBot_m365",
+]
+
+[scripts.m365_lite]
+mode = "m365"
+bots = [
+    "EchoBot",
+    "LlmBot",
+    "ChatBot",
+    "SystemBot",
+    "ToolBot",
+    "ScanBot_lite",
+    "SendBot_lite",
+    "AgentBot_m365",
+    "GuardBot_m365",
+]
 
 
 #
-# Bots
+# Bots — coding path
 #
 [bots.EchoBot]
+type = "EchoBot"
 name = "Coco"
 emoji = "PARROT"
 description = "Repeat your message verbatim — no LLM, just a mirror."
@@ -34,6 +67,7 @@ sources = ["echo_bot.py"]
 prompts = ["Hello!", "How can I reverse a text string in Python?"]
 
 [bots.LlmBot]
+type = "LlmBot"
 name = "Mono"
 emoji = "SPARKLES"
 description = "Call the LLM once and forget the conversation immediately after."
@@ -41,6 +75,7 @@ sources = ["llm_bot.py"]
 prompts = ["Hello!", "How can I reverse a text string in Python?", "How about in C#?"]
 
 [bots.ChatBot]
+type = "ChatBot"
 name = "Iris"
 emoji = "NAZAR AMULET"
 description = "Keep the full conversation history, remember what you said."
@@ -52,6 +87,7 @@ prompts = [
 ]
 
 [bots.SystemBot]
+type = "SystemBot"
 name = "Sona"
 emoji = "PERFORMING ARTS"
 description = "Add a system prompt to shape the LLM's persona and behavior."
@@ -65,32 +101,38 @@ prompts = [
 ]
 
 [bots.ToolBot]
+type = "ToolBot"
 name = "Telo"
 emoji = "WRENCH"
 description = "Call a tool before replying — the first step toward doing things."
 sources = ["tool_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string"]
 prompts = [
     "How do I spell 'Guido van Rossum created Python' backwards?",
     "What is today's date?",
 ]
 
-[bots.FileBot]
+[bots.ReadBot]
+type = "ReadBot"
 name = "Rune"
 emoji = "FILE FOLDER"
 description = "Read files from disk to answer questions about your code."
-sources = ["file_bot.py", "general_tool_bot.py"]
+sources = ["read_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "read_file", "list_files"]
 prompts = [
     "Read greeter.py — what is this project about?",
-    "Write a short code review to review.txt",
+    "List the files in the current directory",
     "Compare README.md and greeter.py — does the code match the description?",
     "What is the first line of archive.txt?",
 ]
 
-[bots.ShellBot]
-name = "Ash"
-emoji = "SPIRAL SHELL"
-description = "Execute shell commands — now it can run code, not just read it."
-sources = ["shell_bot.py", "general_tool_bot.py"]
+[bots.ChangeBot]
+type = "ChangeBot"
+name = "Axel"
+emoji = "HAMMER"
+description = "Execute shell commands and write files — now it can change things."
+sources = ["change_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
 prompts = [
     "Run greeter.py with uv",
     "Run the tests: uv run pytest test_greeter.py",
@@ -99,25 +141,118 @@ prompts = [
 ]
 
 [bots.AgentBot]
+type = "AgentBot"
 name = "Loom"
 emoji = "CYCLONE"
 description = "Loop tool calls until done — pursue goals, not single commands."
 sources = ["agent_bot.py"]
+tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
     "Which tools do you have access to?",
     "greeter.py is crashing when run (uv run greeter.py). Fix the bug and verify with the tests (uv run pytest).",
 ]
 
 [bots.GuardBot]
+type = "GuardBot"
 name = "Cato"
 emoji = "LOCK"
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
 sources = ["guard_bot.py"]
+tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
     "Read greeter.py and write a short summary to summary.md",
     "Run the tests with uv run pytest. If they pass, commit the changes. If they don't, then fix the code first.",
 ]
 
+
+#
+# Bots — M365 path
+#
+[bots.ScanBot]
+type = "ScanBot"
+name = "Roam"
+emoji = "PEDESTRIAN"
+description = "Read SharePoint docs, email, and calendar — observational M365 access."
+sources = ["scan_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "list_email", "list_calendar"]
+prompts = [
+    "What files are in the demo SharePoint site?",
+    "Read my latest email",
+    "What meetings do I have today?",
+]
+
+[bots.ScanBot_lite]
+type = "ScanBot"
+name = "Roam"
+emoji = "PEDESTRIAN"
+description = "Read email and calendar — M365 access without SharePoint."
+sources = ["scan_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "read_email", "list_email", "list_calendar"]
+prompts = [
+    "Read my latest email",
+    "What meetings do I have today?",
+    "Summarise my inbox",
+]
+
+[bots.SendBot]
+type = "SendBot"
+name = "Aero"
+emoji = "OUTBOX TRAY"
+description = "Send email, create calendar events, post to Teams, write SharePoint docs."
+sources = ["send_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "send_email", "create_calendar_event", "post_teams_message", "write_sharepoint"]
+prompts = [
+    "Send a summary email of today's demo to me",
+    "Create a calendar event for a follow-up meeting next week",
+    "Post a message to the demo Teams channel",
+]
+
+[bots.SendBot_lite]
+type = "SendBot"
+name = "Aero"
+emoji = "OUTBOX TRAY"
+description = "Send email and create calendar events."
+sources = ["send_bot.py", "general_tool_bot.py"]
+tools = ["reverse_string", "send_email", "create_calendar_event"]
+prompts = [
+    "Send a summary email of today's demo to me",
+    "Create a calendar event for a follow-up meeting next week",
+]
+
+[bots.AgentBot_m365]
+type = "AgentBot"
+name = "Loom"
+emoji = "CYCLONE"
+description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
+sources = ["agent_bot.py"]
+tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "send_email", "create_calendar_event", "post_teams_message"]
+prompts = [
+    "Which tools do you have access to?",
+    "Summarise my recent emails and create a calendar event for any follow-ups you find.",
+]
+
+[bots.GuardBot_m365]
+type = "GuardBot"
+name = "Cato"
+emoji = "LOCK"
+description = "Pause before sending M365 actions — nothing sent without your say-so."
+sources = ["guard_bot.py"]
+tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "send_email", "create_calendar_event", "post_teams_message"]
+prompts = [
+    "Read my latest email and write a short summary",
+    "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
+]
+
+
+#
+# Microsoft 365 / Graph API
+#
+[m365]
+tenant_id = "00000000-0000-0000-0000-000000000000"
+client_id = "00000000-0000-0000-0000-000000000000"
+sharepoint_host = "contoso.sharepoint.com"
+sharepoint_site = "/sites/demo"
+graph_base_url = "https://graph.microsoft.com/v1.0"
 
 #
 # Model backends

@@ -20,7 +20,7 @@ def _bots() -> list:
         _MockBackend(),
         human_name="You",
         cfg=config.bots,
-        bot_order=config.scripts["default"],
+        bot_order=config.scripts["default"].bots,
     )
 
 

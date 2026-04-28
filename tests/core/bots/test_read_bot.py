@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.core.backend import Message, TextResponse, ToolUse
-from codemoo.core.bots.file_bot import FileBot
+from codemoo.core.bots.read_bot import ReadBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, read_file
 
@@ -68,8 +68,8 @@ def tool_backend(tmp_path: pytest.TempPathFactory) -> _MockBackend:
 
 
 @pytest.fixture
-def bot_text(text_backend: _MockBackend) -> FileBot:
-    return FileBot(
+def bot_text(text_backend: _MockBackend) -> ReadBot:
+    return ReadBot(
         name="R",
         emoji="\N{FILE FOLDER}",
         backend=text_backend,
@@ -79,8 +79,8 @@ def bot_text(text_backend: _MockBackend) -> FileBot:
 
 
 @pytest.fixture
-def bot_tool(tool_backend: _MockBackend) -> FileBot:
-    return FileBot(
+def bot_tool(tool_backend: _MockBackend) -> ReadBot:
+    return ReadBot(
         name="R",
         emoji="\N{FILE FOLDER}",
         backend=tool_backend,
@@ -89,12 +89,12 @@ def bot_tool(tool_backend: _MockBackend) -> FileBot:
     )
 
 
-def test_file_bot_is_not_human(bot_text: FileBot) -> None:
+def test_read_bot_is_not_human(bot_text: ReadBot) -> None:
     assert bot_text.is_human is False
 
 
 @pytest.mark.asyncio
-async def test_text_response_path_reply_sender(bot_text: FileBot) -> None:
+async def test_text_response_path_reply_sender(bot_text: ReadBot) -> None:
     reply = await bot_text.on_message(_msg("You", "hi"), [])
 
     assert reply is not None
@@ -104,7 +104,7 @@ async def test_text_response_path_reply_sender(bot_text: FileBot) -> None:
 
 @pytest.mark.asyncio
 async def test_text_response_path_no_complete_call(
-    bot_text: FileBot, text_backend: _MockBackend
+    bot_text: ReadBot, text_backend: _MockBackend
 ) -> None:
     await bot_text.on_message(_msg("You", "hi"), [])
 
@@ -114,7 +114,7 @@ async def test_text_response_path_no_complete_call(
 
 @pytest.mark.asyncio
 async def test_tool_use_path_reads_file_and_replies(
-    bot_tool: FileBot, tool_backend: _MockBackend
+    bot_tool: ReadBot, tool_backend: _MockBackend
 ) -> None:
     reply = await bot_tool.on_message(_msg("You", "read the file"), [])
 
@@ -127,7 +127,7 @@ async def test_tool_use_path_reads_file_and_replies(
 
 @pytest.mark.asyncio
 async def test_tool_use_path_follow_up_includes_file_contents(
-    bot_tool: FileBot, tool_backend: _MockBackend
+    bot_tool: ReadBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "read the file"), [])
 
@@ -139,7 +139,7 @@ async def test_tool_use_path_follow_up_includes_file_contents(
 
 @pytest.mark.asyncio
 async def test_complete_step_receives_read_file_tool(
-    bot_tool: FileBot, tool_backend: _MockBackend
+    bot_tool: ReadBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "hi"), [])
 
@@ -148,11 +148,11 @@ async def test_complete_step_receives_read_file_tool(
 
 
 @pytest.mark.asyncio
-async def test_system_prompt_mentions_read_file(
-    bot_text: FileBot, text_backend: _MockBackend
+async def test_system_prompt_mentions_read_files(
+    bot_text: ReadBot, text_backend: _MockBackend
 ) -> None:
     await bot_text.on_message(_msg("You", "hi"), [])
 
     context, _ = text_backend.step_calls[0]
     assert context[0].role == "system"
-    assert "read_file" in context[0].content
+    assert "read files" in context[0].content

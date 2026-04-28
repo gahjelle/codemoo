@@ -1,31 +1,35 @@
 """Bot participants for the Codemoo chat loop."""
 
-from codemoo.config.schema import BotConfig, BotType
+from codemoo.config.schema import BotConfig, ModeName
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
+from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.bots.file_bot import FileBot
 from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.bots.llm_bot import LlmBot
-from codemoo.core.bots.shell_bot import ShellBot
+from codemoo.core.bots.read_bot import ReadBot
+from codemoo.core.bots.scan_bot import ScanBot
+from codemoo.core.bots.send_bot import SendBot
 from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
-from codemoo.core.tools import read_file, reverse_string, run_shell, write_file
+from codemoo.core.tools import TOOL_REGISTRY
 
 __all__ = [
     "AgentBot",
+    "ChangeBot",
     "ChatBot",
     "CommentatorBot",
     "EchoBot",
     "ErrorBot",
-    "FileBot",
     "GuardBot",
     "LlmBot",
-    "ShellBot",
+    "ReadBot",
+    "ScanBot",
+    "SendBot",
     "SystemBot",
     "ToolBot",
     "make_bots",
@@ -33,15 +37,15 @@ __all__ = [
 ]
 
 
-def _make_bot(  # noqa: PLR0911
-    bot_type: BotType,
+def _make_bot(  # noqa: C901, PLR0911
     cfg: BotConfig,
     backend: ToolLLMBackend,
     human_name: str,
     commentator: CommentatorBot | None,
 ) -> ChatParticipant:
-    """Construct a single bot by type."""
-    match bot_type:
+    """Construct a single bot by type, resolving tools from TOOL_REGISTRY."""
+    tools = [TOOL_REGISTRY[name] for name in cfg.tools]
+    match cfg.type:
         case "EchoBot":
             return EchoBot(name=cfg.name, emoji=cfg.emoji)
         case "LlmBot":
@@ -60,25 +64,43 @@ def _make_bot(  # noqa: PLR0911
                 emoji=cfg.emoji,
                 backend=backend,
                 human_name=human_name,
-                tools=[reverse_string],
+                tools=tools,
                 commentator=commentator,
             )
-        case "FileBot":
-            return FileBot(
+        case "ReadBot":
+            return ReadBot(
                 name=cfg.name,
                 emoji=cfg.emoji,
                 backend=backend,
                 human_name=human_name,
-                tools=[read_file, write_file, reverse_string],
+                tools=tools,
                 commentator=commentator,
             )
-        case "ShellBot":
-            return ShellBot(
+        case "ChangeBot":
+            return ChangeBot(
                 name=cfg.name,
                 emoji=cfg.emoji,
                 backend=backend,
                 human_name=human_name,
-                tools=[run_shell, read_file, write_file, reverse_string],
+                tools=tools,
+                commentator=commentator,
+            )
+        case "ScanBot":
+            return ScanBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=tools,
+                commentator=commentator,
+            )
+        case "SendBot":
+            return SendBot(
+                name=cfg.name,
+                emoji=cfg.emoji,
+                backend=backend,
+                human_name=human_name,
+                tools=tools,
                 commentator=commentator,
             )
         case "AgentBot":
@@ -87,7 +109,7 @@ def _make_bot(  # noqa: PLR0911
                 emoji=cfg.emoji,
                 backend=backend,
                 human_name=human_name,
-                tools=[run_shell, read_file, write_file, reverse_string],
+                tools=tools,
                 commentator=commentator,
             )
         case "GuardBot":
@@ -96,21 +118,23 @@ def _make_bot(  # noqa: PLR0911
                 emoji=cfg.emoji,
                 backend=backend,
                 human_name=human_name,
-                tools=[run_shell, read_file, write_file, reverse_string],
+                tools=tools,
                 commentator=commentator,
             )
 
 
-def make_bots(
+def make_bots(  # noqa: PLR0913
     backend: ToolLLMBackend,
     *,
     human_name: str,
-    cfg: dict[BotType, BotConfig],
-    bot_order: list[BotType],
+    cfg: dict[str, BotConfig],
+    bot_order: list[str],
+    mode: ModeName = "code",
     commentator: CommentatorBot | None = None,
 ) -> list[ChatParticipant]:
     """Return bots instantiated in the order given by bot_order."""
-    return [_make_bot(t, cfg[t], backend, human_name, commentator) for t in bot_order]
+    _ = mode  # mode is available for future use by callers; tools are wired via config
+    return [_make_bot(cfg[t], backend, human_name, commentator) for t in bot_order]
 
 
 def resolve_bot(spec: str, bots: list[ChatParticipant]) -> ChatParticipant:

@@ -17,5 +17,5 @@ rules:
     - "Break tasks into small, actionable chunks"
     - "Always include verification tasks: ruff format, ruff check, ty check, and
       pytest. Run ruff and ty on both src/ and tests/"
-    - "Always include documentation tasks: Read README.md, PLANS.md, BOTS.md and
-      AGENTS.md and update whatever is necessary."
+    - "Always review documentation and update if necessary: Read README.md,
+      PLANS.md, BOTS.md and AGENTS.md and update whatever is necessary."

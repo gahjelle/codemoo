@@ -53,7 +53,7 @@ production code. It contains intentional issues that must stay in place:
   `UnicodeDecodeError` at runtime and is the bug the demo asks AgentBot (Loom) to
   diagnose and fix. Do not change this encoding.
 - **`demo/README.md`** claims the script "sorts names alphabetically." The code does
-  not sort. This discrepancy is intentional — it makes the FileBot comparison prompt
+  not sort. This discrepancy is intentional — it makes the ReadBot comparison prompt
   reveal a real difference between the README and the code.
 
 When modifying `demo/` files for other reasons, preserve these intentional issues.

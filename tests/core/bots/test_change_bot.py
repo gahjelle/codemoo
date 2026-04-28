@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.core.backend import Message, TextResponse, ToolUse
-from codemoo.core.bots.shell_bot import ShellBot
+from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, run_shell
 
@@ -68,10 +68,10 @@ def tool_backend() -> _MockBackend:
 
 
 @pytest.fixture
-def bot_text(text_backend: _MockBackend) -> ShellBot:
-    return ShellBot(
+def bot_text(text_backend: _MockBackend) -> ChangeBot:
+    return ChangeBot(
         name="A",
-        emoji="\N{SPIRAL SHELL}",
+        emoji="\N{HAMMER}",
         backend=text_backend,
         human_name="You",
         tools=[run_shell],
@@ -79,22 +79,22 @@ def bot_text(text_backend: _MockBackend) -> ShellBot:
 
 
 @pytest.fixture
-def bot_tool(tool_backend: _MockBackend) -> ShellBot:
-    return ShellBot(
+def bot_tool(tool_backend: _MockBackend) -> ChangeBot:
+    return ChangeBot(
         name="A",
-        emoji="\N{SPIRAL SHELL}",
+        emoji="\N{HAMMER}",
         backend=tool_backend,
         human_name="You",
         tools=[run_shell],
     )
 
 
-def test_shell_bot_is_not_human(bot_text: ShellBot) -> None:
+def test_change_bot_is_not_human(bot_text: ChangeBot) -> None:
     assert bot_text.is_human is False
 
 
 @pytest.mark.asyncio
-async def test_text_response_path_reply_sender(bot_text: ShellBot) -> None:
+async def test_text_response_path_reply_sender(bot_text: ChangeBot) -> None:
     reply = await bot_text.on_message(_msg("You", "hi"), [])
 
     assert reply is not None
@@ -104,7 +104,7 @@ async def test_text_response_path_reply_sender(bot_text: ShellBot) -> None:
 
 @pytest.mark.asyncio
 async def test_text_response_path_no_complete_call(
-    bot_text: ShellBot, text_backend: _MockBackend
+    bot_text: ChangeBot, text_backend: _MockBackend
 ) -> None:
     await bot_text.on_message(_msg("You", "hi"), [])
 
@@ -114,7 +114,7 @@ async def test_text_response_path_no_complete_call(
 
 @pytest.mark.asyncio
 async def test_tool_use_path_runs_command_and_replies(
-    bot_tool: ShellBot, tool_backend: _MockBackend
+    bot_tool: ChangeBot, tool_backend: _MockBackend
 ) -> None:
     reply = await bot_tool.on_message(_msg("You", "run echo hi"), [])
 
@@ -127,7 +127,7 @@ async def test_tool_use_path_runs_command_and_replies(
 
 @pytest.mark.asyncio
 async def test_tool_use_path_follow_up_includes_shell_output(
-    bot_tool: ShellBot, tool_backend: _MockBackend
+    bot_tool: ChangeBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "run echo hi"), [])
 
@@ -139,7 +139,7 @@ async def test_tool_use_path_follow_up_includes_shell_output(
 
 @pytest.mark.asyncio
 async def test_complete_step_receives_run_shell_tool(
-    bot_tool: ShellBot, tool_backend: _MockBackend
+    bot_tool: ChangeBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "hi"), [])
 
@@ -148,11 +148,11 @@ async def test_complete_step_receives_run_shell_tool(
 
 
 @pytest.mark.asyncio
-async def test_system_prompt_mentions_run_shell(
-    bot_text: ShellBot, text_backend: _MockBackend
+async def test_system_prompt_mentions_shell_commands(
+    bot_text: ChangeBot, text_backend: _MockBackend
 ) -> None:
     await bot_text.on_message(_msg("You", "hi"), [])
 
     context, _ = text_backend.step_calls[0]
     assert context[0].role == "system"
-    assert "run_shell" in context[0].content
+    assert "shell commands" in context[0].content

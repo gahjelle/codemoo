@@ -1,24 +1,28 @@
 # Codemoo - Script for progressing through the agents
 
-The demo walks through a sequence of bots, each adding one capability, culminating in a full coding agent.
+The demo walks through a sequence of bots, each adding one capability. There are two modes, `code` and `m365` with similar progressions. Many bots are shared between the two paths, but some are unique to a given path.
 
 ### Bot Names and emojis
 
 Each bot has a memorable name, playing on the feature it introduces.
 
-| Bot       | Name | Name rationale                                                          | Emoji | `\N{}` name       | Emoji rationale                 |
-| --------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | ------------------------------- |
-| EchoBot   | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                    |
-| LLMBot    | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence         |
-| ChatBot   | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene" |
-| SystemBot | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role           |
-| ToolBot   | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                     |
-| FileBot   | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files                     |
-| ShellBot  | Ash  | Ash is a real Unix shell, and it's almost Bash                          | 🐚     | `SPIRAL SHELL`    | Shell pun                       |
-| AgentBot  | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                |
-| GuardBot  | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions        |
+| Bot       | Mode       | Name | Name rationale                                                          | Emoji | Emoji name        | Emoji rationale                   |
+| --------- | ---------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | --------------------------------- |
+| EchoBot   | code, m365 | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                      |
+| LLMBot    | code, m365 | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence           |
+| ChatBot   | code, m365 | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene"   |
+| SystemBot | code, m365 | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role             |
+| ToolBot   | code, m365 | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                       |
+| ReadBot   | code       | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files and lists directories |
+| ScanBot   | m365       | Roam | Roams through M365 data                                                 | 🚶     | `PEDESTRIAN`      | Wanders through your data         |
+| ChangeBot | code       | Axel | Axe — change, cut, action                                               | 🔨     | `HAMMER`          | Drives change                     |
+| SendBot   | m365       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`     | Sends email, events, messages     |
+| AgentBot  | code, m365 | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                  |
+| GuardBot  | code, m365 | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
 
 ### Full Progression (not all implemented yet)
+
+**Coding assistant: `code`**
 
 | #   | Type            | Name    | Feature added                                        | Talking point                                                                             |
 | --- | --------------- | ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -27,8 +31,8 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 3   | ChatBot         | Iris    | Sees full chat history                               | Now it remembers the whole conversation                                                   |
 | 4   | SystemBot       | Sona    | Strong system prompt persona                         | Now we can give it instructions and a role. Same LLM, totally different character         |
 | 5   | ToolBot         | Telo    | Calls a single toy tool                              | Now it can *do* things, not just talk. One tool, one call                                 |
-| 6   | FileBot         | Rune    | Reads files from disk                                | Now it can look at your code. Ask it anything about a file                                |
-| 7   | ShellBot        | Ash     | Executes bash commands                               | Now it can run code. This is where it gets dangerous — and useful                         |
+| 6   | ReadBot         | Rune    | Reads files and lists directories                    | Now it can look at your code. Ask it anything about a file                                |
+| 7   | ChangeBot       | Axel    | Executes shell commands and writes files             | Now it can run code and change things. This is where it gets consequential                |
 | 8   | AgentBot        | Loom    | Full tool loop, multi-step actions                   | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot        | Cato    | Human-in-the-loop before destructive actions         | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 10  | ProjectBot      | Lore    | Reads AGENTS.md for project context                  | Now it reads the room. It understands your project before touching anything               |
@@ -46,12 +50,28 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 22  | CompactBot      | Pith    | Better handling of context                           | Now it manages its own memory. It compresses the past to keep focus on the present        |
 | 23  | CodemooBot      | Codemoo | All of the above                                     | This is Claude Code. Every feature, working together.                                     |
 
+**Business assistant: `m365`**
+
+| #   | Type      | Name | Feature added                                | Talking point                                                                             |
+| --- | --------- | ---- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 1   | EchoBot   | Coco | No LLM - pure echo                           | You talk, the bot answers, no intelligence                                                |
+| 2   | LLMBot    | Mono | Single LLM call                              | Now it thinks — but only about what you just said                                         |
+| 3   | ChatBot   | Iris | Sees full chat history                       | Now it remembers the whole conversation                                                   |
+| 4   | SystemBot | Sona | Strong system prompt persona                 | Now we can give it instructions and a role. Same LLM, totally different character         |
+| 5   | ToolBot   | Telo | Calls a single toy tool                      | Now it can *do* things, not just talk. One tool, one call                                 |
+| 6   | * ScanBot | Roam | Reads SharePoint, email, and calendar        | Now it can look at your organisation's data                                               |
+| 7   | * SendBot | Aero | Sends email, creates events, posts to Teams  | Now it can change things against your M365 tenant                                         |
+| 8   | AgentBot  | Loom | Full tool loop, multi-step actions           | Now it keeps going until the task is finished. You give a goal, not a command             |
+| 9   | GuardBot  | Cato | Human-in-the-loop before destructive actions | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
+
+Bot types marked with * are unique to `m365` mode.
+
 ### Demo Arc
 
 *Implemented:*
 - **Act 1 — The Loop** (Coco → Mono → Iris): "An LLM isn't an agent. A loop is."
 - **Act 2 — Control** (Sona → Telo): "Instructions and tools — the two levers."
-- **Act 3 — Access** (Rune → Ash): "Reading and running — and where each breaks."
+- **Act 3 — Access** (Rune → Axel **or** Roam → Aero): "Reading and changing — and where each becomes consequential."
 - **Act 4 — Agency** (Loom → Cato): "Goals, not commands. And guardrails, not blind trust."
 
 *Planned:*

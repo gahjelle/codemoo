@@ -14,10 +14,8 @@ from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
 _INSTRUCTIONS = """
-You're a helpful coding agent that helps the user in understanding the current
-project, maintaining it, and developing it further. You have access to tools.
-Use them as many times as needed to fully complete the user's request before
-giving your final answer.
+You're a helpful assistant. You have access to tools. Use them as many times as needed
+to fully complete the user's request before giving your final answer.
 """.strip()
 
 

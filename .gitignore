@@ -194,3 +194,5 @@ pyrightconfig.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
+
+# Microsoft Graph token cache — stored outside the repo at ~/.codemoo/token_cache.bin

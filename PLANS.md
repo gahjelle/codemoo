@@ -15,6 +15,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
+- Rename GeneralToolBot to SingleCallToolBot
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file
@@ -23,7 +24,19 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Update prompts to "trust the tool"
 - Make demoo a more explicit tool, showing the actual JSON flowing back and forth. This can be used to demonstrate the tool calls better
 - Simplify current context management. Maybe replace build_llm_context() with plain history? Then a ContextBot can fix things later.
+- Refactor m365 auth and graph_read to use caching instead of globals
+- Refactor core.tools to use more files (and maybe formatting can go into common?)
 
 ## Done
 
 - ~~Dedicated demo folder with artifacts~~
+- ~~M365 Copilot parallel demo path (ScanBot/Roam, SendBot/Aero, MSAL auth, TOOL_REGISTRY, mode plumbing)~~
+- ~~FileBot renamed to ReadBot (read-only); ShellBot renamed to ChangeBot (shell + write)~~
+- ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
+- ~~Scripts become structured objects with `mode` and `bots` fields~~
+
+## Next steps
+
+- ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
+- AgentBot mode-specific system prompt tuning (currently mode-agnostic)
+- Entra app registration setup guide for M365 demo tenants
