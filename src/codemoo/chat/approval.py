@@ -1,7 +1,10 @@
 """Approval modal shown when GuardBot requires human sign-off on a tool call."""
 
+from typing import ClassVar
+
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.events import Key
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label
 
@@ -43,18 +46,43 @@ class ApprovalModal(ModalScreen[GuardDecision]):
             )
             yield Label(call_display, id="approval-call")
             with Horizontal(id="approval-buttons"):
-                yield Button("Approve", id="approve", variant="success")
-                yield Button("Deny", id="deny", variant="error")
+                yield Button("Yes", id="approve", variant="success")
                 yield Button(
-                    "Deny with reason\N{HORIZONTAL ELLIPSIS}",
+                    "No, but \N{HORIZONTAL ELLIPSIS}",
                     id="deny-reason",
+                    variant="warning",
                 )
+                yield Button("No", id="deny", variant="error")
             yield Label(
                 f"What should {bot_name} do instead?",
                 id="reason-label",
                 classes="hidden",
             )
             yield Input(id="reason-input", classes="hidden")
+
+    _BUTTON_ORDER: ClassVar[list[str]] = ["approve", "deny-reason", "deny"]
+
+    def on_key(self, event: Key) -> None:
+        """Move focus between buttons with left/right arrow keys."""
+        buttons_widget = self.query_one("#approval-buttons")
+        if "hidden" in buttons_widget.classes:
+            return
+        focused = self.focused
+        if not isinstance(focused, Button):
+            return
+        button_id = focused.id
+        if button_id not in self._BUTTON_ORDER:
+            return
+        idx = self._BUTTON_ORDER.index(button_id)
+        if event.key == "right":
+            next_id = self._BUTTON_ORDER[(idx + 1) % len(self._BUTTON_ORDER)]
+            event.stop()
+        elif event.key == "left":
+            next_id = self._BUTTON_ORDER[(idx - 1) % len(self._BUTTON_ORDER)]
+            event.stop()
+        else:
+            return
+        self.query_one(f"#{next_id}", Button).focus()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle the three approval choices."""
