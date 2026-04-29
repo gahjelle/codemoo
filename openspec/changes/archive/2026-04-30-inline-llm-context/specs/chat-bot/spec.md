@@ -1,17 +1,4 @@
-# Spec: chat-bot
-
-## Purpose
-
-Defines `ChatBot`, a context-aware chat participant that builds a filtered LLM conversation history from prior messages, enabling multi-turn dialogue with an `LLMBackend`.
-
-## Requirements
-
-### Requirement: ChatBot satisfies the ChatParticipant protocol
-`ChatBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
-
-#### Scenario: ChatBot.is_human returns False
-- **WHEN** `ChatBot.is_human` is accessed
-- **THEN** it SHALL return `False`
+## MODIFIED Requirements
 
 ### Requirement: ChatBot builds LLM context from history
 When `on_message` is called, `ChatBot` SHALL build a `list[Message]` inline by mapping each message in `history` to a `Message` with `role="assistant"` if `m.sender == self.name`, otherwise `role="user"`. It SHALL then append `Message(role="user", content=message.text)` as the final element using list unpacking. The resulting list SHALL be passed to the backend. The reply SHALL be constructed as `ChatMessage(sender=self.name, text=response)`.
@@ -37,3 +24,9 @@ When `on_message` is called, `ChatBot` SHALL build a `list[Message]` inline by m
 #### Scenario: ChatBot constructs reply without explicit timestamp
 - **WHEN** `ChatBot.on_message` returns a reply
 - **THEN** the reply SHALL be a `ChatMessage` constructed with `sender` and `text` only
+
+## REMOVED Requirements
+
+### Requirement: ChatBot clips context to a configurable maximum message count
+**Reason**: `max_messages` is removed from `ChatBot`. No clipping is applied.
+**Migration**: No replacement. Introduce a dedicated context-management layer if needed.

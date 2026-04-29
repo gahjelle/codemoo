@@ -23,5 +23,5 @@ def test_label_echo_bot() -> None:
 
 
 def test_label_chat_bot() -> None:
-    bot = ChatBot(name="Chat", emoji="O", backend=_BACKEND, human_name="You")
+    bot = ChatBot(name="Chat", emoji="O", backend=_BACKEND)
     assert _bot_label(bot) == "O Chat (ChatBot)"

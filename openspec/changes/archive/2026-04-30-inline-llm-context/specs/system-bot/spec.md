@@ -1,17 +1,4 @@
-# Spec: system-bot
-
-## Purpose
-
-TBD — Defines `SystemBot`, a `ChatParticipant` that accepts a system prompt string and uses it to guide LLM responses via `build_llm_context`.
-
-## Requirements
-
-### Requirement: SystemBot satisfies the ChatParticipant protocol
-`SystemBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(message, history) -> ChatMessage | None` method. `is_human` SHALL always return `False`.
-
-#### Scenario: SystemBot.is_human returns False
-- **WHEN** `SystemBot.is_human` is accessed
-- **THEN** it SHALL return `False`
+## MODIFIED Requirements
 
 ### Requirement: SystemBot accepts a system prompt string
 `SystemBot` SHALL accept an `instructions: str` field at construction. This string SHALL be prepended as `Message(role="system", content=self.instructions)` as the first element of the context list on every `on_message` call. `SystemBot` SHALL NOT delegate to `build_llm_context`. `SystemBot` SHALL NOT carry `human_name` or `max_messages` fields.
@@ -35,9 +22,8 @@ TBD — Defines `SystemBot`, a `ChatParticipant` that accepts a system prompt st
 - **WHEN** `on_message` is called
 - **THEN** the last element of the list sent to the backend SHALL be `Message(role="user", content=message.text)`
 
-### Requirement: SystemBot constructs its reply from the backend response
-The response from the backend SHALL be wrapped in a `ChatMessage(sender=self.name, text=response)` and returned from `on_message`.
+## REMOVED Requirements
 
-#### Scenario: Reply uses bot name as sender
-- **WHEN** `SystemBot.on_message` returns a reply
-- **THEN** the reply SHALL have `sender == self.name`
+### Requirement: SystemBot builds context using the same history rules as ChatBot
+**Reason**: `build_llm_context` is removed. Context is built inline without filtering or clipping.
+**Migration**: See "SystemBot builds context inline from history" above.

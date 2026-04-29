@@ -37,7 +37,6 @@ def chat_bot(chat_backend: _MockBackend) -> ChatBot:
         name="ChatBot",
         emoji="\N{ROBOT FACE}",
         backend=chat_backend,
-        human_name="You",
     )
 
 
@@ -46,12 +45,12 @@ def test_chat_bot_is_not_human(chat_bot: ChatBot) -> None:
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_filters_out_other_bot_messages(
+async def test_chat_bot_includes_other_bot_messages_as_user_role(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
     history = [
         _msg("You", "hello"),
-        _msg("EchoBot", "hello"),  # should be excluded
+        _msg("EchoBot", "hello"),  # now included as user role
         _msg("ChatBot", "hi there"),
     ]
     await chat_bot.on_message(_msg("You", "how are you?"), history)
@@ -59,6 +58,7 @@ async def test_chat_bot_filters_out_other_bot_messages(
     sent = chat_backend.calls[0]
     assert sent == [
         Message(role="user", content="hello"),
+        Message(role="user", content="hello"),  # EchoBot message as user
         Message(role="assistant", content="hi there"),
         Message(role="user", content="how are you?"),
     ]
@@ -95,39 +95,3 @@ async def test_chat_bot_current_message_is_last_user_turn(
 
     sent = chat_backend.calls[0]
     assert sent[-1] == Message(role="user", content="final")
-
-
-@pytest.mark.asyncio
-async def test_chat_bot_clips_history_to_max_messages() -> None:
-    backend = _MockBackend()
-    bot = ChatBot(
-        name="ChatBot",
-        emoji="\N{ROBOT FACE}",
-        backend=backend,
-        human_name="You",
-        max_messages=2,
-    )
-    history = [
-        _msg("You", "msg1"),
-        _msg("ChatBot", "reply1"),
-        _msg("You", "msg2"),
-        _msg("ChatBot", "reply2"),
-    ]
-    await bot.on_message(_msg("You", "msg3"), history)
-
-    sent = backend.calls[0]
-    assert len(sent) == 3
-    assert sent[0].content == "msg2"
-    assert sent[1].content == "reply2"
-    assert sent[2].content == "msg3"
-
-
-@pytest.mark.asyncio
-async def test_chat_bot_does_not_clip_when_within_limit(
-    chat_bot: ChatBot, chat_backend: _MockBackend
-) -> None:
-    history = [_msg("You", "a"), _msg("ChatBot", "b")]
-    await chat_bot.on_message(_msg("You", "c"), history)
-
-    sent = chat_backend.calls[0]
-    assert len(sent) == 3

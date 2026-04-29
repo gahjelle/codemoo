@@ -55,7 +55,6 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
         init_graph_auth(config.m365)
     available, resolved_configs = make_bots(
         backend,
-        human_name=human.name,
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
@@ -168,7 +167,6 @@ def _select(*, mode: ModeName) -> None:
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
     available, _ = make_bots(
         backend,
-        human_name=human.name,
         cfg=config.bots,
         bot_refs=mode_bot_refs,
         commentator=commentator_bot,

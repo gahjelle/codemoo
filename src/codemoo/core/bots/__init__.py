@@ -41,7 +41,6 @@ __all__ = [
 def _make_bot(  # noqa: C901, PLR0911
     resolved: ResolvedBotConfig,
     backend: ToolLLMBackend,
-    human_name: str,
     commentator: CommentatorBot | None,
 ) -> ChatParticipant:
     """Construct a single bot by type, resolving tools from TOOL_REGISTRY."""
@@ -56,14 +55,12 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
             )
         case "SystemBot":
             return SystemBot(
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 instructions=resolved.instructions,
             )
         case "ToolBot":
@@ -71,7 +68,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -81,7 +77,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -91,7 +86,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -101,7 +95,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -111,7 +104,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -121,7 +113,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -131,7 +122,6 @@ def _make_bot(  # noqa: C901, PLR0911
                 name=resolved.name,
                 emoji=resolved.emoji,
                 backend=backend,
-                human_name=human_name,
                 tools=tools,
                 instructions=resolved.instructions,
                 commentator=commentator,
@@ -141,14 +131,13 @@ def _make_bot(  # noqa: C901, PLR0911
 def make_bots(
     backend: ToolLLMBackend,
     *,
-    human_name: str,
     cfg: dict[BotType, BotConfig],
     bot_refs: list[BotRef],
     commentator: CommentatorBot | None = None,
 ) -> tuple[list[ChatParticipant], list[ResolvedBotConfig]]:
     """Return bots and their resolved configs, in the order given by bot_refs."""
     resolved_list = [resolve(cfg, ref) for ref in bot_refs]
-    bots = [_make_bot(r, backend, human_name, commentator) for r in resolved_list]
+    bots = [_make_bot(r, backend, commentator) for r in resolved_list]
     return bots, resolved_list
 
 

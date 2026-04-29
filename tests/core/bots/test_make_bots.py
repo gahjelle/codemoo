@@ -19,7 +19,6 @@ class _MockBackend:
 def _bots() -> list:
     bots, _ = make_bots(
         _MockBackend(),
-        human_name="You",
         cfg=config.bots,
         bot_refs=config.scripts["default"].bots,
     )
@@ -55,7 +54,6 @@ def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
     }
     _, resolved = make_bots(
         _MockBackend(),
-        human_name="You",
         cfg=mock_bots,
         bot_refs=[BotRef(type="EchoBot", variant="default")],
     )

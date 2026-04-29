@@ -7,7 +7,6 @@ from codemoo.core.backend import (
     Message,
     ToolLLMBackend,
     ToolUse,
-    build_llm_context,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
@@ -26,10 +25,8 @@ class AgentBot:
     name: str
     emoji: str
     backend: ToolLLMBackend
-    human_name: str
     tools: list[ToolDef]
     instructions: str
-    max_messages: int = 20
     commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False
 
@@ -37,16 +34,18 @@ class AgentBot:
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
         """Respond, invoking tools repeatedly until the LLM returns plain text."""
-        context = build_llm_context(
-            history,
-            message,
-            bot_name=self.name,
-            human_name=self.human_name,
-            max_messages=self.max_messages,
-            system=self.instructions,
-        )
+        messages: list[Message] = [
+            Message(role="system", content=self.instructions),
+            *[
+                Message(
+                    role="assistant" if m.sender == self.name else "user",
+                    content=m.text,
+                )
+                for m in history
+            ],
+            Message(role="user", content=message.text),
+        ]
         tool_map = {t.name: t for t in self.tools}
-        messages: list[Message] = list(context)
 
         while True:
             step = await self.backend.complete_step(messages, self.tools)

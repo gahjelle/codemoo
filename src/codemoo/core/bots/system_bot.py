@@ -3,7 +3,7 @@
 import dataclasses
 from typing import ClassVar
 
-from codemoo.core.backend import LLMBackend, build_llm_context
+from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 
 
@@ -18,22 +18,23 @@ class SystemBot:
     name: str
     emoji: str
     backend: LLMBackend
-    human_name: str
     instructions: str
-    max_messages: int = 20
     is_human: ClassVar[bool] = False
 
     async def on_message(
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
-        """Respond using filtered conversation history prefixed by the system prompt."""
-        context = build_llm_context(
-            history,
-            message,
-            bot_name=self.name,
-            human_name=self.human_name,
-            max_messages=self.max_messages,
-            system=self.instructions,
-        )
+        """Respond using conversation history prefixed by the system prompt."""
+        context = [
+            Message(role="system", content=self.instructions),
+            *[
+                Message(
+                    role="assistant" if m.sender == self.name else "user",
+                    content=m.text,
+                )
+                for m in history
+            ],
+            Message(role="user", content=message.text),
+        ]
         response = await self.backend.complete(context)
         return ChatMessage(sender=self.name, text=response)

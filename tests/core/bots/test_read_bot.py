@@ -73,7 +73,6 @@ def bot_text(text_backend: _MockBackend) -> ReadBot:
         name="R",
         emoji="\N{FILE FOLDER}",
         backend=text_backend,
-        human_name="You",
         tools=[read_file],
         instructions="You can read files and list directory contents using your tools.",
     )
@@ -85,7 +84,6 @@ def bot_tool(tool_backend: _MockBackend) -> ReadBot:
         name="R",
         emoji="\N{FILE FOLDER}",
         backend=tool_backend,
-        human_name="You",
         tools=[read_file],
         instructions="You can read files and list directory contents using your tools.",
     )

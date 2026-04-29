@@ -57,7 +57,6 @@ def _make_bot(backend: _SequentialBackend) -> AgentBot:
         name="Loom",
         emoji="\N{CYCLONE}",
         backend=backend,
-        human_name="You",
         tools=[run_shell],
         instructions="You are a helpful assistant.",
     )

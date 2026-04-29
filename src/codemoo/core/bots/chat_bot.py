@@ -3,7 +3,7 @@
 import dataclasses
 from typing import ClassVar
 
-from codemoo.core.backend import LLMBackend, build_llm_context
+from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
 
 
@@ -11,23 +11,28 @@ from codemoo.core.message import ChatMessage
 class ChatBot:
     """Chat participant that maintains conversation context.
 
-    Filters history to human + self messages only and clips to max_messages
-    before sending to the LLM. Stateless — history is injected by the shell.
+    Prepends history to the current message before sending to the LLM.
+    Stateless — history is injected by the shell.
     """
 
     name: str
     emoji: str
     backend: LLMBackend
-    human_name: str
-    max_messages: int = 20
     is_human: ClassVar[bool] = False
 
     async def on_message(
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
-        """Respond using filtered conversation history."""
-        context = build_llm_context(
-            history, message, self.name, self.human_name, self.max_messages
-        )
+        """Respond using conversation history."""
+        context = [
+            *[
+                Message(
+                    role="assistant" if m.sender == self.name else "user",
+                    content=m.text,
+                )
+                for m in history
+            ],
+            Message(role="user", content=message.text),
+        ]
         response = await self.backend.complete(context)
         return ChatMessage(sender=self.name, text=response)

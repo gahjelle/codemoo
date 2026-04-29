@@ -1,10 +1,4 @@
-# Spec: agent-bot
-
-## Purpose
-
-TBD — defines AgentBot, a bot participant that implements an agentic loop, repeatedly calling the backend with tool use until a final text response is produced.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: AgentBot loops tool calls until a TextResponse is returned
 `AgentBot` SHALL implement `on_message` with an agentic loop. It SHALL build its initial `list[Message]` inline: `[Message(role="system", content=self.instructions), *[Message(role="assistant" if m.sender == self.name else "user", content=m.text) for m in history], Message(role="user", content=message.text)]`. It SHALL NOT use `build_llm_context`. `AgentBot` SHALL NOT carry `human_name` or `max_messages` fields.
@@ -26,10 +20,3 @@ It SHALL then call `backend.complete_step(messages, self.tools)` repeatedly. On 
 #### Scenario: Reply uses bot name as sender
 - **WHEN** `AgentBot.on_message` returns a reply
 - **THEN** `reply.sender` SHALL equal `self.name`
-
-### Requirement: AgentBot satisfies the ChatParticipant protocol
-`AgentBot` SHALL expose `name: str`, `emoji: str`, and `is_human: ClassVar[bool]` attributes. `is_human` SHALL always be `False`.
-
-#### Scenario: is_human is False
-- **WHEN** `is_human` is accessed on an `AgentBot` instance
-- **THEN** it SHALL return `False`

@@ -37,7 +37,6 @@ def system_bot(backend: _MockBackend) -> SystemBot:
         name="Sigma",
         emoji="\N{PERFORMING ARTS}",
         backend=backend,
-        human_name="You",
         instructions="You are a terse coding assistant.",
     )
 
@@ -72,7 +71,7 @@ async def test_system_message_present_with_history(
 
 
 @pytest.mark.asyncio
-async def test_filters_out_other_bot_messages(
+async def test_includes_other_bot_messages_as_user_role(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
     history = [
@@ -83,35 +82,12 @@ async def test_filters_out_other_bot_messages(
     await system_bot.on_message(_msg("You", "follow up"), history)
 
     sent = backend.calls[0]
-    contents = [m.content for m in sent]
-    assert "noise" not in contents
-
-
-@pytest.mark.asyncio
-async def test_clips_history_to_max_messages(backend: _MockBackend) -> None:
-    bot = SystemBot(
-        name="Sigma",
-        emoji="\N{PERFORMING ARTS}",
-        backend=backend,
-        human_name="You",
-        instructions="Be terse.",
-        max_messages=2,
-    )
-    history = [
-        _msg("You", "msg1"),
-        _msg("Sigma", "reply1"),
-        _msg("You", "msg2"),
-        _msg("Sigma", "reply2"),
-    ]
-    await bot.on_message(_msg("You", "msg3"), history)
-
-    sent = backend.calls[0]
-    # system + 2 clipped history + current
-    assert len(sent) == 4
+    # System, user, other bot as user, assistant, user
     assert sent[0].role == "system"
-    assert sent[1].content == "msg2"
-    assert sent[2].content == "reply2"
-    assert sent[3].content == "msg3"
+    assert sent[1] == Message(role="user", content="hi")
+    assert sent[2] == Message(role="user", content="noise")
+    assert sent[3] == Message(role="assistant", content="reply")
+    assert sent[4] == Message(role="user", content="follow up")
 
 
 @pytest.mark.asyncio

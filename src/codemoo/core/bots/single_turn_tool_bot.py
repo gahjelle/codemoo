@@ -7,7 +7,6 @@ from codemoo.core.backend import (
     Message,
     ToolLLMBackend,
     ToolUse,
-    build_llm_context,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
@@ -27,10 +26,8 @@ class SingleTurnToolBot:
     name: str
     emoji: str
     backend: ToolLLMBackend
-    human_name: str
     tools: list[ToolDef]
     instructions: str
-    max_messages: int = 20
     commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False
 
@@ -38,15 +35,18 @@ class SingleTurnToolBot:
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
         """Respond, invoking a tool first if the LLM requests one."""
-        context = build_llm_context(
-            history,
-            message,
-            bot_name=self.name,
-            human_name=self.human_name,
-            max_messages=self.max_messages,
-            system=self.instructions,
-        )
-        step = await self.backend.complete_step(context, self.tools)
+        messages: list[Message] = [
+            Message(role="system", content=self.instructions),
+            *[
+                Message(
+                    role="assistant" if m.sender == self.name else "user",
+                    content=m.text,
+                )
+                for m in history
+            ],
+            Message(role="user", content=message.text),
+        ]
+        step = await self.backend.complete_step(messages, self.tools)
         if isinstance(step, ToolUse):
             tool_map = {t.name: t for t in self.tools}
             if self.commentator is not None:
@@ -59,7 +59,7 @@ class SingleTurnToolBot:
                 )
             tool_output = tool_map[step.name].fn(**step.arguments)
             follow_up = [
-                *context,
+                *messages,
                 step.assistant_message,
                 Message(role="tool", content=tool_output, tool_call_id=step.call_id),
             ]

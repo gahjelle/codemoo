@@ -3,8 +3,6 @@
 import dataclasses
 from typing import TYPE_CHECKING, Literal, Protocol
 
-from codemoo.core.message import ChatMessage
-
 if TYPE_CHECKING:
     from codemoo.core.tools import ToolDef
 
@@ -70,32 +68,3 @@ class ToolLLMBackend(LLMBackend, Protocol):
         Does NOT invoke the tool or re-submit. The caller drives re-submission.
         """
         ...
-
-
-def build_llm_context(  # noqa: PLR0913
-    history: list[ChatMessage],
-    current: ChatMessage,
-    bot_name: str,
-    human_name: str,
-    max_messages: int,
-    system: str = "",
-) -> list[Message]:
-    """Build a filtered, clipped Message list for an LLM completion call.
-
-    Pure function: filters history to human + bot messages, clips to the most
-    recent max_messages, maps senders to roles, then appends current as the
-    final user turn. Prepends a system message when system is non-empty.
-    """
-    relevant = [m for m in history if m.sender in (human_name, bot_name)]
-    clipped = relevant[-max_messages:]
-    messages = [
-        Message(
-            role="assistant" if m.sender == bot_name else "user",
-            content=m.text,
-        )
-        for m in clipped
-    ]
-    messages.append(Message(role="user", content=current.text))
-    if system:
-        messages.insert(0, Message(role="system", content=system))
-    return messages
