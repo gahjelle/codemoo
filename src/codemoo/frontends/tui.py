@@ -50,13 +50,9 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
     if mode == "business":
-        import contextlib  # noqa: PLC0415
-
         from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
 
-        with contextlib.suppress(Exception):
-            init_graph_auth(config.m365)
-
+        init_graph_auth(config.m365)
     available, resolved_configs = make_bots(
         backend,
         human_name=human.name,
@@ -77,14 +73,20 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
 
 @code_app.default
 def code_chat(*, bot: str = config.main_bot, mode: ModeName = "code") -> None:
-    """Launch the code chat with the most capable bot, or a specific one via --bot."""
-    return _chat(bot=bot, mode=mode)
+    """Launch the code chat with the main bot, or a specific one via --bot."""
+    try:
+        return _chat(bot=bot, mode=mode)
+    except ValueError as err:
+        _raise_error(str(err))
 
 
 @business_app.default
 def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") -> None:
     """Launch the business chat with the main bot, or a specific one via --bot."""
-    return _chat(bot=bot, mode=mode)
+    try:
+        return _chat(bot=bot, mode=mode)
+    except ValueError as err:
+        _raise_error(str(err))
 
 
 def _chat(*, bot: str, mode: ModeName) -> None:
