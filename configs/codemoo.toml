@@ -11,52 +11,52 @@ m365_token_path = "{cache_path}/token_cache.bin"
 [scripts.default]
 mode = "code"
 bots = [
-    {type = "EchoBot",  variant = "default"},
-    {type = "LlmBot",   variant = "default"},
-    {type = "ChatBot",  variant = "default"},
-    {type = "SystemBot", variant = "default"},
-    {type = "ToolBot",  variant = "default"},
-    {type = "ReadBot",  variant = "default"},
-    {type = "ChangeBot", variant = "default"},
-    {type = "AgentBot", variant = "code"},
-    {type = "GuardBot", variant = "code"},
+    { type = "EchoBot", variant = "default" },
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "SystemBot", variant = "default" },
+    { type = "ToolBot", variant = "default" },
+    { type = "ReadBot", variant = "default" },
+    { type = "ChangeBot", variant = "default" },
+    { type = "AgentBot", variant = "code" },
+    { type = "GuardBot", variant = "code" },
 ]
 
 [scripts.focused]
 mode = "code"
 bots = [
-    {type = "LlmBot",   variant = "default"},
-    {type = "ChatBot",  variant = "default"},
-    {type = "AgentBot", variant = "code"},
-    {type = "GuardBot", variant = "code"},
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "AgentBot", variant = "code" },
+    { type = "GuardBot", variant = "code" },
 ]
 
 [scripts.m365]
 mode = "business"
 bots = [
-    {type = "EchoBot",  variant = "default"},
-    {type = "LlmBot",   variant = "default"},
-    {type = "ChatBot",  variant = "default"},
-    {type = "SystemBot", variant = "default"},
-    {type = "ToolBot",  variant = "default"},
-    {type = "ScanBot",  variant = "full"},
-    {type = "SendBot",  variant = "full"},
-    {type = "AgentBot", variant = "m365"},
-    {type = "GuardBot", variant = "m365"},
+    { type = "EchoBot", variant = "default" },
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "SystemBot", variant = "default" },
+    { type = "ToolBot", variant = "default" },
+    { type = "ScanBot", variant = "full" },
+    { type = "SendBot", variant = "full" },
+    { type = "AgentBot", variant = "m365" },
+    { type = "GuardBot", variant = "m365" },
 ]
 
 [scripts.m365_lite]
 mode = "business"
 bots = [
-    {type = "EchoBot",  variant = "default"},
-    {type = "LlmBot",   variant = "default"},
-    {type = "ChatBot",  variant = "default"},
-    {type = "SystemBot", variant = "default"},
-    {type = "ToolBot",  variant = "default"},
-    {type = "ScanBot",  variant = "lite"},
-    {type = "SendBot",  variant = "lite"},
-    {type = "AgentBot", variant = "m365"},
-    {type = "GuardBot", variant = "m365"},
+    { type = "EchoBot", variant = "default" },
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "SystemBot", variant = "default" },
+    { type = "ToolBot", variant = "default" },
+    { type = "ScanBot", variant = "lite" },
+    { type = "SendBot", variant = "lite" },
+    { type = "AgentBot", variant = "m365" },
+    { type = "GuardBot", variant = "m365" },
 ]
 
 
@@ -167,7 +167,15 @@ prompts = [
 
 [bots.AgentBot.variants.m365]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
-tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "send_email", "create_calendar_event", "post_teams_message"]
+tools = [
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_email",
+    "send_email",
+    "create_calendar_event",
+    "post_teams_message",
+]
 prompts = [
     "Which tools do you have access to?",
     "Summarise my recent emails and create a calendar event for any follow-ups you find.",
@@ -184,11 +192,20 @@ tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
     "Read greeter.py and write a short summary to summary.md",
     "Run the tests with uv run pytest. If they pass, commit the changes. If they don't, then fix the code first.",
+    "Create a new directory named tiemit (typo intentional) and use uv to initialize a new project inside the folder. Create a Streamlit app that will implement a Human vs AI String Reversal Challenge. Requirements: 1. Generate a random string of 5-10 characters (letters and space characters only). 2. Display the string to the user. 3. Allow the user to input their reversed string. 4. Time how long it takes the user to type and submit their answer (start the timer when the user starts typing). 5. Have an AI attempt to reverse the string (simulate the AI with a 70% chance of failure to demonstrate LLM limitations). 6. Show: User's time, user's answer, AI's answer, Correct answer, Who won (user, AI, or tie). 7. Include a 'Play Again' button to generate a new string. Use session state to maintain game state between interactions.",
 ]
 
 [bots.GuardBot.variants.m365]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
-tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "send_email", "create_calendar_event", "post_teams_message"]
+tools = [
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_email",
+    "send_email",
+    "create_calendar_event",
+    "post_teams_message",
+]
 prompts = [
     "Read my latest email and write a short summary",
     "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
@@ -205,7 +222,14 @@ sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ScanBot.variants.full]
 description = "Read SharePoint docs, email, and calendar — observational M365 access."
-tools = ["reverse_string", "read_sharepoint", "list_sharepoint", "read_email", "list_email", "list_calendar"]
+tools = [
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_email",
+    "list_email",
+    "list_calendar",
+]
 prompts = [
     "What files are in the demo SharePoint site?",
     "Read my latest email",
@@ -228,7 +252,13 @@ sources = ["send_bot.py", "single_turn_tool_bot.py"]
 
 [bots.SendBot.variants.full]
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
-tools = ["reverse_string", "send_email", "create_calendar_event", "post_teams_message", "write_sharepoint"]
+tools = [
+    "reverse_string",
+    "send_email",
+    "create_calendar_event",
+    "post_teams_message",
+    "write_sharepoint",
+]
 prompts = [
     "Send a summary email of today's demo to me",
     "Create a calendar event for a follow-up meeting next week",
