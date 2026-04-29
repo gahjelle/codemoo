@@ -1,10 +1,4 @@
-# Spec: demo-bot-descriptions
-
-## Purpose
-
-TBD — defines how bot-type descriptions and source file mappings are stored for use in the demo slide screen, sourced from `configs/codemoo.toml` via `config.bots`.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: slides.py reads descriptions and source lists from ResolvedBotConfig via DemoContext
 `slides.py` SHALL look up bot descriptions and source file lists from `DemoContext.resolved_configs` by index, not by calling `config.bots.get(type(bot).__name__)`. The `cast("BotType", ...)` lookup is eliminated. The fallback for unregistered bot types is no longer needed — every bot in `DemoContext.all_bots` has a corresponding `ResolvedBotConfig` at the same index.

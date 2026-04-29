@@ -5,6 +5,7 @@ import pytest
 from codemoo.chat.app import ChatApp
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.slides import DemoContext
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import HumanParticipant
@@ -25,8 +26,18 @@ def _make_demo_context(
     prompts: list[str] | None = None,
 ) -> DemoContext:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
+    resolved = ResolvedBotConfig(
+        bot_type="EchoBot",
+        name="Coco",
+        emoji="\N{PARROT}",
+        sources=["echo_bot.py"],
+        description="A bot.",
+        tools=[],
+        prompts=prompts or [],
+    )
     return DemoContext(
         all_bots=[bot],
+        resolved_configs=[resolved],
         prev_bot=None,
         backend=_MockBackend(),
         position=position,

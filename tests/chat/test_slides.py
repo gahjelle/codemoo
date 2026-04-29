@@ -5,10 +5,12 @@ import pytest
 from codemoo.chat.slides import (
     AgendaColumn,
     DemoContext,
+    SlideContent,
     SlideScreen,
     _build_llm_prompt,
     _parse_numbered_list,
 )
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.llm_bot import LlmBot
@@ -31,10 +33,27 @@ def _make_bots() -> list[EchoBot | LlmBot]:
     ]
 
 
+def _resolved(
+    bot_type: str = "EchoBot",
+    sources: list[str] | None = None,
+    description: str = "A bot.",
+) -> ResolvedBotConfig:
+    return ResolvedBotConfig(
+        bot_type=bot_type,  # type: ignore[arg-type]
+        name="Coco",
+        emoji="\N{PARROT}",
+        sources=sources or ["echo_bot.py"],
+        description=description,
+        tools=[],
+        prompts=[],
+    )
+
+
 def _make_context(position: tuple[int, int] = (1, 1)) -> DemoContext:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     return DemoContext(
         all_bots=[bot],
+        resolved_configs=[_resolved()],
         prev_bot=None,
         backend=_MockBackend(),
         position=position,
@@ -90,7 +109,8 @@ def test_agenda_produces_one_label_per_bot() -> None:
 
 def test_build_llm_prompt_first_bot_no_comparison() -> None:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
-    prompt = _build_llm_prompt(bot, prev_bot=None)
+    resolved = _resolved(sources=["echo_bot.py"])
+    prompt = _build_llm_prompt(bot, resolved, prev_bot=None, prev_resolved=None)
     assert "Coco" in prompt
     assert "EchoBot" in prompt
     assert "echo_bot.py" in prompt
@@ -98,8 +118,12 @@ def test_build_llm_prompt_first_bot_no_comparison() -> None:
 
 def test_build_llm_prompt_comparison_includes_both_bots() -> None:
     prev = EchoBot(name="Coco", emoji="\N{PARROT}")
+    prev_resolved = _resolved(bot_type="EchoBot", sources=["echo_bot.py"])
     curr = LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())
-    prompt = _build_llm_prompt(curr, prev_bot=prev)
+    curr_resolved = _resolved(bot_type="LlmBot", sources=["llm_bot.py"])
+    prompt = _build_llm_prompt(
+        curr, curr_resolved, prev_bot=prev, prev_resolved=prev_resolved
+    )
     assert "Coco" in prompt
     assert "Mono" in prompt
     assert "echo_bot.py" in prompt
@@ -111,6 +135,7 @@ def test_build_llm_prompt_includes_tool_names_when_present() -> None:
     from codemoo.core.tools import reverse_string
 
     prev = EchoBot(name="Coco", emoji="\N{PARROT}")
+    prev_resolved = _resolved(bot_type="EchoBot", sources=["echo_bot.py"])
     curr = ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
@@ -119,14 +144,43 @@ def test_build_llm_prompt_includes_tool_names_when_present() -> None:
         tools=[reverse_string],
         instructions="",
     )
-    prompt = _build_llm_prompt(curr, prev_bot=prev)
+    curr_resolved = _resolved(bot_type="ToolBot", sources=["tool_bot.py"])
+    prompt = _build_llm_prompt(
+        curr, curr_resolved, prev_bot=prev, prev_resolved=prev_resolved
+    )
     assert "reverse_string" in prompt
 
 
 def test_build_llm_prompt_no_tools_line_when_no_tools() -> None:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
-    prompt = _build_llm_prompt(bot, prev_bot=None)
+    resolved = _resolved()
+    prompt = _build_llm_prompt(bot, resolved, prev_bot=None, prev_resolved=None)
     assert "tools:" not in prompt
+
+
+# --- SlideContent: description label regression test ---
+
+
+def test_slide_content_description_comes_from_resolved_config() -> None:
+    """Regression: slides use resolved_configs[i].description, not a config lookup."""
+    from textual.widgets import Label
+
+    bot = EchoBot(name="Coco", emoji="\N{PARROT}")
+    resolved = _resolved(description="M365 variant — not the code description")
+    content = SlideContent(
+        current_bot=bot,
+        current_resolved=resolved,
+        prev_bot=None,
+        prev_resolved=None,
+        backend=_MockBackend(),
+    )
+    description_labels = [
+        w
+        for w in content.compose()
+        if isinstance(w, Label) and w.id == "slide-description"
+    ]
+    assert len(description_labels) == 1
+    assert "M365 variant" in str(description_labels[0].content)
 
 
 # --- SlideScreen: dismiss handler unit tests ---
@@ -246,6 +300,7 @@ def _make_context_with_prompts(
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     return DemoContext(
         all_bots=[bot],
+        resolved_configs=[_resolved()],
         prev_bot=None,
         backend=backend or _MockBackend(),
         position=(1, 1),

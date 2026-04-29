@@ -13,7 +13,13 @@ from codemoo.chat.app import ChatApp
 from codemoo.chat.selection import SelectionApp
 from codemoo.chat.slides import DemoContext
 from codemoo.config import config
-from codemoo.config.schema import ModeName, ScriptName
+from codemoo.config.schema import (
+    BotRef,
+    BotType,
+    ModeName,
+    ResolvedBotConfig,
+    ScriptName,
+)
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots import make_bots, resolve_bot
@@ -27,6 +33,7 @@ _SetupResult = tuple[
     BackendInfo,
     HumanParticipant,
     list[ChatParticipant],
+    list[ResolvedBotConfig],
     ErrorBot,
     CommentatorBot,
 ]
@@ -43,23 +50,29 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupRes
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
     if mode == "business":
+        import contextlib  # noqa: PLC0415
+
         from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
 
-        try:
+        with contextlib.suppress(Exception):
             init_graph_auth(config.m365)
-        except Exception as err:  # noqa: BLE001
-            # _raise_error(str(err))
-            pass
 
-    available = make_bots(
+    available, resolved_configs = make_bots(
         backend,
         human_name=human.name,
         cfg=config.bots,
-        bot_order=config.scripts[script].bots,
-        mode=mode,
+        bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
     )
-    return backend, backend_info, human, available, error_bot, commentator_bot
+    return (
+        backend,
+        backend_info,
+        human,
+        available,
+        resolved_configs,
+        error_bot,
+        commentator_bot,
+    )
 
 
 @code_app.default
@@ -76,7 +89,7 @@ def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") ->
 
 def _chat(*, bot: str, mode: ModeName) -> None:
     """Launch the chat in any mode."""
-    _, backend_info, human, available, error_bot, commentator_bot = _setup(mode=mode)
+    _, backend_info, human, available, _, error_bot, commentator_bot = _setup(mode=mode)
     chosen = resolve_bot(bot, available)
     ChatApp(
         participants=[human, chosen],
@@ -98,7 +111,7 @@ def show_config(section: str | None = None) -> None:
 @business_app.command
 def list_bots(*, script: ScriptName = "default") -> None:
     """List all available bots with their index, type, and name."""
-    _, _, _, bots, _, _ = _setup(script)
+    _, _, _, bots, _, _, _ = _setup(script)
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Type")
@@ -117,7 +130,8 @@ def list_scripts() -> None:
     table.add_column("Mode")
     table.add_column("Bots")
     for name, script_cfg in config.scripts.items():
-        table.add_row(name, script_cfg.mode, ", ".join(script_cfg.bots))
+        bots_str = ", ".join(f"{r.type}:{r.variant}" for r in script_cfg.bots)
+        table.add_row(name, script_cfg.mode, bots_str)
     Console().print(table)
 
 
@@ -135,27 +149,26 @@ def business_select(*, mode: ModeName = "business") -> None:
 
 def _select(*, mode: ModeName) -> None:
     """Choose bots interactively before starting the chat."""
-    # Derive available bots as the union of all bots across scripts with the given mode
-    mode_bot_keys: list[str] = []
-    seen: set[str] = set()
+    # Deduplicated union of bots across scripts with the given mode; first variant wins
+    mode_bot_refs: list[BotRef] = []
+    seen: set[BotType] = set()
     for script_cfg in config.scripts.values():
         if script_cfg.mode == mode:
-            for key in script_cfg.bots:
-                if key not in seen:
-                    seen.add(key)
-                    mode_bot_keys.append(key)
+            for ref in script_cfg.bots:
+                if ref.type not in seen:
+                    seen.add(ref.type)
+                    mode_bot_refs.append(ref)
 
     backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(backend=backend, language=language)
     commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
-    available = make_bots(
+    available, _ = make_bots(
         backend,
         human_name=human.name,
         cfg=config.bots,
-        bot_order=mode_bot_keys,
-        mode=mode,
+        bot_refs=mode_bot_refs,
         commentator=commentator_bot,
     )
 
@@ -195,10 +208,15 @@ def business_demo(
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
     mode: ModeName = config.scripts[script].mode
-    backend, backend_info, human, available, error_bot, commentator_bot = _setup(
-        script, mode
-    )
-    bot_order = config.scripts[script].bots
+    (
+        backend,
+        backend_info,
+        human,
+        available,
+        resolved_configs,
+        error_bot,
+        commentator_bot,
+    ) = _setup(script, mode)
     start_index = (
         available.index(resolve_bot(start, available)) if start is not None else 0
     )
@@ -208,17 +226,16 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
         else len(available) - 1
     )
     demo_bots = available[start_index : end_index + 1]
-    demo_keys = bot_order[start_index : end_index + 1]
+    demo_resolved = resolved_configs[start_index : end_index + 1]
     for i, bot in enumerate(demo_bots):
         prev_bot = demo_bots[i - 1] if i > 0 else None
-        bot_cfg = config.bots.get(demo_keys[i])
-        prompts = list(bot_cfg.prompts) if bot_cfg else []
         context = DemoContext(
             all_bots=demo_bots,
+            resolved_configs=demo_resolved,
             prev_bot=prev_bot,
             backend=backend,
             position=(i + 1, len(demo_bots)),
-            prompts=prompts,
+            prompts=list(demo_resolved[i].prompts),
         )
         result = await ChatApp(
             participants=[human, bot],

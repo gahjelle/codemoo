@@ -1,10 +1,4 @@
-# Spec: demo-preset-prompts
-
-## Purpose
-
-Defines the pre-set prompt feature for demo mode: configuration, keyboard insertion, prompt-count display, exhaustion behaviour, and optional LLM translation.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: BotVariantConfig carries the preset prompts list
 Preset prompts SHALL be defined per variant, not per bot type. Each `BotVariantConfig` entry in TOML MAY include a `prompts: list[str]` field (defaults to `[]`).
@@ -27,4 +21,3 @@ When `ChatApp` is launched in demo mode, `DemoContext` SHALL include a `prompts`
 #### Scenario: Prompts are empty for a bot with no prompts in the active variant
 - **WHEN** `DemoContext` is constructed for a bot whose resolved variant has no `prompts`
 - **THEN** `demo_context.prompts` SHALL be an empty list
-

@@ -1,10 +1,14 @@
-# Spec: toml-bot-registry
+## REMOVED Requirements
 
-## Purpose
+### Requirement: BotConfig carries a required type field constrained to BotType
+**Reason**: `BotType` is now the dict key in `CodemooConfig.bots`; a `type` field inside the value is redundant. `BotType` is retained as a type alias used in `BotRef.type`, `CodemooConfig.main_bot`, and `_make_bot()` dispatch.
+**Migration**: Remove `type = "..."` from all `[bots.X]` entries in `codemoo.toml`. Remove the `type` field from `BotConfig` in `schema.py`.
 
-TBD — defines the TOML-based registry of demo bot types in `configs/codemoo.toml`, including the schema for `BotConfig` entries and how `make_bots()` uses config values for bot construction.
+### Requirement: BotConfig carries an optional prompts list
+**Reason**: Prompts vary per variant and have moved to `BotVariantConfig`. See `demo-preset-prompts` spec.
+**Migration**: Remove `prompts` from `BotConfig`. Move prompts to each `[bots.X.variants.Y]` sub-table.
 
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: All demo bot types are registered in TOML by BotType as the key
 The TOML `[bots]` table SHALL contain exactly one entry per `BotType`. The key SHALL be the Python class name (i.e. the `BotType` value). Synthetic compound keys such as `"AgentBot_m365"` or `"ScanBot_lite"` SHALL NOT appear. Bot classes that previously had multiple entries (AgentBot, GuardBot, ScanBot, SendBot) SHALL each have a single entry with multiple named variants.
@@ -58,14 +62,3 @@ Each `BotConfig` entry in TOML SHALL define `name`, `emoji`, and `sources`. The 
 #### Scenario: make_bots respects BotRef order
 - **WHEN** `make_bots()` is called with refs for `[LlmBot/default, AgentBot/code]`
 - **THEN** the returned list SHALL contain exactly two bots: an `LlmBot` followed by an `AgentBot`
-
-### Requirement: main_bot config field identifies the default chat bot
-`CodemooConfig` SHALL include a `main_bot: BotType` field. The TOML config SHALL set `main_bot` to the bot type that should be used when `codemoo` is invoked without `--bot`.
-
-#### Scenario: main_bot is present and valid in the default config
-- **WHEN** `configs/codemoo.toml` is loaded
-- **THEN** `config.main_bot` SHALL be a valid `BotType` string (e.g. `"AgentBot"`)
-
-#### Scenario: Invalid BotType for main_bot raises a validation error
-- **WHEN** `main_bot = "UnknownBot"` is set in the TOML
-- **THEN** Pydantic SHALL raise a validation error on config load

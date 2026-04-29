@@ -1,4 +1,5 @@
 from codemoo.config import config
+from codemoo.config.schema import BotConfig, BotRef, BotVariantConfig
 from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots import make_bots
 from codemoo.core.bots.echo_bot import EchoBot
@@ -16,12 +17,13 @@ class _MockBackend:
 
 
 def _bots() -> list:
-    return make_bots(
+    bots, _ = make_bots(
         _MockBackend(),
         human_name="You",
         cfg=config.bots,
-        bot_order=config.scripts["default"].bots,
+        bot_refs=config.scripts["default"].bots,
     )
+    return bots
 
 
 def test_make_bots_returns_nine_bots() -> None:
@@ -34,3 +36,27 @@ def test_make_bots_first_is_echo_bot() -> None:
 
 def test_make_bots_last_is_guard_bot() -> None:
     assert isinstance(_bots()[-1], GuardBot)
+
+
+def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
+    """Resolved configs must surface prompts from the active BotVariantConfig."""
+    mock_bots: dict = {
+        "EchoBot": BotConfig(
+            name="Coco",
+            emoji="PARROT",
+            sources=["echo_bot.py"],
+            variants={
+                "default": BotVariantConfig(
+                    description="A mirror.",
+                    prompts=["Prompt A", "Prompt B"],
+                )
+            },
+        )
+    }
+    _, resolved = make_bots(
+        _MockBackend(),
+        human_name="You",
+        cfg=mock_bots,
+        bot_refs=[BotRef(type="EchoBot", variant="default")],
+    )
+    assert resolved[0].prompts == ["Prompt A", "Prompt B"]

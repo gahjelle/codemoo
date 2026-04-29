@@ -3,7 +3,6 @@
 import dataclasses
 import re
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, cast
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -13,11 +12,9 @@ from textual.widget import Widget
 from textual.widgets import Button, Label, Markdown
 
 from codemoo.config import config
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.participant import ChatParticipant
-
-if TYPE_CHECKING:
-    from codemoo.config.schema import BotType
 
 
 @dataclasses.dataclass
@@ -25,6 +22,7 @@ class DemoContext:
     """All demo-specific state passed from tui.py through ChatApp to SlideScreen."""
 
     all_bots: list[ChatParticipant]
+    resolved_configs: list[ResolvedBotConfig]
     prev_bot: ChatParticipant | None
     backend: LLMBackend
     position: tuple[int, int]
@@ -52,27 +50,25 @@ def _tool_names(bot: ChatParticipant) -> list[str]:
     return [tool.name for tool in tools if tool.name]
 
 
-def _bot_source_block(bot: ChatParticipant) -> str:
-    bot_type_name = type(bot).__name__
-    bot_cfg = config.bots.get(cast("BotType", bot_type_name))
-    files = bot_cfg.sources if bot_cfg else [f"{bot_type_name.lower()}.py"]
-    return "\n".join(f"--- {f} ---\n{_read_source(f)}" for f in files)
+def _bot_source_block(resolved: ResolvedBotConfig) -> str:
+    return "\n".join(f"--- {f} ---\n{_read_source(f)}" for f in resolved.sources)
 
 
 def _build_llm_prompt(
     current_bot: ChatParticipant,
+    current_resolved: ResolvedBotConfig,
     prev_bot: ChatParticipant | None,
+    prev_resolved: ResolvedBotConfig | None,
 ) -> str:
     """Build the LLM prompt for the slide's what's-new explanation."""
-    curr_type = type(current_bot).__name__
-    curr_source = _bot_source_block(current_bot)
+    curr_source = _bot_source_block(current_resolved)
     curr_tools = _tool_names(current_bot)
     curr_tools_line = f"\n{current_bot.name} tools: {curr_tools}" if curr_tools else ""
 
-    if prev_bot is None:
+    if prev_bot is None or prev_resolved is None:
         return (
             f"You're explaining a demo coding agent called {current_bot.name} "
-            f"({curr_type}) to a live audience.\n\n"
+            f"({current_resolved.bot_type}) to a live audience.\n\n"
             f"Here is its implementation:\n{curr_source}{curr_tools_line}\n\n"
             "Explain in 5-8 lines what this bot does and how it works. "
             "Be code-focused. Use Markdown — show the key line(s) of code in a "
@@ -80,14 +76,14 @@ def _build_llm_prompt(
             f"Answer in {config.language}."
         )
 
-    prev_type = type(prev_bot).__name__
-    prev_source = _bot_source_block(prev_bot)
+    prev_source = _bot_source_block(prev_resolved)
     prev_tools = _tool_names(prev_bot)
     prev_tools_line = f"\n{prev_bot.name} tools: {prev_tools}" if prev_tools else ""
 
     return (
         f"You're explaining to a live audience what {current_bot.name} "
-        f"({curr_type}) adds over {prev_bot.name} ({prev_type}).\n\n"
+        f"({current_resolved.bot_type}) adds over"
+        f" {prev_bot.name} ({prev_resolved.bot_type}).\n\n"
         f"{prev_bot.name} source:\n{prev_source}{prev_tools_line}\n\n"
         f"{current_bot.name} source:\n{curr_source}{curr_tools_line}\n\n"
         "Explain the single most important change in 5-8 lines. Be code-focused. "
@@ -138,25 +134,27 @@ class SlideContent(Widget):
     def __init__(
         self,
         current_bot: ChatParticipant,
+        current_resolved: ResolvedBotConfig,
         prev_bot: ChatParticipant | None,
+        prev_resolved: ResolvedBotConfig | None,
         backend: LLMBackend,
     ) -> None:
-        """Initialise with the current bot, optional predecessor, and backend."""
+        """Initialise with current/previous bots, resolved configs, and backend."""
         super().__init__()
         self._current_bot = current_bot
+        self._current_resolved = current_resolved
         self._prev_bot = prev_bot
+        self._prev_resolved = prev_resolved
         self._backend = backend
 
     def compose(self) -> ComposeResult:
         """Yield the title, description, what's-new area, and dismiss button."""
-        bot_type = type(self._current_bot).__name__
-        bot_cfg = config.bots.get(cast("BotType", bot_type))
-        description = bot_cfg.description if bot_cfg else ""
         yield Label(
-            f"Meet {self._current_bot.name}, the {bot_type}",
+            f"Meet {self._current_resolved.name},"
+            f" the {self._current_resolved.bot_type}",
             id="slide-title",
         )
-        yield Label(description, id="slide-description")
+        yield Label(self._current_resolved.description, id="slide-description")
         yield Markdown("Generating\N{HORIZONTAL ELLIPSIS}", id="slide-whats-new")
         yield Button("OK", id="slide-ok", variant="primary")
 
@@ -165,7 +163,12 @@ class SlideContent(Widget):
         self.run_worker(self._load_explanation(), exclusive=True)
 
     async def _load_explanation(self) -> None:
-        prompt = _build_llm_prompt(self._current_bot, self._prev_bot)
+        prompt = _build_llm_prompt(
+            self._current_bot,
+            self._current_resolved,
+            self._prev_bot,
+            self._prev_resolved,
+        )
         text = await self._backend.complete([Message(role="user", content=prompt)])
         await self.query_one("#slide-whats-new", Markdown).update(text)
 
@@ -182,11 +185,21 @@ class SlideScreen(ModalScreen[None]):
         """Yield the two-column slide layout."""
         current_index = self._demo_ctx.position[0] - 1
         current_bot = self._demo_ctx.all_bots[current_index]
+        current_resolved = self._demo_ctx.resolved_configs[current_index]
+        prev_resolved = (
+            self._demo_ctx.resolved_configs[current_index - 1]
+            if current_index > 0
+            else None
+        )
         with Vertical(id="slide-outer"):
             yield Horizontal(
                 AgendaColumn(self._demo_ctx.all_bots, current_index),
                 SlideContent(
-                    current_bot, self._demo_ctx.prev_bot, self._demo_ctx.backend
+                    current_bot,
+                    current_resolved,
+                    self._demo_ctx.prev_bot,
+                    prev_resolved,
+                    self._demo_ctx.backend,
                 ),
                 id="slide-layout",
             )

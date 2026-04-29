@@ -1,5 +1,6 @@
 """Pydantic schema for the Codemoo TOML configuration."""
 
+import dataclasses
 import unicodedata
 from pathlib import Path
 from typing import Literal
@@ -37,16 +38,21 @@ class PathsConfig(StrictModel):
     m365_token_path: Path
 
 
-class BotConfig(StrictModel):
-    """Configure one bot."""
+class BotVariantConfig(StrictModel):
+    """Profile-specific settings for one bot variant."""
 
-    type: BotType
-    name: str
-    emoji: str
     description: str
-    sources: list[str]
     tools: list[str] = []
     prompts: list[str] = []
+
+
+class BotConfig(StrictModel):
+    """Stable identity for one bot type."""
+
+    name: str
+    emoji: str
+    sources: list[str]
+    variants: dict[str, BotVariantConfig]
 
     @field_validator("emoji", mode="before")
     @classmethod
@@ -57,6 +63,52 @@ class BotConfig(StrictModel):
         except KeyError:
             msg = f"Unknown Unicode character name: {v!r}"
             raise ValueError(msg) from None
+
+    @field_validator("variants")
+    @classmethod
+    def variants_not_empty(
+        cls, v: dict[str, BotVariantConfig]
+    ) -> dict[str, BotVariantConfig]:
+        """Require at least one variant."""
+        if not v:
+            msg = "variants must have at least one entry"
+            raise ValueError(msg)
+        return v
+
+
+class BotRef(StrictModel):
+    """Reference to a specific bot type and variant."""
+
+    type: BotType
+    variant: str
+
+
+@dataclasses.dataclass
+class ResolvedBotConfig:
+    """Merged bot identity + variant, produced at runtime — never parsed from TOML."""
+
+    bot_type: BotType
+    name: str
+    emoji: str
+    sources: list[str]
+    description: str
+    tools: list[str]
+    prompts: list[str]
+
+
+def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
+    """Merge a BotConfig and one of its BotVariantConfigs into a ResolvedBotConfig."""
+    cfg = bots[ref.type]
+    variant = cfg.variants[ref.variant]
+    return ResolvedBotConfig(
+        bot_type=ref.type,
+        name=cfg.name,
+        emoji=cfg.emoji,
+        sources=cfg.sources,
+        description=variant.description,
+        tools=variant.tools,
+        prompts=variant.prompts,
+    )
 
 
 class BackendConfig(StrictModel):
@@ -77,7 +129,7 @@ class ScriptConfig(StrictModel):
     """Configure one demo script."""
 
     mode: ModeName
-    bots: list[str]
+    bots: list[BotRef]
 
 
 class M365Config(StrictModel):
@@ -96,7 +148,7 @@ class CodemooConfig(StrictModel):
     language: str
     main_bot: BotType
     paths: PathsConfig
-    bots: dict[str, BotConfig]
+    bots: dict[BotType, BotConfig]
     scripts: dict[ScriptName, ScriptConfig]
     models: ModelsConfig
     m365: M365Config

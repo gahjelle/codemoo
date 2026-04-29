@@ -1,10 +1,4 @@
-# Spec: demo-scripts
-
-## Purpose
-
-TBD — defines the `[scripts]` TOML section and associated config schema that allows named, ordered subsets of bots to be selected for a demo session.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: [scripts] TOML section defines named structured script objects
 The `configs/codemoo.toml` file SHALL contain a `[scripts]` section. Each key SHALL be a script name; its value SHALL be a structured object with `mode: ModeName` and `bots: list[BotRef]`. A `"default"` script SHALL always be present with `mode = "code"` and SHALL list `BotRef` inline tables for the standard coding progression. Each `BotRef` SHALL use `{type = "<BotType>", variant = "<variant>"}` inline-table syntax.
@@ -31,8 +25,3 @@ The `configs/codemoo.toml` file SHALL contain a `[scripts]` section. Each key SH
 #### Scenario: make_bots respects BotRef order
 - **WHEN** `make_bots(backend, human_name, cfg, bot_refs=[BotRef(type="LlmBot", variant="default"), BotRef(type="AgentBot", variant="code")])` is called
 - **THEN** the returned list SHALL contain exactly two bots: an `LlmBot` instance followed by an `AgentBot` instance
-
-#### Scenario: _make_bot raises for unhandled bot type
-- **WHEN** `_make_bot` is called with a `BotType` value that has no match arm
-- **THEN** it SHALL raise `ValueError` with a descriptive message
-

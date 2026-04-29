@@ -32,6 +32,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - ~~GeneralToolBot renamed to SingleTurnToolBot~~
 - ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
 - ~~Scripts become structured objects with `mode` and `bots` fields~~
+- ~~Bot config variants: `BotConfig` splits into stable identity (name, emoji, sources) + `variants: dict[str, BotVariantConfig]`; `ScriptConfig.bots` becomes `list[BotRef]`; compound keys (`AgentBot_m365` etc.) eliminated~~
 - ~~Entra app registration setup guide for M365 demo tenants~~
 - ~~Bug: When Cato asks for permission in several tools, some modals are shown twice~~
 
