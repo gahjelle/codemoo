@@ -58,6 +58,42 @@ production code. It contains intentional issues that must stay in place:
 
 When modifying `demo/` files for other reasons, preserve these intentional issues.
 
+## Tools Architecture
+
+Tools are organized by category into separate modules under `src/codemoo/core/tools/`:
+
+- **`__init__.py`** — Core infrastructure (ToolDef, ToolParam, format_tool_call, TOOL_REGISTRY)
+- **`files.py`** — File operations (read_file, write_file, list_files)
+- **`strings.py`** — String operations (reverse_string)
+- **`shell.py`** — Shell commands (run_shell)
+- **`graph_read.py`** — Microsoft Graph read operations (list_calendar, list_email, etc.)
+- **`graph_write.py`** — Microsoft Graph write operations (send_email, create_calendar_event, etc.)
+
+### Using Tools
+
+Tools are accessed via `TOOL_REGISTRY`, the single source of truth at runtime:
+
+```python
+from codemoo.core.tools import TOOL_REGISTRY
+read_file_tool = TOOL_REGISTRY["read_file"]
+```
+
+For tests, import directly from the tool's module:
+
+```python
+from codemoo.core.tools.files import read_file
+from codemoo.core.tools.shell import run_shell
+```
+
+### Adding New Tools
+
+1. Create or find the appropriate module (or create a new one if starting a new category)
+2. Define the implementation function (prefix with `_`): `def _my_tool(arg: str) -> str: ...`
+3. Create a ToolDef instance with metadata: `my_tool = ToolDef(name="my_tool", description="...", parameters=[...], fn=_my_tool)`
+4. Add the tool to `TOOL_REGISTRY` in `__init__.py`
+
+Each tool module should import `ToolDef` and `ToolParam` from the parent `__init__.py` to avoid circular imports.
+
 ## Textual Widget CSS
 
 Widget CSS follows a structural/visual split:

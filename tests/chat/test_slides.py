@@ -130,7 +130,7 @@ def test_build_llm_prompt_comparison_includes_both_bots() -> None:
 
 
 def test_build_llm_prompt_includes_tool_names_when_present() -> None:
-    from codemoo.core.tools import reverse_string
+    from codemoo.core.tools.strings import reverse_string
 
     prev_resolved = _resolved(bot_type="EchoBot", name="Coco", sources=["echo_bot.py"])
     curr_resolved = _resolved(

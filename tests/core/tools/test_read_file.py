@@ -3,7 +3,7 @@ from typing import cast
 
 import pytest
 
-from codemoo.core.tools import read_file
+from codemoo.core.tools.files import read_file
 
 
 def test_read_file_returns_contents(tmp_path: Path) -> None:

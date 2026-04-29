@@ -1,4 +1,4 @@
-from codemoo.core.tools.formatting import format_tool_call
+from codemoo.core.tools import format_tool_call
 
 
 def test_no_args_produces_empty_parens() -> None:

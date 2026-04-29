@@ -7,6 +7,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Questions
 
 - Should tool output be added to conversation history?
+- Can llm.complete() and llm.complete_step() be merged into a single llm.complete()?
 - Can we control shell scripts to only touch session folder
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?
@@ -27,3 +28,4 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Refactor core.tools to use more files (and maybe formatting can go into common?)
 - ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
 - Add sessions and store them to disk, include --resume functionality
+- Stream answers

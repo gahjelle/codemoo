@@ -1,6 +1,6 @@
 from typing import cast
 
-from codemoo.core.tools import run_shell
+from codemoo.core.tools.shell import run_shell
 
 
 def test_successful_command_returns_stdout() -> None:

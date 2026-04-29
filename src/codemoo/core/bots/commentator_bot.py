@@ -6,7 +6,7 @@ from collections.abc import Callable
 
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.message import ChatMessage
-from codemoo.core.tools.formatting import format_tool_call
+from codemoo.core.tools import format_tool_call
 
 
 @dataclasses.dataclass(frozen=True)

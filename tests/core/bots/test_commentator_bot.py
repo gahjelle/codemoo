@@ -19,7 +19,7 @@ from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import HumanParticipant
-from codemoo.core.tools import run_shell
+from codemoo.core.tools.shell import run_shell
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 _PERSONA_NAMES = {p.name for p in _PERSONAS}

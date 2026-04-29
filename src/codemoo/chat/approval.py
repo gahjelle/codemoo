@@ -14,7 +14,7 @@ from codemoo.core.bots.guard_bot import (
     Denied,
     GuardDecision,
 )
-from codemoo.core.tools.formatting import format_tool_call
+from codemoo.core.tools import format_tool_call
 
 
 class ApprovalModal(ModalScreen[GuardDecision]):
