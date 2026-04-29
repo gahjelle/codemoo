@@ -4,6 +4,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Label
 
+from codemoo import __version__
 from codemoo.config.schema import ModeName
 from codemoo.llm.factory import BackendInfo
 
@@ -25,10 +26,10 @@ class BackendStatus(Widget):
     def __init__(self, backend_info: BackendInfo, mode: ModeName = "code") -> None:
         """Initialise with the active backend info and current mode."""
         super().__init__()
-        self._mode = mode
+        self._mode_text = f"{mode}  \N{BULLET}  {__version__}"
         self._backend_text = f"{backend_info.name}  \N{BULLET}  {backend_info.model}"
 
     def compose(self) -> ComposeResult:
         """Yield mode label on the left and backend/model label on the right."""
-        yield Label(self._mode.title(), id="mode-label")
+        yield Label(self._mode_text, id="mode-label")
         yield Label(self._backend_text, id="backend-label")
