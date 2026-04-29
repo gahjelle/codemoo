@@ -59,6 +59,7 @@ def _make_bot(backend: _SequentialBackend) -> GuardBot:
         backend=backend,
         human_name="You",
         tools=[run_shell, _safe_tool],
+        instructions="You are a helpful assistant.",
     )
 
 
@@ -303,6 +304,7 @@ async def test_only_dangerous_tools_require_approval() -> None:
         backend=backend,
         human_name="You",
         tools=[safe_tool, dangerous_tool],
+        instructions="You are a helpful assistant.",
     )
     bot.register_guard(ask_fn)
 

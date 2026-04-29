@@ -75,6 +75,7 @@ def bot_text(text_backend: _MockBackend) -> ChangeBot:
         backend=text_backend,
         human_name="You",
         tools=[run_shell],
+        instructions="You can execute shell commands and write files using your tools.",
     )
 
 
@@ -86,6 +87,7 @@ def bot_tool(tool_backend: _MockBackend) -> ChangeBot:
         backend=tool_backend,
         human_name="You",
         tools=[run_shell],
+        instructions="You can execute shell commands and write files using your tools.",
     )
 
 

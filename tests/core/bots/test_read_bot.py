@@ -75,6 +75,7 @@ def bot_text(text_backend: _MockBackend) -> ReadBot:
         backend=text_backend,
         human_name="You",
         tools=[read_file],
+        instructions="You can read files and list directory contents using your tools.",
     )
 
 
@@ -86,6 +87,7 @@ def bot_tool(tool_backend: _MockBackend) -> ReadBot:
         backend=tool_backend,
         human_name="You",
         tools=[read_file],
+        instructions="You can read files and list directory contents using your tools.",
     )
 
 

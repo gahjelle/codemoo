@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Config injection in make_bots passes instructions to bots that accept them
 The `make_bots()` function SHALL accept cfg parameter containing only the bots configuration section instead of using global config state. `_make_bot()` SHALL pass `instructions=resolved.instructions` to every bot type that declares an `instructions` field (`SystemBot`, `ToolBot`, `ReadBot`, `ChangeBot`, `ScanBot`, `SendBot`, `AgentBot`, `GuardBot`). Bot types without an `instructions` field (`EchoBot`, `LlmBot`, `ChatBot`) SHALL receive no instructions argument.
@@ -33,24 +33,3 @@ The `make_bots()` function SHALL accept cfg parameter containing only the bots c
 #### Scenario: _make_bot passes empty instructions when variant omits the field
 - **WHEN** `_make_bot()` constructs a bot from a `ResolvedBotConfig` with `instructions = ""`
 - **THEN** the bot's `instructions` attribute SHALL equal `""`
-
-### Requirement: Type safety with bot config dict
-The `make_bots()` function SHALL use `dict[BotType, BotConfig]` type for the cfg parameter to ensure type safety.
-
-#### Scenario: Type checker validates cfg parameter
-- **WHEN** `make_bots()` is called with incorrect cfg type
-- **THEN** static type checker reports type error
-- **AND** runtime behavior is unchanged
-
-### Requirement: Backward compatibility for callers
-All existing callers of `make_bots()` SHALL be updated to pass `config.bots` as the cfg parameter explicitly.
-
-#### Scenario: Frontend callers updated
-- **WHEN** frontends/tui.py calls `make_bots()`
-- **THEN** it passes `config.bots` as the cfg parameter
-- **AND** bot creation works identically to before
-
-#### Scenario: Test callers updated
-- **WHEN** test helpers call `make_bots()`
-- **THEN** they pass `config.bots` as the cfg parameter
-- **AND** tests continue to pass with same assertions

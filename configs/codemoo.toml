@@ -16,8 +16,8 @@ bots = [
     { type = "ChatBot", variant = "default" },
     { type = "SystemBot", variant = "default" },
     { type = "ToolBot", variant = "default" },
-    { type = "ReadBot", variant = "default" },
-    { type = "ChangeBot", variant = "default" },
+    { type = "ReadBot", variant = "code" },
+    { type = "ChangeBot", variant = "code" },
     { type = "AgentBot", variant = "code" },
     { type = "GuardBot", variant = "code" },
 ]
@@ -39,10 +39,10 @@ bots = [
     { type = "ChatBot", variant = "default" },
     { type = "SystemBot", variant = "default" },
     { type = "ToolBot", variant = "default" },
-    { type = "ScanBot", variant = "full" },
-    { type = "SendBot", variant = "full" },
-    { type = "AgentBot", variant = "m365" },
-    { type = "GuardBot", variant = "m365" },
+    { type = "ScanBot", variant = "business" },
+    { type = "SendBot", variant = "business" },
+    { type = "AgentBot", variant = "business" },
+    { type = "GuardBot", variant = "business" },
 ]
 
 [scripts.m365_lite]
@@ -53,10 +53,10 @@ bots = [
     { type = "ChatBot", variant = "default" },
     { type = "SystemBot", variant = "default" },
     { type = "ToolBot", variant = "default" },
-    { type = "ScanBot", variant = "lite" },
-    { type = "SendBot", variant = "lite" },
-    { type = "AgentBot", variant = "m365" },
-    { type = "GuardBot", variant = "m365" },
+    { type = "ScanBot", variant = "business_lite" },
+    { type = "SendBot", variant = "business_lite" },
+    { type = "AgentBot", variant = "business" },
+    { type = "GuardBot", variant = "business" },
 ]
 
 
@@ -101,6 +101,16 @@ sources = ["system_bot.py"]
 
 [bots.SystemBot.variants.default]
 description = "Add a system prompt to shape the LLM's persona and behavior."
+instructions = """
+You are Sona, a ruthlessly practical coding assistant.
+Rules you never break:
+(1) Respond only about code and software engineering — for anything else reply
+    with exactly 'Not my domain.' and nothing more.
+(2) Never use pleasantries, filler, or preamble — get straight to the answer.
+(3) Prefer the simplest correct solution; do not over-engineer.
+(4) When showing code, show only the relevant snippet, not the whole file.
+(5) If a question is ambiguous, state your assumption in one line then answer it.
+"""
 prompts = [
     "How can I reverse a text string in Python?",
     "How about in C#?",
@@ -116,6 +126,7 @@ sources = ["tool_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ToolBot.variants.default]
 description = "Call a tool before replying — the first step toward doing things."
+instructions = "You are Telo, a coding assistant. You have tools available. Use them when they would help answer accurately. Trust the output of the tools."
 tools = ["reverse_string"]
 prompts = [
     "How do I spell 'Guido van Rossum created Python' backwards?",
@@ -127,8 +138,9 @@ name = "Rune"
 emoji = "FILE FOLDER"
 sources = ["read_bot.py", "single_turn_tool_bot.py"]
 
-[bots.ReadBot.variants.default]
+[bots.ReadBot.variants.code]
 description = "Read files from disk to answer questions about your code."
+instructions = "You are Rune, a coding assistant. You can read files and list directory contents using your tools. When the user asks about a file, its contents, or what files exist in a folder, call the appropriate tool to retrieve that information before answering."
 tools = ["reverse_string", "read_file", "list_files"]
 prompts = [
     "Read greeter.py — what is this project about?",
@@ -137,19 +149,82 @@ prompts = [
     "What is the first line of archive.txt?",
 ]
 
+[bots.ScanBot]
+name = "Roam"
+emoji = "PEDESTRIAN"
+sources = ["scan_bot.py", "single_turn_tool_bot.py"]
+
+[bots.ScanBot.variants.business]
+description = "Read SharePoint docs, email, and calendar — observational M365 access."
+instructions = "You are Roam, a productivity assistant. You can read Microsoft 365 data using your tools. When the user asks about documents, emails, or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
+tools = [
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_email",
+    "list_email",
+    "list_calendar",
+]
+prompts = [
+    "What files are in the demo SharePoint site?",
+    "Read my latest email",
+    "What meetings do I have today?",
+]
+
+[bots.ScanBot.variants.business_lite]
+description = "Read email and calendar — M365 access without SharePoint."
+instructions = "You are Roam, a productivity assistant. You can read Microsoft 365 data using your tools. When the user asks about emails or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
+tools = ["reverse_string", "read_email", "list_email", "list_calendar"]
+prompts = [
+    "Read my latest email",
+    "What meetings do I have today?",
+    "Summarise my inbox",
+]
+
 [bots.ChangeBot]
 name = "Axel"
 emoji = "HAMMER"
 sources = ["change_bot.py", "single_turn_tool_bot.py"]
 
-[bots.ChangeBot.variants.default]
+[bots.ChangeBot.variants.code]
 description = "Execute shell commands and write files — now it can change things."
+instructions = "You are Axel, a coding assistant. You can execute shell commands and write files using your tools. When the user asks you to run a command, modify a file, or perform a system operation, call the appropriate tool before answering. These actions change state — proceed carefully."
 tools = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
 prompts = [
     "Run greeter.py with uv",
     "Run the tests: uv run pytest test_greeter.py",
     "Use cat to list both README.md and greeter.py and compare them — does the code match the description?",
     "How many names are in names.txt?",
+]
+
+[bots.SendBot]
+name = "Aero"
+emoji = "OUTBOX TRAY"
+sources = ["send_bot.py", "single_turn_tool_bot.py"]
+
+[bots.SendBot.variants.business]
+description = "Send email, create calendar events, post to Teams, write SharePoint docs."
+instructions = "You are Aero, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails, create calendar events, post Teams messages, and write SharePoint documents. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
+tools = [
+    "reverse_string",
+    "send_email",
+    "create_calendar_event",
+    "post_teams_message",
+    "write_sharepoint",
+]
+prompts = [
+    "Send a summary email of today's demo to me",
+    "Create a calendar event for a follow-up meeting next week",
+    "Post a message to the demo Teams channel",
+]
+
+[bots.SendBot.variants.business_lite]
+description = "Send email and create calendar events."
+instructions = "You are Areo, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails and create calendar events. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
+tools = ["reverse_string", "send_email", "create_calendar_event"]
+prompts = [
+    "Send a summary email of today's demo to me",
+    "Create a calendar event for a follow-up meeting next week",
 ]
 
 [bots.AgentBot]
@@ -159,14 +234,16 @@ sources = ["agent_bot.py"]
 
 [bots.AgentBot.variants.code]
 description = "Loop tool calls until done — pursue goals, not single commands."
+instructions = "You are Loom, a helpful coding assistant. You have access to tools — use them as many times as needed to fully complete the user's request before giving your final answer. Focus on the project in the current working directory."
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
     "Which tools do you have access to?",
     "greeter.py is crashing when run (uv run greeter.py). Fix the bug and verify with the tests (uv run pytest).",
 ]
 
-[bots.AgentBot.variants.m365]
+[bots.AgentBot.variants.business]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
+instructions = "You are Loom, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read email, access SharePoint, create calendar events, and post to Teams."
 tools = [
     "reverse_string",
     "read_sharepoint",
@@ -188,6 +265,7 @@ sources = ["guard_bot.py"]
 
 [bots.GuardBot.variants.code]
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
+instructions = "You are Cato, a helpful coding assistant. You help the user understand the current project, maintain it, and develop it further. You have access to tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt."
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
     "Read greeter.py and write a short summary to summary.md",
@@ -195,8 +273,9 @@ prompts = [
     "Create a new directory named tiemit (typo intentional) and use uv to initialize a new project inside the folder. Create a Streamlit app that will implement a Human vs AI String Reversal Challenge. Requirements: 1. Generate a random string of 5-10 characters (letters and space characters only). 2. Display the string to the user. 3. Allow the user to input their reversed string. 4. Time how long it takes the user to type and submit their answer (start the timer when the user starts typing). 5. Have an AI attempt to reverse the string (simulate the AI with a 70% chance of failure to demonstrate LLM limitations). 6. Show: User's time, user's answer, AI's answer, Correct answer, Who won (user, AI, or tie). 7. Include a 'Play Again' button to generate a new string. Use session state to maintain game state between interactions.",
 ]
 
-[bots.GuardBot.variants.m365]
+[bots.GuardBot.variants.business]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
+instructions = "You are Cato, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails or posting to Teams."
 tools = [
     "reverse_string",
     "read_sharepoint",
@@ -210,69 +289,6 @@ prompts = [
     "Read my latest email and write a short summary",
     "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
 ]
-
-
-#
-# Bots — M365 path
-#
-[bots.ScanBot]
-name = "Roam"
-emoji = "PEDESTRIAN"
-sources = ["scan_bot.py", "single_turn_tool_bot.py"]
-
-[bots.ScanBot.variants.full]
-description = "Read SharePoint docs, email, and calendar — observational M365 access."
-tools = [
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_email",
-    "list_email",
-    "list_calendar",
-]
-prompts = [
-    "What files are in the demo SharePoint site?",
-    "Read my latest email",
-    "What meetings do I have today?",
-]
-
-[bots.ScanBot.variants.lite]
-description = "Read email and calendar — M365 access without SharePoint."
-tools = ["reverse_string", "read_email", "list_email", "list_calendar"]
-prompts = [
-    "Read my latest email",
-    "What meetings do I have today?",
-    "Summarise my inbox",
-]
-
-[bots.SendBot]
-name = "Aero"
-emoji = "OUTBOX TRAY"
-sources = ["send_bot.py", "single_turn_tool_bot.py"]
-
-[bots.SendBot.variants.full]
-description = "Send email, create calendar events, post to Teams, write SharePoint docs."
-tools = [
-    "reverse_string",
-    "send_email",
-    "create_calendar_event",
-    "post_teams_message",
-    "write_sharepoint",
-]
-prompts = [
-    "Send a summary email of today's demo to me",
-    "Create a calendar event for a follow-up meeting next week",
-    "Post a message to the demo Teams channel",
-]
-
-[bots.SendBot.variants.lite]
-description = "Send email and create calendar events."
-tools = ["reverse_string", "send_email", "create_calendar_event"]
-prompts = [
-    "Send a summary email of today's demo to me",
-    "Create a calendar event for a follow-up meeting next week",
-]
-
 
 #
 # Microsoft 365 / Graph API

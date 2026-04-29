@@ -251,6 +251,7 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
         backend=backend,
         human_name="You",
         tools=[run_shell],
+        instructions="You are a helpful assistant.",
         commentator=mock_commentator,
     )
 

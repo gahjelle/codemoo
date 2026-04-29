@@ -14,14 +14,6 @@ from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
-_INSTRUCTIONS = """
-You're a helpful coding agent that helps the user in understanding the current
-project, maintaining it, and developing it further. You have access to tools.
-Use them as many times as needed to fully complete the user's request before
-giving your final answer. Some tools require the user's approval before they
-run — if approval is denied, respect the user's instructions and adapt.
-""".strip()
-
 
 @dataclasses.dataclass(frozen=True)
 class Approved:
@@ -69,7 +61,7 @@ class GuardBot:
     backend: ToolLLMBackend
     human_name: str
     tools: list[ToolDef]
-    instructions: str = _INSTRUCTIONS
+    instructions: str
     max_messages: int = 20
     commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False

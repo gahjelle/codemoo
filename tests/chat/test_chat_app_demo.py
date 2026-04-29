@@ -34,6 +34,7 @@ def _make_demo_context(
         description="A bot.",
         tools=[],
         prompts=prompts or [],
+        instructions="",
     )
     return DemoContext(
         all_bots=[bot],

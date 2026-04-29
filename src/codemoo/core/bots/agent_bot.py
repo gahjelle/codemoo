@@ -13,11 +13,6 @@ from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
-_INSTRUCTIONS = """
-You're a helpful assistant. You have access to tools. Use them as many times as needed
-to fully complete the user's request before giving your final answer.
-""".strip()
-
 
 @dataclasses.dataclass(eq=False)
 class AgentBot:
@@ -33,7 +28,7 @@ class AgentBot:
     backend: ToolLLMBackend
     human_name: str
     tools: list[ToolDef]
-    instructions: str = _INSTRUCTIONS
+    instructions: str
     max_messages: int = 20
     commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False

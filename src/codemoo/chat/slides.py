@@ -44,9 +44,7 @@ def _read_source(filename: str) -> str:
 
 
 def _tool_names(bot: ChatParticipant) -> list[str]:
-    tools = getattr(bot, "tools", None)
-    if not tools:
-        return []
+    tools = getattr(bot, "tools", [])
     return [tool.name for tool in tools if tool.name]
 
 
@@ -55,37 +53,49 @@ def _bot_source_block(resolved: ResolvedBotConfig) -> str:
 
 
 def _build_llm_prompt(
-    current_bot: ChatParticipant,
-    current_resolved: ResolvedBotConfig,
-    prev_bot: ChatParticipant | None,
-    prev_resolved: ResolvedBotConfig | None,
+    current: ResolvedBotConfig,
+    previous: ResolvedBotConfig | None,
 ) -> str:
     """Build the LLM prompt for the slide's what's-new explanation."""
-    curr_source = _bot_source_block(current_resolved)
-    curr_tools = _tool_names(current_bot)
-    curr_tools_line = f"\n{current_bot.name} tools: {curr_tools}" if curr_tools else ""
+    curr_source = _bot_source_block(current)
+    curr_tools_line = (
+        f"\n{current.name} tools: {current.tools}" if current.tools else ""
+    )
+    curr_instructions_line = (
+        f"\n{current.name} instructions:\n{current.instructions}"
+        if current.instructions
+        else ""
+    )
 
-    if prev_bot is None or prev_resolved is None:
+    if previous is None:
         return (
-            f"You're explaining a demo coding agent called {current_bot.name} "
-            f"({current_resolved.bot_type}) to a live audience.\n\n"
-            f"Here is its implementation:\n{curr_source}{curr_tools_line}\n\n"
+            f"You're explaining a demo coding agent called {current.name} "
+            f"({current.bot_type}) to a live audience.\n\n"
+            f"Here is its implementation:\n{curr_source}{curr_tools_line}"
+            f"{curr_instructions_line}\n\n"
             "Explain in 5-8 lines what this bot does and how it works. "
             "Be code-focused. Use Markdown — show the key line(s) of code in a "
             "fenced Python code block. Be concise — this must fit on a single screen. "
             f"Answer in {config.language}."
         )
 
-    prev_source = _bot_source_block(prev_resolved)
-    prev_tools = _tool_names(prev_bot)
-    prev_tools_line = f"\n{prev_bot.name} tools: {prev_tools}" if prev_tools else ""
+    prev_source = _bot_source_block(previous)
+    prev_tools_line = (
+        f"\n{previous.name} tools: {previous.tools}" if previous.tools else ""
+    )
+    prev_instructions_line = (
+        f"\n{previous.name} instructions:\n{previous.instructions}"
+        if previous.instructions
+        else ""
+    )
 
     return (
-        f"You're explaining to a live audience what {current_bot.name} "
-        f"({current_resolved.bot_type}) adds over"
-        f" {prev_bot.name} ({prev_resolved.bot_type}).\n\n"
-        f"{prev_bot.name} source:\n{prev_source}{prev_tools_line}\n\n"
-        f"{current_bot.name} source:\n{curr_source}{curr_tools_line}\n\n"
+        f"You're explaining to a live audience what {current.name} "
+        f"({current.bot_type}) adds over {previous.name} ({previous.bot_type}).\n\n"
+        f"{previous.name} source:\n{prev_source}{prev_tools_line}"
+        f"{prev_instructions_line}\n\n"
+        f"{current.name} source:\n{curr_source}{curr_tools_line}"
+        f"{curr_instructions_line}\n\n"
         "Explain the single most important change in 5-8 lines. Be code-focused. "
         "Use Markdown — show the key code difference in a fenced Python code block. "
         "Don't explain helper functions in detail — focus on the concept. "
@@ -163,12 +173,7 @@ class SlideContent(Widget):
         self.run_worker(self._load_explanation(), exclusive=True)
 
     async def _load_explanation(self) -> None:
-        prompt = _build_llm_prompt(
-            self._current_bot,
-            self._current_resolved,
-            self._prev_bot,
-            self._prev_resolved,
-        )
+        prompt = _build_llm_prompt(self._current_resolved, self._prev_resolved)
         text = await self._backend.complete([Message(role="user", content=prompt)])
         await self.query_one("#slide-whats-new", Markdown).update(text)
 

@@ -35,17 +35,20 @@ def _make_bots() -> list[EchoBot | LlmBot]:
 
 def _resolved(
     bot_type: str = "EchoBot",
+    name: str = "Coco",
     sources: list[str] | None = None,
     description: str = "A bot.",
+    tools: list[str] | None = None,
 ) -> ResolvedBotConfig:
     return ResolvedBotConfig(
         bot_type=bot_type,  # type: ignore[arg-type]
-        name="Coco",
+        name=name,
         emoji="\N{PARROT}",
         sources=sources or ["echo_bot.py"],
         description=description,
-        tools=[],
+        tools=tools or [],
         prompts=[],
+        instructions="",
     )
 
 
@@ -108,22 +111,17 @@ def test_agenda_produces_one_label_per_bot() -> None:
 
 
 def test_build_llm_prompt_first_bot_no_comparison() -> None:
-    bot = EchoBot(name="Coco", emoji="\N{PARROT}")
-    resolved = _resolved(sources=["echo_bot.py"])
-    prompt = _build_llm_prompt(bot, resolved, prev_bot=None, prev_resolved=None)
+    resolved = _resolved(bot_type="EchoBot", name="Coco", sources=["echo_bot.py"])
+    prompt = _build_llm_prompt(resolved, previous=None)
     assert "Coco" in prompt
     assert "EchoBot" in prompt
     assert "echo_bot.py" in prompt
 
 
 def test_build_llm_prompt_comparison_includes_both_bots() -> None:
-    prev = EchoBot(name="Coco", emoji="\N{PARROT}")
-    prev_resolved = _resolved(bot_type="EchoBot", sources=["echo_bot.py"])
-    curr = LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend())
-    curr_resolved = _resolved(bot_type="LlmBot", sources=["llm_bot.py"])
-    prompt = _build_llm_prompt(
-        curr, curr_resolved, prev_bot=prev, prev_resolved=prev_resolved
-    )
+    prev_resolved = _resolved(bot_type="EchoBot", name="Coco", sources=["echo_bot.py"])
+    curr_resolved = _resolved(bot_type="LlmBot", name="Mono", sources=["llm_bot.py"])
+    prompt = _build_llm_prompt(curr_resolved, previous=prev_resolved)
     assert "Coco" in prompt
     assert "Mono" in prompt
     assert "echo_bot.py" in prompt
@@ -131,30 +129,22 @@ def test_build_llm_prompt_comparison_includes_both_bots() -> None:
 
 
 def test_build_llm_prompt_includes_tool_names_when_present() -> None:
-    from codemoo.core.bots.tool_bot import ToolBot
     from codemoo.core.tools import reverse_string
 
-    prev = EchoBot(name="Coco", emoji="\N{PARROT}")
-    prev_resolved = _resolved(bot_type="EchoBot", sources=["echo_bot.py"])
-    curr = ToolBot(
+    prev_resolved = _resolved(bot_type="EchoBot", name="Coco", sources=["echo_bot.py"])
+    curr_resolved = _resolved(
+        bot_type="ToolBot",
         name="Telo",
-        emoji="\N{WRENCH}",
-        backend=_MockBackend(),
-        human_name="You",
-        tools=[reverse_string],
-        instructions="",
+        sources=["tool_bot.py"],
+        tools=[reverse_string.name],
     )
-    curr_resolved = _resolved(bot_type="ToolBot", sources=["tool_bot.py"])
-    prompt = _build_llm_prompt(
-        curr, curr_resolved, prev_bot=prev, prev_resolved=prev_resolved
-    )
+    prompt = _build_llm_prompt(curr_resolved, previous=prev_resolved)
     assert "reverse_string" in prompt
 
 
 def test_build_llm_prompt_no_tools_line_when_no_tools() -> None:
-    bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     resolved = _resolved()
-    prompt = _build_llm_prompt(bot, resolved, prev_bot=None, prev_resolved=None)
+    prompt = _build_llm_prompt(resolved, previous=None)
     assert "tools:" not in prompt
 
 

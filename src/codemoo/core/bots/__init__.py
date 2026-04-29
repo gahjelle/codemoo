@@ -64,6 +64,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 emoji=resolved.emoji,
                 backend=backend,
                 human_name=human_name,
+                instructions=resolved.instructions,
             )
         case "ToolBot":
             return ToolBot(
@@ -72,6 +73,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "ReadBot":
@@ -81,6 +83,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "ChangeBot":
@@ -90,6 +93,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "ScanBot":
@@ -99,6 +103,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "SendBot":
@@ -108,6 +113,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "AgentBot":
@@ -117,6 +123,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
         case "GuardBot":
@@ -126,6 +133,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 backend=backend,
                 human_name=human_name,
                 tools=tools,
+                instructions=resolved.instructions,
                 commentator=commentator,
             )
 

@@ -7,12 +7,16 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Questions
 
 - Should tool output be added to conversation history?
+- Can build_llm_context() be replaced by plain history?
 - Can we control shell scripts to only touch session folder
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?
 
 ## Tasks
 
+- Add PyPI setup
+- Clean up setup in tui.py: Use a named tuple or dataclass for return value
+- Refactor tools subpackage to use more files
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file
@@ -35,8 +39,9 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - ~~Bot config variants: `BotConfig` splits into stable identity (name, emoji, sources) + `variants: dict[str, BotVariantConfig]`; `ScriptConfig.bots` becomes `list[BotRef]`; compound keys (`AgentBot_m365` etc.) eliminated~~
 - ~~Entra app registration setup guide for M365 demo tenants~~
 - ~~Bug: When Cato asks for permission in several tools, some modals are shown twice~~
+- ~~Move system prompts (instructions) to config, inject into demo slides~~
 
 ## Next steps
 
 - ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
-- AgentBot mode-specific system prompt tuning (currently mode-agnostic)
+- ~~AgentBot mode-specific system prompt tuning (currently mode-agnostic)~~

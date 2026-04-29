@@ -44,6 +44,7 @@ class BotVariantConfig(StrictModel):
     description: str
     tools: list[str] = []
     prompts: list[str] = []
+    instructions: str = ""
 
 
 class BotConfig(StrictModel):
@@ -94,6 +95,7 @@ class ResolvedBotConfig:
     description: str
     tools: list[str]
     prompts: list[str]
+    instructions: str
 
 
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
@@ -108,6 +110,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         description=variant.description,
         tools=variant.tools,
         prompts=variant.prompts,
+        instructions=variant.instructions,
     )
 
 
