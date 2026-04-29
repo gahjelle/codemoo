@@ -17,7 +17,7 @@ class SystemBot:
 
     name: str
     emoji: str
-    backend: LLMBackend
+    llm: LLMBackend
     instructions: str
     is_human: ClassVar[bool] = False
 
@@ -36,5 +36,5 @@ class SystemBot:
             ],
             Message(role="user", content=message.text),
         ]
-        response = await self.backend.complete(context)
+        response = await self.llm.complete(context)
         return ChatMessage(sender=self.name, text=response)

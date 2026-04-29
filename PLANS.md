@@ -15,7 +15,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 - Add PyPI setup
 - Add more LLM providers: Ollama, OpenAI, Google/Gemini
-- Clean up setup in tui.py: Use a named tuple or dataclass for return value
 - Refactor tools subpackage to use more files
 - Introduce concept of session folder
 - Read file-tool locked to session folder
@@ -27,19 +26,4 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Refactor ~~m365 auth~~ and graph_read to use caching instead of globals
 - Refactor core.tools to use more files (and maybe formatting can go into common?)
 - ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
-
-## Done
-
-- ~~Dedicated demo folder with artifacts~~
-- ~~M365 Copilot parallel demo path (ScanBot/Roam, SendBot/Aero, MSAL auth, TOOL_REGISTRY, mode plumbing)~~
-- ~~FileBot renamed to ReadBot (read-only); ShellBot renamed to ChangeBot (shell + write)~~
-- ~~GeneralToolBot renamed to SingleTurnToolBot~~
-- ~~Tool registry: tools are now config not code; `BotConfig` gains required `type` and `tools` fields~~
-- ~~Scripts become structured objects with `mode` and `bots` fields~~
-- ~~Bot config variants: `BotConfig` splits into stable identity (name, emoji, sources) + `variants: dict[str, BotVariantConfig]`; `ScriptConfig.bots` becomes `list[BotRef]`; compound keys (`AgentBot_m365` etc.) eliminated~~
-- ~~Entra app registration setup guide for M365 demo tenants~~
-- ~~Bug: When Cato asks for permission in several tools, some modals are shown twice~~
-- ~~Move system prompts (instructions) to config, inject into demo slides~~
-- ~~Inline LLM context construction and remove build_llm_context() helper~~
-- ~~AgentBot mode-specific system prompt tuning (currently mode-agnostic)~~
-
+- Add sessions and store them to disk, include --resume functionality

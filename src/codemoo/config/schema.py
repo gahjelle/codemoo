@@ -91,6 +91,7 @@ class ResolvedBotConfig:
     bot_type: BotType
     name: str
     emoji: str
+    variant: str
     sources: list[str]
     description: str
     tools: list[str]
@@ -106,6 +107,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         bot_type=ref.type,
         name=cfg.name,
         emoji=cfg.emoji,
+        variant=ref.variant,
         sources=cfg.sources,
         description=variant.description,
         tools=variant.tools,

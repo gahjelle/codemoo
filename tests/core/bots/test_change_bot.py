@@ -72,7 +72,7 @@ def bot_text(text_backend: _MockBackend) -> ChangeBot:
     return ChangeBot(
         name="A",
         emoji="\N{HAMMER}",
-        backend=text_backend,
+        llm=text_backend,
         tools=[run_shell],
         instructions="You can execute shell commands and write files using your tools.",
     )
@@ -83,7 +83,7 @@ def bot_tool(tool_backend: _MockBackend) -> ChangeBot:
     return ChangeBot(
         name="A",
         emoji="\N{HAMMER}",
-        backend=tool_backend,
+        llm=tool_backend,
         tools=[run_shell],
         instructions="You can execute shell commands and write files using your tools.",
     )

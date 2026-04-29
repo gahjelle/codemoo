@@ -25,7 +25,7 @@ class SingleTurnToolBot:
 
     name: str
     emoji: str
-    backend: ToolLLMBackend
+    llm: ToolLLMBackend
     tools: list[ToolDef]
     instructions: str
     commentator: CommentatorBot | None = None
@@ -46,7 +46,7 @@ class SingleTurnToolBot:
             ],
             Message(role="user", content=message.text),
         ]
-        step = await self.backend.complete_step(messages, self.tools)
+        step = await self.llm.complete_step(messages, self.tools)
         if isinstance(step, ToolUse):
             tool_map = {t.name: t for t in self.tools}
             if self.commentator is not None:
@@ -63,7 +63,7 @@ class SingleTurnToolBot:
                 step.assistant_message,
                 Message(role="tool", content=tool_output, tool_call_id=step.call_id),
             ]
-            text = await self.backend.complete(follow_up) or _INTERRUPTED
+            text = await self.llm.complete(follow_up) or _INTERRUPTED
         else:
             text = step.text  # TextResponse
         return ChatMessage(sender=self.name, text=text)

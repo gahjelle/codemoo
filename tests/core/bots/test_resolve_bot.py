@@ -15,7 +15,7 @@ def _make_bots() -> list[ChatParticipant]:
     backend = _MockBackend()
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=backend),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", llm=backend),
     ]
 
 

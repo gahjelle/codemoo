@@ -14,7 +14,7 @@ _BACKEND: LLMBackend = _StubBackend()
 
 
 def test_label_includes_name_and_type() -> None:
-    bot = LlmBot(name="Llm", emoji="\N{SPARKLES}", backend=_BACKEND)
+    bot = LlmBot(name="Llm", emoji="\N{SPARKLES}", llm=_BACKEND)
     assert _bot_label(bot) == "\N{SPARKLES} Llm (LlmBot)"
 
 
@@ -23,5 +23,5 @@ def test_label_echo_bot() -> None:
 
 
 def test_label_chat_bot() -> None:
-    bot = ChatBot(name="Chat", emoji="O", backend=_BACKEND)
+    bot = ChatBot(name="Chat", emoji="O", llm=_BACKEND)
     assert _bot_label(bot) == "O Chat (ChatBot)"

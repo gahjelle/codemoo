@@ -1,6 +1,7 @@
 """TUI entry point for the codemoo command."""
 
 import asyncio
+from dataclasses import dataclass
 from typing import NoReturn
 
 import configaroo
@@ -28,45 +29,52 @@ from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
 
-_SetupResult = tuple[
-    ToolLLMBackend,
-    BackendInfo,
-    HumanParticipant,
-    list[ChatParticipant],
-    list[ResolvedBotConfig],
-    ErrorBot,
-    CommentatorBot,
-]
+
+@dataclass
+class SetupResult:
+    """Basic set up of the coding assistant."""
+
+    llm: ToolLLMBackend
+    backend_info: BackendInfo
+    human: HumanParticipant
+    available: list[ChatParticipant]
+    resolved_bots: list[ResolvedBotConfig]
+    error_bot: ErrorBot
+    commentator_bot: CommentatorBot
+
 
 # One app defaults to code mode, while the other defaults to business mode
 code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 business_app = cyclopts.App(help="Enterproose - demo enterprise agents step by step.")
 
 
-def _setup(script: ScriptName = "default", mode: ModeName = "code") -> _SetupResult:
-    backend, backend_info = resolve_backend(config)
+def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResult:
+    llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
-    error_bot = bot_module.ErrorBot(backend=backend, language=language)
-    commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
+    error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+
     if mode == "business":
+        # Try to connect to M365 in order to fail early if there are issues
         from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
 
         init_graph_auth(config.m365)
-    available, resolved_configs = make_bots(
-        backend,
+
+    available, resolved_bots = make_bots(
+        llm_backend,
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
     )
-    return (
-        backend,
-        backend_info,
-        human,
-        available,
-        resolved_configs,
-        error_bot,
-        commentator_bot,
+    return SetupResult(
+        llm=llm_backend,
+        backend_info=backend_info,
+        human=human,
+        available=available,
+        resolved_bots=resolved_bots,
+        error_bot=error_bot,
+        commentator_bot=commentator_bot,
     )
 
 
@@ -90,13 +98,13 @@ def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") ->
 
 def _chat(*, bot: str, mode: ModeName) -> None:
     """Launch the chat in any mode."""
-    _, backend_info, human, available, _, error_bot, commentator_bot = _setup(mode=mode)
-    chosen = resolve_bot(bot, available)
+    setup = _setup(mode=mode)
+    chosen = resolve_bot(bot, setup.available)
     ChatApp(
-        participants=[human, chosen],
-        error_bot=error_bot,
-        commentator_bot=commentator_bot,
-        backend_info=backend_info,
+        participants=[setup.human, chosen],
+        error_bot=setup.error_bot,
+        commentator_bot=setup.commentator_bot,
+        backend_info=setup.backend_info,
         mode=mode,
     ).run()
 
@@ -112,13 +120,14 @@ def show_config(section: str | None = None) -> None:
 @business_app.command
 def list_bots(*, script: ScriptName = "default") -> None:
     """List all available bots with their index, type, and name."""
-    _, _, _, bots, _, _, _ = _setup(script)
+    setup = _setup(script)
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Type")
     table.add_column("Bot")
-    for i, bot in enumerate(bots, start=1):
-        table.add_row(str(i), type(bot).__name__, f"{bot.emoji} {bot.name}")
+    table.add_column("Variant")
+    for i, bot in enumerate(setup.resolved_bots, start=1):
+        table.add_row(str(i), bot.bot_type, f"{bot.emoji} {bot.name}", bot.variant)
     Console().print(table)
 
 
@@ -160,13 +169,13 @@ def _select(*, mode: ModeName) -> None:
                     seen.add(ref.type)
                     mode_bot_refs.append(ref)
 
-    backend, backend_info = resolve_backend(config)
+    llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
-    error_bot = bot_module.ErrorBot(backend=backend, language=language)
-    commentator_bot = bot_module.CommentatorBot(backend=backend, language=language)
+    error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
     available, _ = make_bots(
-        backend,
+        llm_backend,
         cfg=config.bots,
         bot_refs=mode_bot_refs,
         commentator=commentator_bot,
@@ -208,41 +217,35 @@ def business_demo(
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
     mode: ModeName = config.scripts[script].mode
-    (
-        backend,
-        backend_info,
-        human,
-        available,
-        resolved_configs,
-        error_bot,
-        commentator_bot,
-    ) = _setup(script, mode)
+    setup = _setup(script, mode)
     start_index = (
-        available.index(resolve_bot(start, available)) if start is not None else 0
+        setup.available.index(resolve_bot(start, setup.available))
+        if start is not None
+        else 0
     )
     end_index = (
-        available.index(resolve_bot(end, available))
+        setup.available.index(resolve_bot(end, setup.available))
         if end is not None
-        else len(available) - 1
+        else len(setup.available) - 1
     )
-    demo_bots = available[start_index : end_index + 1]
-    demo_resolved = resolved_configs[start_index : end_index + 1]
+    demo_bots = setup.available[start_index : end_index + 1]
+    demo_resolved = setup.resolved_bots[start_index : end_index + 1]
     for i, bot in enumerate(demo_bots):
         prev_bot = demo_bots[i - 1] if i > 0 else None
         context = DemoContext(
             all_bots=demo_bots,
             resolved_configs=demo_resolved,
             prev_bot=prev_bot,
-            backend=backend,
+            llm=setup.llm,
             position=(i + 1, len(demo_bots)),
             prompts=list(demo_resolved[i].prompts),
         )
         result = await ChatApp(
-            participants=[human, bot],
-            error_bot=error_bot,
-            commentator_bot=commentator_bot,
+            participants=[setup.human, bot],
+            error_bot=setup.error_bot,
+            commentator_bot=setup.commentator_bot,
             demo_context=context,
-            backend_info=backend_info,
+            backend_info=setup.backend_info,
             mode=mode,
         ).run_async()
         if result != "next":

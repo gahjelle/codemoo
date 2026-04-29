@@ -61,7 +61,7 @@ class ErrorBot:
     called directly by the dispatch loop when another participant raises.
     """
 
-    backend: LLMBackend
+    llm: LLMBackend
     language: str = "English"
     is_human: ClassVar[bool] = False
     name: str = dataclasses.field(init=False)
@@ -98,7 +98,7 @@ class ErrorBot:
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),
             ]
-            text = await self.backend.complete(messages)
+            text = await self.llm.complete(messages)
         except Exception:  # noqa: BLE001
             text = f"{participant.name} encountered an error: {exception}"
         return ChatMessage(sender=self.name, text=text)

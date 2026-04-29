@@ -30,6 +30,7 @@ def _make_demo_context(
         bot_type="EchoBot",
         name="Coco",
         emoji="\N{PARROT}",
+        variant="default",
         sources=["echo_bot.py"],
         description="A bot.",
         tools=[],
@@ -40,7 +41,7 @@ def _make_demo_context(
         all_bots=[bot],
         resolved_configs=[resolved],
         prev_bot=None,
-        backend=_MockBackend(),
+        llm=_MockBackend(),
         position=position,
         prompts=prompts or [],
     )
@@ -49,7 +50,7 @@ def _make_demo_context(
 def _make_app(demo_context: DemoContext | None = None) -> ChatApp:
     human = HumanParticipant()
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
-    error_bot = ErrorBot(backend=_MockBackend())
+    error_bot = ErrorBot(llm=_MockBackend())
     return ChatApp(
         participants=[human, bot],
         error_bot=error_bot,

@@ -87,7 +87,7 @@ class CommentatorBot:
     Call register() before the first comment() to wire it to the UI.
     """
 
-    backend: LLMBackend
+    llm: LLMBackend
     language: str = "English"
     _post_fn: Callable[[ChatMessage], None] = dataclasses.field(init=False, repr=False)
 
@@ -121,7 +121,7 @@ class CommentatorBot:
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),
             ]
-            text = await self.backend.complete(messages)
+            text = await self.llm.complete(messages)
         except Exception:  # noqa: BLE001
             fallback = f"{event.bot_name} calls {full_sig}"
             self._post_fn(ChatMessage(sender=_STREIK_NAME, text=fallback))

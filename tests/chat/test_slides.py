@@ -29,7 +29,7 @@ class _MockBackend:
 def _make_bots() -> list[EchoBot | LlmBot]:
     return [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", llm=_MockBackend()),
     ]
 
 
@@ -44,6 +44,7 @@ def _resolved(
         bot_type=bot_type,  # type: ignore[arg-type]
         name=name,
         emoji="\N{PARROT}",
+        variant="default",
         sources=sources or ["echo_bot.py"],
         description=description,
         tools=tools or [],
@@ -58,7 +59,7 @@ def _make_context(position: tuple[int, int] = (1, 1)) -> DemoContext:
         all_bots=[bot],
         resolved_configs=[_resolved()],
         prev_bot=None,
-        backend=_MockBackend(),
+        llm=_MockBackend(),
         position=position,
     )
 
@@ -90,7 +91,7 @@ def test_agenda_upcoming_bot_has_upcoming_class() -> None:
 def test_agenda_all_three_states_with_three_bots() -> None:
     bots = [
         EchoBot(name="Coco", emoji="\N{PARROT}"),
-        LlmBot(name="Mono", emoji="\N{SPARKLES}", backend=_MockBackend()),
+        LlmBot(name="Mono", emoji="\N{SPARKLES}", llm=_MockBackend()),
         EchoBot(name="Other", emoji="\N{PARROT}"),
     ]
     column = AgendaColumn(bots, current_index=1)
@@ -162,7 +163,7 @@ def test_slide_content_description_comes_from_resolved_config() -> None:
         current_resolved=resolved,
         prev_bot=None,
         prev_resolved=None,
-        backend=_MockBackend(),
+        llm=_MockBackend(),
     )
     description_labels = [
         w
@@ -292,7 +293,7 @@ def _make_context_with_prompts(
         all_bots=[bot],
         resolved_configs=[_resolved()],
         prev_bot=None,
-        backend=backend or _MockBackend(),
+        llm=backend or _MockBackend(),
         position=(1, 1),
         prompts=list(prompts),
     )

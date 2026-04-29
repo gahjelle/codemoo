@@ -36,7 +36,7 @@ def system_bot(backend: _MockBackend) -> SystemBot:
     return SystemBot(
         name="Sigma",
         emoji="\N{PERFORMING ARTS}",
-        backend=backend,
+        llm=backend,
         instructions="You are a terse coding assistant.",
     )
 

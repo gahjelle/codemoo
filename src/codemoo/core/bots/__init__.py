@@ -39,97 +39,97 @@ __all__ = [
 
 
 def _make_bot(  # noqa: C901, PLR0911
-    resolved: ResolvedBotConfig,
-    backend: ToolLLMBackend,
+    bot: ResolvedBotConfig,
+    llm: ToolLLMBackend,
     commentator: CommentatorBot | None,
 ) -> ChatParticipant:
     """Construct a single bot by type, resolving tools from TOOL_REGISTRY."""
-    tools = [TOOL_REGISTRY[name] for name in resolved.tools]
-    match resolved.bot_type:
+    tools = [TOOL_REGISTRY[name] for name in bot.tools]
+    match bot.bot_type:
         case "EchoBot":
-            return EchoBot(name=resolved.name, emoji=resolved.emoji)
+            return EchoBot(name=bot.name, emoji=bot.emoji)
         case "LlmBot":
-            return LlmBot(name=resolved.name, emoji=resolved.emoji, backend=backend)
+            return LlmBot(name=bot.name, emoji=bot.emoji, llm=llm)
         case "ChatBot":
             return ChatBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
             )
         case "SystemBot":
             return SystemBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
-                instructions=resolved.instructions,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                instructions=bot.instructions,
             )
         case "ToolBot":
             return ToolBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "ReadBot":
             return ReadBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "ChangeBot":
             return ChangeBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "ScanBot":
             return ScanBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "SendBot":
             return SendBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "AgentBot":
             return AgentBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
         case "GuardBot":
             return GuardBot(
-                name=resolved.name,
-                emoji=resolved.emoji,
-                backend=backend,
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
                 tools=tools,
-                instructions=resolved.instructions,
+                instructions=bot.instructions,
                 commentator=commentator,
             )
 
 
 def make_bots(
-    backend: ToolLLMBackend,
+    llm: ToolLLMBackend,
     *,
     cfg: dict[BotType, BotConfig],
     bot_refs: list[BotRef],
@@ -137,7 +137,7 @@ def make_bots(
 ) -> tuple[list[ChatParticipant], list[ResolvedBotConfig]]:
     """Return bots and their resolved configs, in the order given by bot_refs."""
     resolved_list = [resolve(cfg, ref) for ref in bot_refs]
-    bots = [_make_bot(r, backend, commentator) for r in resolved_list]
+    bots = [_make_bot(bot, llm, commentator) for bot in resolved_list]
     return bots, resolved_list
 
 

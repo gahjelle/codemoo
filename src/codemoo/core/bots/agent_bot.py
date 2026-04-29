@@ -24,7 +24,7 @@ class AgentBot:
 
     name: str
     emoji: str
-    backend: ToolLLMBackend
+    llm: ToolLLMBackend
     tools: list[ToolDef]
     instructions: str
     commentator: CommentatorBot | None = None
@@ -48,7 +48,7 @@ class AgentBot:
         tool_map = {t.name: t for t in self.tools}
 
         while True:
-            step = await self.backend.complete_step(messages, self.tools)
+            step = await self.llm.complete_step(messages, self.tools)
             if not isinstance(step, ToolUse):
                 return ChatMessage(sender=self.name, text=step.text)
             if self.commentator is not None:

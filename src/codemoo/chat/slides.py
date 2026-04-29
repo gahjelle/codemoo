@@ -24,7 +24,7 @@ class DemoContext:
     all_bots: list[ChatParticipant]
     resolved_configs: list[ResolvedBotConfig]
     prev_bot: ChatParticipant | None
-    backend: LLMBackend
+    llm: LLMBackend
     position: tuple[int, int]
     prompts: list[str] = dataclasses.field(default_factory=list)
 
@@ -41,11 +41,6 @@ def _parse_numbered_list(text: str, expected: int) -> list[str] | None:
 
 def _read_source(filename: str) -> str:
     return (config.paths.bots_dir / filename).read_text()
-
-
-def _tool_names(bot: ChatParticipant) -> list[str]:
-    tools = getattr(bot, "tools", [])
-    return [tool.name for tool in tools if tool.name]
 
 
 def _bot_source_block(resolved: ResolvedBotConfig) -> str:
@@ -147,15 +142,15 @@ class SlideContent(Widget):
         current_resolved: ResolvedBotConfig,
         prev_bot: ChatParticipant | None,
         prev_resolved: ResolvedBotConfig | None,
-        backend: LLMBackend,
+        llm: LLMBackend,
     ) -> None:
-        """Initialise with current/previous bots, resolved configs, and backend."""
+        """Initialise with current/previous bots, resolved configs, and llm."""
         super().__init__()
         self._current_bot = current_bot
         self._current_resolved = current_resolved
         self._prev_bot = prev_bot
         self._prev_resolved = prev_resolved
-        self._backend = backend
+        self._llm = llm
 
     def compose(self) -> ComposeResult:
         """Yield the title, description, what's-new area, and dismiss button."""
@@ -174,7 +169,7 @@ class SlideContent(Widget):
 
     async def _load_explanation(self) -> None:
         prompt = _build_llm_prompt(self._current_resolved, self._prev_resolved)
-        text = await self._backend.complete([Message(role="user", content=prompt)])
+        text = await self._llm.complete([Message(role="user", content=prompt)])
         await self.query_one("#slide-whats-new", Markdown).update(text)
 
 
@@ -204,7 +199,7 @@ class SlideScreen(ModalScreen[None]):
                     current_resolved,
                     self._demo_ctx.prev_bot,
                     prev_resolved,
-                    self._demo_ctx.backend,
+                    self._demo_ctx.llm,
                 ),
                 id="slide-layout",
             )
@@ -223,7 +218,7 @@ class SlideScreen(ModalScreen[None]):
             "Return them as a numbered list in the same format, with no extra text.\n\n"
             f"{numbered}"
         )
-        response = await self._demo_ctx.backend.complete(
+        response = await self._demo_ctx.llm.complete(
             [Message(role="user", content=prompt)]
         )
         translated = _parse_numbered_list(response, len(self._demo_ctx.prompts))

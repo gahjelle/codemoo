@@ -128,7 +128,7 @@ _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 def _make_app(participants: list[ChatParticipant]) -> ChatApp:
     return ChatApp(
         participants=participants,
-        error_bot=ErrorBot(backend=_MockBackend()),
+        error_bot=ErrorBot(llm=_MockBackend()),
     )
 
 

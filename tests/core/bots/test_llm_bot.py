@@ -33,7 +33,7 @@ def mock_backend() -> _MockBackend:
 
 @pytest.fixture
 def llm_bot(mock_backend: _MockBackend) -> LlmBot:
-    return LlmBot(name="LLMBot", emoji="\N{ROBOT FACE}", backend=mock_backend)
+    return LlmBot(name="LLMBot", emoji="\N{ROBOT FACE}", llm=mock_backend)
 
 
 def test_llm_bot_is_not_human(llm_bot: LlmBot) -> None:

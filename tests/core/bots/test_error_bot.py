@@ -53,7 +53,7 @@ def test_persona_fields_are_non_empty() -> None:
 
 
 def test_error_bot_name_and_emoji_match_a_known_persona() -> None:
-    bot = ErrorBot(backend=_MockBackend())
+    bot = ErrorBot(llm=_MockBackend())
     known_names = {p.name for p in _PERSONAS}
     known_emojis = {p.emoji for p in _PERSONAS}
     assert bot.name in known_names
@@ -61,12 +61,12 @@ def test_error_bot_name_and_emoji_match_a_known_persona() -> None:
 
 
 def test_error_bot_is_not_human() -> None:
-    bot = ErrorBot(backend=_MockBackend())
+    bot = ErrorBot(llm=_MockBackend())
     assert bot.is_human is False
 
 
 def test_error_bot_persona_is_stable_within_session() -> None:
-    bot = ErrorBot(backend=_MockBackend())
+    bot = ErrorBot(llm=_MockBackend())
     name_first = bot.name
     emoji_first = bot.emoji
     assert bot.name == name_first
@@ -75,7 +75,7 @@ def test_error_bot_persona_is_stable_within_session() -> None:
 
 @pytest.mark.asyncio
 async def test_on_message_always_returns_none() -> None:
-    bot = ErrorBot(backend=_MockBackend())
+    bot = ErrorBot(llm=_MockBackend())
     msg = ChatMessage(sender="You", text="hello")
     result = await bot.on_message(msg, [])
     assert result is None
@@ -83,7 +83,7 @@ async def test_on_message_always_returns_none() -> None:
 
 @pytest.mark.asyncio
 async def test_format_error_returns_llm_response_when_available() -> None:
-    bot = ErrorBot(backend=_MockBackend(response="Oh no, so sorry!"))
+    bot = ErrorBot(llm=_MockBackend(response="Oh no, so sorry!"))
     result = await bot.format_error(_MockParticipant(), ValueError("oops"))
     assert result.text == "Oh no, so sorry!"
     assert result.sender == bot.name
@@ -92,7 +92,7 @@ async def test_format_error_returns_llm_response_when_available() -> None:
 @pytest.mark.asyncio
 async def test_format_error_passes_instructions_to_backend() -> None:
     backend = _MockBackend()
-    bot = ErrorBot(backend=backend)
+    bot = ErrorBot(llm=backend)
     await bot.format_error(_MockParticipant(), ValueError("oops"))
 
     sent_messages = backend.calls[0]
@@ -105,7 +105,7 @@ async def test_format_error_passes_instructions_to_backend() -> None:
 
 @pytest.mark.asyncio
 async def test_format_error_falls_back_to_plain_text_when_llm_fails() -> None:
-    bot = ErrorBot(backend=_FailingBackend())
+    bot = ErrorBot(llm=_FailingBackend())
     exc = RuntimeError("connection refused")
     result = await bot.format_error(_MockParticipant(), exc)
     assert "Iris" in result.text
@@ -115,6 +115,6 @@ async def test_format_error_falls_back_to_plain_text_when_llm_fails() -> None:
 
 @pytest.mark.asyncio
 async def test_format_error_fallback_does_not_raise() -> None:
-    bot = ErrorBot(backend=_FailingBackend())
+    bot = ErrorBot(llm=_FailingBackend())
     result = await bot.format_error(_MockParticipant(), Exception("total failure"))
     assert result is not None

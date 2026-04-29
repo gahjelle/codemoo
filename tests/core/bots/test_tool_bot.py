@@ -74,7 +74,7 @@ def bot_text(text_backend: _MockBackend) -> ToolBot:
     return ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
-        backend=text_backend,
+        llm=text_backend,
         tools=[reverse_string],
         instructions="You have tools available. Use them when they would help.",
     )
@@ -98,7 +98,7 @@ def bot_tool(tool_backend: _MockBackend) -> ToolBot:
     return ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
-        backend=tool_backend,
+        llm=tool_backend,
         tools=[reverse_string],
         instructions="You have tools available. Use them when they would help.",
     )
@@ -170,7 +170,7 @@ async def test_tool_use_path_empty_complete_uses_fallback(
     bot = ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
-        backend=empty_backend,
+        llm=empty_backend,
         tools=[reverse_string],
         instructions="You have tools available.",
     )

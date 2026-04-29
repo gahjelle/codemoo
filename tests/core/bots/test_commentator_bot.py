@@ -63,7 +63,7 @@ class _MockBackend:
 @pytest.mark.asyncio
 async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
     backend = _MockBackend(response="Oh wow, a shell command!")
-    bot = CommentatorBot(backend=backend)
+    bot = CommentatorBot(llm=backend)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -82,7 +82,7 @@ async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
 @pytest.mark.asyncio
 async def test_comment_passes_event_info_in_prompt() -> None:
     backend = _MockBackend()
-    bot = CommentatorBot(backend=backend)
+    bot = CommentatorBot(llm=backend)
     bot.register(lambda _: None)
 
     event = ToolCallEvent(
@@ -109,7 +109,7 @@ class _FailingBackend:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_on_llm_error() -> None:
-    bot = CommentatorBot(backend=_FailingBackend())
+    bot = CommentatorBot(llm=_FailingBackend())
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -124,7 +124,7 @@ async def test_streik_fallback_on_llm_error() -> None:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_text_contains_tool_name_and_bot_name() -> None:
-    bot = CommentatorBot(backend=_FailingBackend())
+    bot = CommentatorBot(llm=_FailingBackend())
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -187,7 +187,7 @@ async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
     bot = SingleTurnToolBot(
         name="Ash",
         emoji="🐚",
-        backend=_SingleStepBackend(_TOOL_USE),
+        llm=_SingleStepBackend(_TOOL_USE),
         tools=[run_shell],
         instructions="",
         commentator=mock_commentator,
@@ -247,7 +247,7 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
     bot = AgentBot(
         name="Loom",
         emoji="🌀",
-        backend=backend,
+        llm=backend,
         tools=[run_shell],
         instructions="You are a helpful assistant.",
         commentator=mock_commentator,
@@ -272,7 +272,7 @@ class _NullBackend:
 def _make_app() -> ChatApp:
     return ChatApp(
         participants=[HumanParticipant()],
-        error_bot=ErrorBot(backend=_NullBackend()),
+        error_bot=ErrorBot(llm=_NullBackend()),
     )
 
 
@@ -296,7 +296,7 @@ def test_known_senders_are_not_affected() -> None:
 
 
 def test_sender_info_contains_all_personas() -> None:
-    bot = CommentatorBot(backend=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend())
     info = bot.sender_info()
     for persona in _PERSONAS:
         assert persona.name in info
@@ -306,7 +306,7 @@ def test_sender_info_contains_all_personas() -> None:
 
 
 def test_sender_info_contains_streik() -> None:
-    bot = CommentatorBot(backend=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend())
     info = bot.sender_info()
     assert _STREIK_NAME in info
     _, _, css = info[_STREIK_NAME]
@@ -314,10 +314,10 @@ def test_sender_info_contains_streik() -> None:
 
 
 def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
-    bot = CommentatorBot(backend=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend())
     app = ChatApp(
         participants=[HumanParticipant()],
-        error_bot=ErrorBot(backend=_NullBackend()),
+        error_bot=ErrorBot(llm=_NullBackend()),
         commentator_bot=bot,
     )
     for persona in _PERSONAS:
@@ -329,7 +329,7 @@ def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
 @pytest.mark.asyncio
 async def test_display_header_truncates_long_values_with_ellipsis() -> None:
     backend = _MockBackend(response="Nice!")
-    bot = CommentatorBot(backend=backend)
+    bot = CommentatorBot(llm=backend)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -350,7 +350,7 @@ def test_streik_fallback_has_no_dim_prefix() -> None:
     """Streik posts just the call sig with no [dim] markup."""
 
     async def _run() -> ChatMessage:
-        bot = CommentatorBot(backend=_FailingBackend())
+        bot = CommentatorBot(llm=_FailingBackend())
         received: list[ChatMessage] = []
         bot.register(received.append)
         event = ToolCallEvent(

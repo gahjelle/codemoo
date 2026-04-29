@@ -17,7 +17,7 @@ class ChatBot:
 
     name: str
     emoji: str
-    backend: LLMBackend
+    llm: LLMBackend
     is_human: ClassVar[bool] = False
 
     async def on_message(
@@ -34,5 +34,5 @@ class ChatBot:
             ],
             Message(role="user", content=message.text),
         ]
-        response = await self.backend.complete(context)
+        response = await self.llm.complete(context)
         return ChatMessage(sender=self.name, text=response)

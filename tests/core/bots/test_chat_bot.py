@@ -36,7 +36,7 @@ def chat_bot(chat_backend: _MockBackend) -> ChatBot:
     return ChatBot(
         name="ChatBot",
         emoji="\N{ROBOT FACE}",
-        backend=chat_backend,
+        llm=chat_backend,
     )
 
 

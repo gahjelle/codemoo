@@ -17,7 +17,7 @@ class LlmBot:
 
     name: str
     emoji: str
-    backend: LLMBackend
+    llm: LLMBackend
     is_human: ClassVar[bool] = False
 
     async def on_message(
@@ -26,7 +26,6 @@ class LlmBot:
         history: list[ChatMessage],  # noqa: ARG002
     ) -> ChatMessage | None:
         """Respond to message using only its text; ignore history."""
-        response = await self.backend.complete(
-            [Message(role="user", content=message.text)]
-        )
+        context = [Message(role="user", content=message.text)]
+        response = await self.llm.complete(context)
         return ChatMessage(sender=self.name, text=response)
