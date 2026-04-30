@@ -44,9 +44,9 @@ class SetupResult:
     commentator_bot: CommentatorBot
 
 
-# One app defaults to code mode, while the other defaults to business mode
+# One app defaults to code bots/scripts, while the other to business bots/scripts
 code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
-business_app = cyclopts.App(help="Enterproose - demo enterprise agents step by step.")
+business_app = cyclopts.App(help="Collebra - demo enterprise agents step by step.")
 
 
 def _setup(script: ScriptName = "default") -> SetupResult:
@@ -78,7 +78,7 @@ def code_chat(*, bot: BotType = "GuardBot", variant: str = "code") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
         return _chat(bot=bot, variant=variant)
-    except ValueError as err:
+    except Exception as err:  # noqa: BLE001
         _raise_error(str(err))
 
 
@@ -87,7 +87,7 @@ def business_chat(*, bot: BotType = "GuardBot", variant: str = "business") -> No
     """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
         return _chat(bot=bot, variant=variant)
-    except ValueError as err:
+    except Exception as err:  # noqa: BLE001
         _raise_error(str(err))
 
 
@@ -108,7 +108,7 @@ def _chat(*, bot: BotType, variant: str) -> None:
     )
     _run_init_hooks_for_resolved(resolved_bots)
     ChatApp(
-        participants=[human, available[0]],
+        participants=[human, *available],
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
@@ -154,11 +154,6 @@ def list_scripts() -> None:
 @code_app.command(name="select")
 @business_app.command(name="select")
 def select() -> None:
-    """Choose a bot interactively before starting the chat."""
-    _select()
-
-
-def _select() -> None:
     """Show the full bot catalog and start chat with the chosen bot(s)."""
     all_resolved = [
         resolve(config.bots, BotRef(type=bot_type, variant=variant_name))

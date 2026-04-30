@@ -63,18 +63,17 @@ Launch the chat with the most capable bot:
 uv run codemoo
 ```
 
-The business chat is named Enterproose, and can be run in the same way as Codemoo (requires an Entra app registration and correctly set [environment variables](#configuration).):
+The business chat is named Collebra, and can be run in the same way as Codemoo (requires an Entra app registration and correctly set [environment variables](#configuration).):
 
 ```console
-uv run enterproose
-uv run codemoo --mode business
+uv run collebra
+uv run codemoo --variant business
 ```
 
-Use `--bot` to start with a specific bot by name, type, or 1-based index:
+Use `--bot` to start with a specific bot by type:
 
 ```console
-uv run codemoo --bot rune
-uv run codemoo --bot 6
+uv run codemoo --bot ReadBot
 ```
 
 To pick a bot interactively before starting:

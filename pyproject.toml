@@ -29,8 +29,8 @@ dependencies = [
 [project.scripts]
 codemoo = "codemoo.frontends.tui:code_app"
 moo = "codemoo.frontends.tui:code_app"
-enterproose = "codemoo.frontends.tui:business_app"
-proose = "codemoo.frontends.tui:business_app"
+collebra = "codemoo.frontends.tui:business_app"
+ebra = "codemoo.frontends.tui:business_app"
 demoo = "codemoo.frontends.cli:app"
 
 [dependency-groups]
@@ -113,5 +113,5 @@ tag = true
 push = true
 
 [tool.bumpver.file_patterns]
-"pyproject.toml" = ['version = "YYYY.MM.PATCH"','current_version = "{version}"']
+"pyproject.toml" = ['version = "YYYY.MM.PATCH"', 'current_version = "{version}"']
 "src/codemoo/__init__.py" = ['__version__ = "YYYY.MM.PATCH"']
