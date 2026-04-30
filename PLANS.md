@@ -4,6 +4,8 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Bugs
 
+- PyPI installs don't include configs/
+
 ## Questions
 
 - Should tool output be added to conversation history?
@@ -14,9 +16,9 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- Add PyPI setup
+- ~~Add PyPI setup~~
 - Add more LLM providers: Ollama, OpenAI, Google/Gemini
-- Refactor tools subpackage to use more files
+- ~~Refactor tools subpackage to use more files~~
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file

@@ -1,15 +1,17 @@
 """Codemoo runtime configuration loaded from configs/codemoo.toml."""
 
-import configaroo
+from pathlib import Path
+
 import platformdirs
+from configaroo import Configuration
 
 from codemoo.config.schema import CodemooConfig
 
 __all__ = ["config"]
 
-config_path = configaroo.find_pyproject_toml() / "configs" / "codemoo.toml"
+config_path = Path(__file__).parent / "codemoo.toml"
 config = (
-    configaroo.Configuration.from_file(config_path)
+    Configuration.from_file(config_path)
     .add_envs(
         {
             "LANGUAGE": "language",
