@@ -152,7 +152,7 @@ class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
     language: str
-    main_bot: BotType
+    main_bot: dict[ModeName, BotRef]
     paths: PathsConfig
     bots: dict[BotType, BotConfig]
     scripts: dict[ScriptName, ScriptConfig]

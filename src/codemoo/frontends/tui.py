@@ -48,6 +48,10 @@ code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 business_app = cyclopts.App(help="Enterproose - demo enterprise agents step by step.")
 
 
+def _default_script_for_mode(mode: ModeName) -> ScriptName:
+    return next(name for name, s in config.scripts.items() if s.mode == mode)
+
+
 def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResult:
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
@@ -83,7 +87,9 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResu
 
 
 @code_app.default
-def code_chat(*, bot: str = config.main_bot, mode: ModeName = "code") -> None:
+def code_chat(
+    *, bot: str = config.main_bot["code"].type, mode: ModeName = "code"
+) -> None:
     """Launch the code chat with the main bot, or a specific one via --bot."""
     try:
         return _chat(bot=bot, mode=mode)
@@ -92,7 +98,9 @@ def code_chat(*, bot: str = config.main_bot, mode: ModeName = "code") -> None:
 
 
 @business_app.default
-def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") -> None:
+def business_chat(
+    *, bot: str = config.main_bot["business"].type, mode: ModeName = "business"
+) -> None:
     """Launch the business chat with the main bot, or a specific one via --bot."""
     try:
         return _chat(bot=bot, mode=mode)
@@ -102,7 +110,7 @@ def business_chat(*, bot: str = config.main_bot, mode: ModeName = "business") ->
 
 def _chat(*, bot: str, mode: ModeName) -> None:
     """Launch the chat in any mode."""
-    setup = _setup(mode=mode)
+    setup = _setup(_default_script_for_mode(mode), mode=mode)
     chosen = resolve_bot(bot, setup.available)
     ChatApp(
         participants=[setup.human, chosen],

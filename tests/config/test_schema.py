@@ -7,9 +7,17 @@ from codemoo.config.schema import (
     BotConfig,
     BotRef,
     BotVariantConfig,
+    ModeName,
     ResolvedBotConfig,
+    StrictModel,
     resolve,
 )
+
+
+class _MainBotHolder(StrictModel):
+    """Minimal model to test main_bot field validation in isolation."""
+
+    main_bot: dict[ModeName, BotRef]
 
 
 def _variant(**kwargs: object) -> BotVariantConfig:
@@ -99,6 +107,28 @@ def test_resolve_merges_identity_and_variant() -> None:
     assert result.name == "Coco"
     assert result.description == "A mirror."
     assert result.prompts == ["Hi"]
+
+
+def test_main_bot_parses_per_mode_bot_refs() -> None:
+    holder = _MainBotHolder(
+        main_bot={
+            "code": {"type": "GuardBot", "variant": "code"},
+            "business": {"type": "GuardBot", "variant": "business"},
+        }
+    )
+    assert holder.main_bot["code"].type == "GuardBot"
+    assert holder.main_bot["code"].variant == "code"
+    assert holder.main_bot["business"].variant == "business"
+
+
+def test_main_bot_rejects_invalid_bot_type() -> None:
+    with pytest.raises(ValidationError):
+        _MainBotHolder(main_bot={"code": {"type": "UnknownBot", "variant": "code"}})
+
+
+def test_main_bot_rejects_bare_string() -> None:
+    with pytest.raises(ValidationError):
+        _MainBotHolder(main_bot="GuardBot")  # type: ignore[arg-type]
 
 
 def test_resolve_raises_for_unknown_variant() -> None:

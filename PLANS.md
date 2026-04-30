@@ -15,7 +15,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- The main_bot config should be a { type, variant } BotRef
+- CLI `--bot` flag should accept `Type:variant` syntax (e.g. `--bot GuardBot:business`) to fully specify a `BotRef` and enable direct bot construction without building the full script list. Mode remains a separate required argument and acts as validator — only variants compatible with the mode's infrastructure (code vs. business/Graph auth) are accepted. This pairs with the direct-construction path in `_chat` when the default bot is used.
 - Add more LLM providers: Ollama, OpenAI, Google/Gemini
 - Introduce concept of session folder
 - Read file-tool locked to session folder

@@ -1,5 +1,7 @@
 language = "English"
-main_bot = "GuardBot"
+[main_bot]
+code = { type = "GuardBot", variant = "code" }
+business = { type = "GuardBot", variant = "business" }
 
 [paths]
 bots_dir = "{project_path}/src/codemoo/core/bots"
