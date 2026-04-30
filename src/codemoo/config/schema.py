@@ -145,6 +145,7 @@ class M365Config(StrictModel):
     sharepoint_host: str
     sharepoint_site: str
     graph_base_url: str
+    scopes: list[str]
 
 
 class CodemooConfig(StrictModel):

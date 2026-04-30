@@ -55,17 +55,21 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResu
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
 
+    extra_tools = None
     if mode == "business":
-        # Try to connect to M365 in order to fail early if there are issues
-        from codemoo.m365.auth import init_graph_auth  # noqa: PLC0415
+        from codemoo.m365.auth import get_access_token, init_graph_auth  # noqa: PLC0415
+        from codemoo.m365.tools import make_graph_tools  # noqa: PLC0415
 
         init_graph_auth(config.m365)
+        get_access_token(config.m365, config.m365.scopes)
+        extra_tools = make_graph_tools(config.m365)
 
     available, resolved_bots = make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
+        extra_tools=extra_tools,
     )
     return SetupResult(
         llm=llm_backend,
@@ -174,11 +178,22 @@ def _select(*, mode: ModeName) -> None:
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+
+    extra_tools = None
+    if mode == "business":
+        from codemoo.m365.auth import get_access_token, init_graph_auth  # noqa: PLC0415
+        from codemoo.m365.tools import make_graph_tools  # noqa: PLC0415
+
+        init_graph_auth(config.m365)
+        get_access_token(config.m365, config.m365.scopes)
+        extra_tools = make_graph_tools(config.m365)
+
     available, _ = make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=mode_bot_refs,
         commentator=commentator_bot,
+        extra_tools=extra_tools,
     )
 
     selected = SelectionApp(available).run()

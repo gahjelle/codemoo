@@ -1,6 +1,6 @@
 ## Purpose
 
-The `core.tools` package is organized into category-specific modules for clarity and maintainability. Tools are organized by functional purpose (file I/O, strings, shell, M365 integrations), with core infrastructure (ToolDef, ToolParam, TOOL_REGISTRY) remaining in `__init__.py` for discoverability.
+The `core.tools` package is organized into category-specific modules for clarity and maintainability. Tools are organized by functional purpose (file I/O, strings, shell), with core infrastructure (ToolDef, ToolParam, TOOL_REGISTRY) remaining in `__init__.py` for discoverability. M365/Graph tools live in `src/codemoo/m365/tools/` and are not part of this package.
 
 ## Requirements
 
@@ -52,16 +52,19 @@ Each tool module SHALL follow the pattern: define private implementation functio
 - **THEN** it defines `_run_shell()` as a private function
 - **AND** it defines a public `ToolDef` instance `run_shell`
 
-### Requirement: TOOL_REGISTRY is the source of truth for tool access
-Runtime code accesses tools via TOOL_REGISTRY from `codemoo.core.tools`, not through direct module imports. Tests and internal code import from their specific tool modules.
+### Requirement: TOOL_REGISTRY is the source of truth for code tool access
+Runtime code accesses code tools via `TOOL_REGISTRY` from `codemoo.core.tools`. M365/Graph tools are not part of `TOOL_REGISTRY`; they are injected at startup via `make_bots(extra_tools=...)`. Tests and internal code import from their specific tool modules.
 
-#### Scenario: TOOL_REGISTRY contains all tools
+#### Scenario: TOOL_REGISTRY contains all code tools
 - **WHEN** code imports `TOOL_REGISTRY` from `codemoo.core.tools`
-- **THEN** it contains all tool definitions with their original names as keys
-- **AND** it includes: read_file, write_file, list_files, reverse_string, run_shell, and all M365 tools
+- **THEN** it SHALL contain `read_file`, `write_file`, `list_files`, `reverse_string`, and `run_shell`
 
-#### Scenario: Runtime code accesses tools via TOOL_REGISTRY
-- **WHEN** production code (e.g., cli.py) needs to use a tool
+#### Scenario: TOOL_REGISTRY does not contain M365 tools
+- **WHEN** `TOOL_REGISTRY` is accessed at import time
+- **THEN** it SHALL NOT contain any Graph/M365 tool names
+
+#### Scenario: Runtime code accesses code tools via TOOL_REGISTRY
+- **WHEN** production code needs to use a code tool
 - **THEN** it looks up the tool in `TOOL_REGISTRY["tool_name"]` rather than importing directly
 
 #### Scenario: Tests import from specific modules
@@ -70,4 +73,4 @@ Runtime code accesses tools via TOOL_REGISTRY from `codemoo.core.tools`, not thr
 
 #### Scenario: Core package exports only infrastructure
 - **WHEN** code performs `from codemoo.core.tools import *`
-- **THEN** only core types and utilities are available: ToolDef, ToolParam, TOOL_REGISTRY, format_tool_call (no individual tools)
+- **THEN** only core types and utilities are available: `ToolDef`, `ToolParam`, `TOOL_REGISTRY`, `format_tool_call`

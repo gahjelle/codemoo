@@ -299,6 +299,7 @@ client_id = "00000000-0000-0000-0000-000000000000"
 sharepoint_host = "contoso.sharepoint.com"
 sharepoint_site = "/sites/demo"
 graph_base_url = "https://graph.microsoft.com/v1.0"
+scopes = ["https://graph.microsoft.com/.default"]
 
 #
 # Model backends

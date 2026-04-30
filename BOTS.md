@@ -1,24 +1,24 @@
 # Codemoo - Script for progressing through the agents
 
-The demo walks through a sequence of bots, each adding one capability. There are two modes, `code` and `m365` with similar progressions. Many bots are shared between the two paths, but some are unique to a given path.
+The demo walks through a sequence of bots, each adding one capability. There are two modes, `code` and `business` with similar progressions. Many bots are shared between the two paths, but some are unique to a given path.
 
 ### Bot Names and emojis
 
 Each bot has a memorable name, playing on the feature it introduces.
 
-| Bot       | Mode       | Name | Name rationale                                                          | Emoji | Emoji name        | Emoji rationale                   |
-| --------- | ---------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | --------------------------------- |
-| EchoBot   | code, m365 | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                      |
-| LLMBot    | code, m365 | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence           |
-| ChatBot   | code, m365 | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene"   |
-| SystemBot | code, m365 | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role             |
-| ToolBot   | code, m365 | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                       |
-| ReadBot   | code       | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files and lists directories |
-| ScanBot   | m365       | Roam | Roams through M365 data                                                 | 🚶     | `PEDESTRIAN`      | Wanders through your data         |
-| ChangeBot | code       | Axel | Axe — change, cut, action                                               | 🔨     | `HAMMER`          | Drives change                     |
-| SendBot   | m365       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`     | Sends email, events, messages     |
-| AgentBot  | code, m365 | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                  |
-| GuardBot  | code, m365 | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
+| Bot       | Mode           | Name | Name rationale                                                          | Emoji | Emoji name        | Emoji rationale                   |
+| --------- | -------------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | --------------------------------- |
+| EchoBot   | code, business | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                      |
+| LLMBot    | code, business | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence           |
+| ChatBot   | code, business | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene"   |
+| SystemBot | code, business | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role             |
+| ToolBot   | code, business | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                       |
+| ReadBot   | code           | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files and lists directories |
+| ScanBot   | business       | Roam | Roams through M365 data                                                 | 🚶     | `PEDESTRIAN`      | Wanders through your data         |
+| ChangeBot | code           | Axel | Axe — change, cut, action                                               | 🔨     | `HAMMER`          | Drives change                     |
+| SendBot   | business       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`     | Sends email, events, messages     |
+| AgentBot  | code, business | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                  |
+| GuardBot  | code, business | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
 
 ### Full Progression (not all implemented yet)
 
@@ -50,7 +50,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 22  | CompactBot      | Pith    | Better handling of context                           | Now it manages its own memory. It compresses the past to keep focus on the present        |
 | 23  | CodemooBot      | Codemoo | All of the above                                     | This is Claude Code. Every feature, working together.                                     |
 
-**Business assistant: `m365`**
+**Business assistant: `business`**
 
 | #   | Type      | Name | Feature added                                | Talking point                                                                             |
 | --- | --------- | ---- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -64,7 +64,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 8   | AgentBot  | Loom | Full tool loop, multi-step actions           | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot  | Cato | Human-in-the-loop before destructive actions | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 
-Bot types marked with * are unique to `m365` mode.
+Bot types marked with * are unique to `business` mode.
 
 ### Demo Arc
 

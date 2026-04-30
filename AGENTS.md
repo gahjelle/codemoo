@@ -60,18 +60,26 @@ When modifying `demo/` files for other reasons, preserve these intentional issue
 
 ## Tools Architecture
 
-Tools are organized by category into separate modules under `src/codemoo/core/tools/`:
+Tools are split into two locations: generic code tools in `src/codemoo/core/tools/` and M365-specific tools in `src/codemoo/m365/tools/`.
+
+### Code tools — `src/codemoo/core/tools/`
 
 - **`__init__.py`** — Core infrastructure (ToolDef, ToolParam, format_tool_call, TOOL_REGISTRY)
 - **`files.py`** — File operations (read_file, write_file, list_files)
 - **`strings.py`** — String operations (reverse_string)
 - **`shell.py`** — Shell commands (run_shell)
-- **`graph_read.py`** — Microsoft Graph read operations (list_calendar, list_email, etc.)
-- **`graph_write.py`** — Microsoft Graph write operations (send_email, create_calendar_event, etc.)
+
+### M365 tools — `src/codemoo/m365/tools/`
+
+- **`__init__.py`** — `make_graph_tools(cfg)` factory; constructs all Graph ToolDefs with a shared auth closure
+- **`read.py`** — Microsoft Graph read operations (list_calendar, list_email, list_sharepoint, etc.)
+- **`write.py`** — Microsoft Graph write operations (send_email, create_calendar_event, etc.)
+
+Graph tools are not in `TOOL_REGISTRY`. They are constructed at startup via `make_graph_tools(config.m365)` and injected into `make_bots(extra_tools=...)` when running in business mode.
 
 ### Using Tools
 
-Tools are accessed via `TOOL_REGISTRY`, the single source of truth at runtime:
+Code tools are accessed via `TOOL_REGISTRY`, the single source of truth at runtime:
 
 ```python
 from codemoo.core.tools import TOOL_REGISTRY
@@ -87,12 +95,20 @@ from codemoo.core.tools.shell import run_shell
 
 ### Adding New Tools
 
-1. Create or find the appropriate module (or create a new one if starting a new category)
+**Code tools** (stateless OS utilities):
+
+1. Create or find the appropriate module under `src/codemoo/core/tools/`
 2. Define the implementation function (prefix with `_`): `def _my_tool(arg: str) -> str: ...`
 3. Create a ToolDef instance with metadata: `my_tool = ToolDef(name="my_tool", description="...", parameters=[...], fn=_my_tool)`
 4. Add the tool to `TOOL_REGISTRY` in `__init__.py`
 
-Each tool module should import `ToolDef` and `ToolParam` from the parent `__init__.py` to avoid circular imports.
+**M365 tools** (Graph API operations):
+
+1. Add the implementation closure to `src/codemoo/m365/tools/read.py` or `write.py`
+2. Add the ToolDef to the returned list in `make_read_tools()` or `make_write_tools()`
+3. The tool is automatically included when `make_graph_tools()` is called at startup
+
+Each tool module should import `ToolDef` and `ToolParam` from `codemoo.core.tools` to avoid circular imports.
 
 ## Textual Widget CSS
 

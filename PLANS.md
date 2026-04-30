@@ -4,7 +4,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Bugs
 
-- PyPI installs don't include configs/
 
 ## Questions
 
@@ -16,9 +15,8 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- ~~Add PyPI setup~~
+- The main_bot config should be a { type, variant } BotRef
 - Add more LLM providers: Ollama, OpenAI, Google/Gemini
-- ~~Refactor tools subpackage to use more files~~
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file
@@ -27,7 +25,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Update prompts to "trust the tool"
 - Make demoo a more explicit tool, showing the actual JSON flowing back and forth. This can be used to demonstrate the tool calls better
 - Refactor ~~m365 auth~~ and graph_read to use caching instead of globals
-- Refactor core.tools to use more files (and maybe formatting can go into common?)
 - ConstitutionBot / ProjectBot (Lore): `read_constitution` tool that reads AGENTS.md for code mode, SharePoint org doc for m365 mode
 - Add sessions and store them to disk, include --resume functionality
 - Stream answers

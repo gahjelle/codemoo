@@ -1,10 +1,4 @@
-# Spec: bot-tool-registry
-
-## Purpose
-
-TBD — defines `TOOL_REGISTRY`, a module-level mapping from tool name strings to `ToolDef` instances for code tools only. M365/Graph tools are injected at runtime via `make_bots(extra_tools=...)`. `_make_bot()` resolves tool names from config through a merged registry of code tools and any injected extras.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: TOOL_REGISTRY maps tool name strings to ToolDef instances for code tools only
 `core/tools/__init__.py` SHALL expose a module-level `TOOL_REGISTRY: dict[str, ToolDef]` containing every code tool keyed by its `ToolDef.name`. M365/Graph tools SHALL NOT be in `TOOL_REGISTRY`; they are injected at runtime via `make_bots(extra_tools=...)`.
@@ -21,17 +15,6 @@ TBD — defines `TOOL_REGISTRY`, a module-level mapping from tool name strings t
 - **WHEN** `TOOL_REGISTRY["nonexistent_tool"]` is accessed
 - **THEN** it SHALL raise `KeyError`
 
-### Requirement: list_files tool is added to the code tool set
-A `list_files` `ToolDef` SHALL be defined and registered in `TOOL_REGISTRY`. It SHALL accept a `path: str` parameter (directory path, default `"."`) and return a newline-separated list of file names in that directory.
-
-#### Scenario: list_files returns file names for a valid directory
-- **WHEN** `list_files.fn(path=".")` is called on a directory with files
-- **THEN** it SHALL return a non-empty string with one filename per line
-
-#### Scenario: list_files returns an error string for a nonexistent path
-- **WHEN** `list_files.fn(path="/nonexistent/path")` is called
-- **THEN** it SHALL return a descriptive error string rather than raising an exception
-
 ### Requirement: _make_bot resolves tools from a merged registry of code and injected tools
 `_make_bot()` SHALL resolve each name in `cfg.tools` through a registry that merges `TOOL_REGISTRY` with any `extra_tools` dict passed from the caller. It SHALL raise `KeyError` if a tool name is not found in the merged registry.
 
@@ -47,6 +30,8 @@ A `list_files` `ToolDef` SHALL be defined and registered in `TOOL_REGISTRY`. It 
 - **WHEN** `_make_bot` is called with `cfg.tools = ["nonexistent_tool"]`
 - **THEN** it SHALL raise `KeyError`
 
+## ADDED Requirements
+
 ### Requirement: make_bots accepts an optional extra_tools parameter
 `make_bots()` SHALL accept `extra_tools: dict[str, ToolDef] | None = None`. When provided, it SHALL be merged with `TOOL_REGISTRY` (`{**TOOL_REGISTRY, **extra_tools}`) to form the lookup registry for `_make_bot()`. When `None`, only `TOOL_REGISTRY` is used.
 
@@ -58,9 +43,8 @@ A `list_files` `ToolDef` SHALL be defined and registered in `TOOL_REGISTRY`. It 
 - **WHEN** `make_bots(llm, cfg=cfg, bot_refs=refs, extra_tools=graph_tools)` is called
 - **THEN** tool lookup SHALL resolve names from both `TOOL_REGISTRY` and `graph_tools`
 
-### Requirement: Tool-using bot constructors no longer hardcode tool lists
-The match arms in `_make_bot()` for tool-using bots (ToolBot, ReadBot, ChangeBot, ScanBot, SendBot, AgentBot, GuardBot) SHALL NOT contain inline tool list literals. Tool lists SHALL come exclusively from `cfg.tools` resolved through `TOOL_REGISTRY`.
+## REMOVED Requirements
 
-#### Scenario: AgentBot tool list comes from config, not code
-- **WHEN** `_make_bot` constructs an `AgentBot`
-- **THEN** the tools passed to the constructor SHALL equal the resolved `cfg.tools`, with no additional tools appended in code
+### Requirement: TOOL_REGISTRY contains all M365 tools
+**Reason:** M365 tools are now constructed by `make_graph_tools()` at startup and injected via `make_bots(extra_tools=...)`. They are shell-layer tools that must not be registered statically in the core tool registry.
+**Migration:** Pass `extra_tools=make_graph_tools(config.m365)` to `make_bots()` when in business mode.
