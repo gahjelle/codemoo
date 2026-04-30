@@ -234,7 +234,7 @@ wheels = [
 
 [[package]]
 name = "codemoo"
-version = "2026.4.6"
+version = "2026.4.7"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
