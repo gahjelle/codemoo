@@ -29,7 +29,7 @@ async def tool(query: str) -> None:
     stdout.print(query, style="yellow")
     context = [Message(role="user", content=query)]
     read_file_tool = TOOL_REGISTRY["read_file"]
-    step = await llm.complete_step(context, [read_file_tool])
+    step = await llm.complete(context, [read_file_tool])
     if isinstance(step, ToolUse):
         tool_output = read_file_tool.fn(**step.arguments)
         stdout.print(
@@ -42,5 +42,5 @@ async def tool(query: str) -> None:
         ]
         response = await llm.complete(follow_up)
     else:
-        response = step.text
+        response = step
     stdout.print(Markdown(response))

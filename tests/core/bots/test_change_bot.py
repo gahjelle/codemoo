@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, run_shell
@@ -30,7 +30,7 @@ def _make_assistant_msg() -> Message:
 class _MockBackend:
     def __init__(
         self,
-        step_result: TextResponse | ToolUse,
+        step_result: str | ToolUse,
         complete_response: str = "final answer",
     ) -> None:
         self.step_result = step_result
@@ -38,20 +38,19 @@ class _MockBackend:
         self.complete_calls: list[list[Message]] = []
         self.step_calls: list[tuple[list[Message], list[ToolDef]]] = []
 
-    async def complete(self, messages: list[Message]) -> str:
+    async def complete(
+        self, messages: list[Message], tools: list[ToolDef] | None = None
+    ) -> str | ToolUse:
+        if tools is not None:
+            self.step_calls.append((list(messages), list(tools)))
+            return self.step_result
         self.complete_calls.append(list(messages))
         return self.complete_response
-
-    async def complete_step(
-        self, messages: list[Message], tools: list[ToolDef]
-    ) -> TextResponse | ToolUse:
-        self.step_calls.append((list(messages), list(tools)))
-        return self.step_result
 
 
 @pytest.fixture
 def text_backend() -> _MockBackend:
-    return _MockBackend(step_result=TextResponse(text="plain reply"))
+    return _MockBackend(step_result="plain reply")
 
 
 @pytest.fixture
@@ -138,7 +137,7 @@ async def test_tool_use_path_follow_up_includes_shell_output(
 
 
 @pytest.mark.asyncio
-async def test_complete_step_receives_run_shell_tool(
+async def test_complete_receives_run_shell_tool(
     bot_tool: ChangeBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "hi"), [])

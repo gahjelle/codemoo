@@ -11,19 +11,13 @@ from codemoo.chat.slides import (
     _parse_numbered_list,
 )
 from codemoo.config.schema import ResolvedBotConfig
-from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.llm_bot import LlmBot
 
 
 class _MockBackend:
-    async def complete(self, messages: object) -> str:
+    async def complete(self, messages: object, tools: object = None) -> str:
         return "Generated explanation"
-
-    async def complete_step(
-        self, messages: object, tools: object
-    ) -> TextResponse | ToolUse:
-        return TextResponse(text="")
 
 
 def _make_bots() -> list[EchoBot | LlmBot]:
@@ -275,14 +269,9 @@ class _TranslatingBackend:
         self._translations = translations
         self.call_count = 0
 
-    async def complete(self, messages: object) -> str:
+    async def complete(self, messages: object, tools: object = None) -> str:
         self.call_count += 1
         return "\n".join(f"{i}. {t}" for i, t in enumerate(self._translations, start=1))
-
-    async def complete_step(self, messages: object, tools: object) -> object:
-        from codemoo.core.backend import TextResponse
-
-        return TextResponse(text="")
 
 
 def _make_context_with_prompts(

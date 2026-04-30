@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.tools import ToolDef, reverse_string
-from codemoo.llm.mistral import _MistralBackend, _tool_schema
+from codemoo.llm.mistral import _MistralBackend
 
 
 def _make_text_response(text: str) -> MagicMock:
@@ -53,26 +53,26 @@ def backend(mock_complete: AsyncMock) -> _MistralBackend:
 
 
 @pytest.mark.asyncio
-async def test_complete_step_text_response(
+async def test_complete_text_response(
     backend: _MistralBackend, mock_complete: AsyncMock
 ) -> None:
     mock_complete.return_value = _make_text_response("hello there")
 
-    result = await backend.complete_step([Message(role="user", content="hi")], [])
+    result = await backend.complete([Message(role="user", content="hi")], [])
 
-    assert isinstance(result, TextResponse)
-    assert result.text == "hello there"
+    assert isinstance(result, str)
+    assert result == "hello there"
 
 
 @pytest.mark.asyncio
-async def test_complete_step_tool_use_returned(
+async def test_complete_tool_use_returned(
     backend: _MistralBackend, mock_complete: AsyncMock
 ) -> None:
     mock_complete.return_value = _make_tool_response(
         "reverse_string", {"text": "hello"}, call_id="call-42"
     )
 
-    result = await backend.complete_step(
+    result = await backend.complete(
         [Message(role="user", content="reverse hello")],
         [reverse_string],
     )
@@ -84,10 +84,10 @@ async def test_complete_step_tool_use_returned(
 
 
 @pytest.mark.asyncio
-async def test_complete_step_tool_use_does_not_invoke_fn(
+async def test_complete_tool_use_does_not_invoke_fn(
     backend: _MistralBackend, mock_complete: AsyncMock
 ) -> None:
-    """complete_step must NOT call the tool function — that's the caller's job."""
+    """complete() must NOT call the tool function — that's the caller's job."""
     invoked = []
 
     def spy_fn(**kwargs: object) -> str:
@@ -104,20 +104,20 @@ async def test_complete_step_tool_use_does_not_invoke_fn(
         "reverse_string", {"text": "hello"}
     )
 
-    await backend.complete_step([Message(role="user", content="hi")], [spy_tool])
+    await backend.complete([Message(role="user", content="hi")], [spy_tool])
 
     assert invoked == []
 
 
 @pytest.mark.asyncio
-async def test_complete_step_assistant_message_has_tool_calls_json(
+async def test_complete_assistant_message_has_tool_calls_json(
     backend: _MistralBackend, mock_complete: AsyncMock
 ) -> None:
     mock_complete.return_value = _make_tool_response(
         "reverse_string", {"text": "hi"}, call_id="call-7"
     )
 
-    result = await backend.complete_step(
+    result = await backend.complete(
         [Message(role="user", content="hi")], [reverse_string]
     )
 
@@ -129,12 +129,13 @@ async def test_complete_step_assistant_message_has_tool_calls_json(
 
 
 @pytest.mark.asyncio
-async def test_complete_step_passes_tool_schemas(
+async def test_complete_passes_tool_schemas(
     backend: _MistralBackend, mock_complete: AsyncMock
 ) -> None:
     mock_complete.return_value = _make_text_response("ok")
 
-    await backend.complete_step([Message(role="user", content="hi")], [reverse_string])
+    await backend.complete([Message(role="user", content="hi")], [reverse_string])
 
     _, kwargs = mock_complete.call_args
-    assert kwargs["tools"] == [_tool_schema(reverse_string)]
+    expected_schema = backend._tool_schema(reverse_string)
+    assert kwargs["tools"] == [expected_schema]

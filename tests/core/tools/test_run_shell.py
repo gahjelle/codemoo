@@ -26,9 +26,12 @@ def test_timeout_returns_message_not_exception() -> None:
 
 
 def test_schema_top_level_fields() -> None:
-    from codemoo.llm.mistral import _tool_schema
+    from unittest.mock import MagicMock
 
-    schema = _tool_schema(run_shell)
+    from codemoo.llm.mistral import _MistralBackend
+
+    backend = _MistralBackend(client=MagicMock(), model="test")
+    schema = backend._tool_schema(run_shell)
     assert schema["type"] == "function"
     fn_block = cast("dict[str, object]", schema["function"])
     assert fn_block["name"] == "run_shell"

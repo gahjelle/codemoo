@@ -12,13 +12,8 @@ from codemoo.core.participant import HumanParticipant
 
 
 class _MockBackend:
-    async def complete(self, messages: object) -> str:
+    async def complete(self, messages: object, tools: object = None) -> str:
         return ""
-
-    async def complete_step(self, messages: object, tools: object) -> object:
-        from codemoo.core.backend import TextResponse
-
-        return TextResponse(text="")
 
 
 def _make_demo_context(

@@ -98,7 +98,7 @@ class ErrorBot:
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),
             ]
-            text = await self.llm.complete(messages)
+            response = await self.llm.complete(messages)
         except Exception:  # noqa: BLE001
-            text = f"{participant.name} encountered an error: {exception}"
-        return ChatMessage(sender=self.name, text=text)
+            response = f"{participant.name} encountered an error: {exception}"
+        return ChatMessage(sender=self.name, text=response)

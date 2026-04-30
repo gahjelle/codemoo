@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, reverse_string
@@ -28,11 +28,11 @@ def _make_assistant_msg() -> Message:
 
 
 class _MockBackend:
-    """Captures calls; step_result controls what complete_step returns."""
+    """Returns step_result when tools provided, complete_response for follow-ups."""
 
     def __init__(
         self,
-        step_result: TextResponse | ToolUse,
+        step_result: str | ToolUse,
         complete_response: str = "final answer",
     ) -> None:
         self.step_result = step_result
@@ -40,20 +40,19 @@ class _MockBackend:
         self.complete_calls: list[list[Message]] = []
         self.step_calls: list[tuple[list[Message], list[ToolDef]]] = []
 
-    async def complete(self, messages: list[Message]) -> str:
+    async def complete(
+        self, messages: list[Message], tools: list[ToolDef] | None = None
+    ) -> str | ToolUse:
+        if tools is not None:
+            self.step_calls.append((list(messages), list(tools)))
+            return self.step_result
         self.complete_calls.append(list(messages))
         return self.complete_response
-
-    async def complete_step(
-        self, messages: list[Message], tools: list[ToolDef]
-    ) -> TextResponse | ToolUse:
-        self.step_calls.append((list(messages), list(tools)))
-        return self.step_result
 
 
 @pytest.fixture
 def text_backend() -> _MockBackend:
-    return _MockBackend(step_result=TextResponse(text="plain reply"))
+    return _MockBackend(step_result="plain reply")
 
 
 @pytest.fixture
@@ -109,7 +108,7 @@ def test_tool_bot_is_not_human(bot_text: ToolBot) -> None:
 
 
 @pytest.mark.asyncio
-async def test_text_response_path_calls_complete_step(
+async def test_text_response_path_calls_complete_with_tools(
     bot_text: ToolBot, text_backend: _MockBackend
 ) -> None:
     await bot_text.on_message(_msg("You", "hi"), [])
@@ -154,7 +153,7 @@ async def test_tool_use_path_follow_up_includes_tool_result(
 
 
 @pytest.mark.asyncio
-async def test_complete_step_receives_tool_list(
+async def test_complete_receives_tool_list(
     bot_tool: ToolBot, tool_backend: _MockBackend
 ) -> None:
     await bot_tool.on_message(_msg("You", "hi"), [])

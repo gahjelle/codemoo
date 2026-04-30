@@ -1,19 +1,13 @@
 from codemoo.config import config
 from codemoo.config.schema import BotConfig, BotRef, BotVariantConfig
-from codemoo.core.backend import TextResponse, ToolUse
 from codemoo.core.bots import make_bots
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.guard_bot import GuardBot
 
 
 class _MockBackend:
-    async def complete(self, messages: object) -> str:
+    async def complete(self, messages: object, tools: object = None) -> str:
         return ""
-
-    async def complete_step(
-        self, messages: object, tools: object
-    ) -> TextResponse | ToolUse:
-        return TextResponse(text="")
 
 
 def _bots() -> list:

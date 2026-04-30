@@ -92,32 +92,34 @@ class GuardBot:
         tool_map = {t.name: t for t in self.tools}
 
         while True:
-            step = await self.llm.complete_step(messages, self.tools)
-            if not isinstance(step, ToolUse):
-                return ChatMessage(sender=self.name, text=step.text)
+            response = await self.llm.complete(messages, self.tools)
+            if not isinstance(response, ToolUse):
+                return ChatMessage(sender=self.name, text=response)
             if self.commentator is not None:
                 await self.commentator.comment(
                     ToolCallEvent(
                         bot_name=self.name,
-                        tool_name=step.name,
-                        arguments=step.arguments,
+                        tool_name=response.name,
+                        arguments=response.arguments,
                     )
                 )
-            tool = tool_map[step.name]
+            tool = tool_map[response.name]
             if tool.requires_approval:
                 decision = await self._ask_fn(
-                    ApprovalRequest(bot_name=self.name, tool_use=step)
+                    ApprovalRequest(bot_name=self.name, tool_use=response)
                 )
                 if isinstance(decision, Denied):
                     tool_output = _denial_message(decision)
                 else:
-                    tool_output = tool.fn(**step.arguments)
+                    tool_output = tool.fn(**response.arguments)
             else:
-                tool_output = tool.fn(**step.arguments)
+                tool_output = tool.fn(**response.arguments)
             messages = [
                 *messages,
-                step.assistant_message,
-                Message(role="tool", content=tool_output, tool_call_id=step.call_id),
+                response.assistant_message,
+                Message(
+                    role="tool", content=tool_output, tool_call_id=response.call_id
+                ),
             ]
 
 

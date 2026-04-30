@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, run_shell
@@ -36,18 +36,13 @@ def _tool_use(call_id: str = "c1") -> ToolUse:
 class _SequentialBackend:
     """Returns step results from a queue, then raises if exhausted."""
 
-    def __init__(self, steps: list[TextResponse | ToolUse]) -> None:
+    def __init__(self, steps: list[str | ToolUse]) -> None:
         self._steps = list(steps)
         self.step_calls: list[list[Message]] = []
 
-    async def complete(self, messages: list[Message]) -> str:
-        pytest.fail("AgentBot should never call complete()")
-
-    async def complete_step(
-        self,
-        messages: list[Message],
-        tools: list[ToolDef],
-    ) -> TextResponse | ToolUse:
+    async def complete(
+        self, messages: list[Message], tools: list[ToolDef] | None = None
+    ) -> str | ToolUse:
         self.step_calls.append(list(messages))
         return self._steps.pop(0)
 
@@ -63,13 +58,13 @@ def _make_bot(backend: _SequentialBackend) -> AgentBot:
 
 
 def test_agent_bot_is_not_human() -> None:
-    backend = _SequentialBackend([TextResponse(text="hi")])
+    backend = _SequentialBackend(["hi"])
     assert _make_bot(backend).is_human is False
 
 
 @pytest.mark.asyncio
 async def test_immediate_text_response_no_tool_call() -> None:
-    backend = _SequentialBackend([TextResponse(text="plain reply")])
+    backend = _SequentialBackend(["plain reply"])
     bot = _make_bot(backend)
 
     reply = await bot.on_message(_msg("You", "hello"), [])
@@ -82,7 +77,7 @@ async def test_immediate_text_response_no_tool_call() -> None:
 
 @pytest.mark.asyncio
 async def test_single_tool_call_then_text_response() -> None:
-    backend = _SequentialBackend([_tool_use("c1"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
     reply = await bot.on_message(_msg("You", "run echo hi"), [])
@@ -95,7 +90,7 @@ async def test_single_tool_call_then_text_response() -> None:
 
 @pytest.mark.asyncio
 async def test_single_tool_call_context_fed_back() -> None:
-    backend = _SequentialBackend([_tool_use("c1"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
     await bot.on_message(_msg("You", "run echo hi"), [])
@@ -108,9 +103,7 @@ async def test_single_tool_call_context_fed_back() -> None:
 
 @pytest.mark.asyncio
 async def test_two_sequential_tool_calls_then_text() -> None:
-    backend = _SequentialBackend(
-        [_tool_use("c1"), _tool_use("c2"), TextResponse(text="all done")]
-    )
+    backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
     reply = await bot.on_message(_msg("You", "do two things"), [])
@@ -122,9 +115,7 @@ async def test_two_sequential_tool_calls_then_text() -> None:
 
 @pytest.mark.asyncio
 async def test_two_tool_calls_both_outputs_in_final_context() -> None:
-    backend = _SequentialBackend(
-        [_tool_use("c1"), _tool_use("c2"), TextResponse(text="all done")]
-    )
+    backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
     await bot.on_message(_msg("You", "do two things"), [])

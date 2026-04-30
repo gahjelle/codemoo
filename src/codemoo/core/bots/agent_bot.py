@@ -18,8 +18,8 @@ class AgentBot:
     """Chat participant that loops tool calls until the LLM decides it is done.
 
     Unlike SingleTurnToolBot (one optional tool call), AgentBot feeds each tool
-    result back into context and calls complete_step again, continuing until
-    the model returns a plain TextResponse.
+    result back into context and calls complete again, continuing until
+    the model returns a plain text string.
     """
 
     name: str
@@ -48,20 +48,22 @@ class AgentBot:
         tool_map = {t.name: t for t in self.tools}
 
         while True:
-            step = await self.llm.complete_step(messages, self.tools)
-            if not isinstance(step, ToolUse):
-                return ChatMessage(sender=self.name, text=step.text)
+            response = await self.llm.complete(messages, self.tools)
+            if not isinstance(response, ToolUse):
+                return ChatMessage(sender=self.name, text=response)
             if self.commentator is not None:
                 await self.commentator.comment(
                     ToolCallEvent(
                         bot_name=self.name,
-                        tool_name=step.name,
-                        arguments=step.arguments,
+                        tool_name=response.name,
+                        arguments=response.arguments,
                     )
                 )
-            tool_output = tool_map[step.name].fn(**step.arguments)
+            tool_output = tool_map[response.name].fn(**response.arguments)
             messages = [
                 *messages,
-                step.assistant_message,
-                Message(role="tool", content=tool_output, tool_call_id=step.call_id),
+                response.assistant_message,
+                Message(
+                    role="tool", content=tool_output, tool_call_id=response.call_id
+                ),
             ]

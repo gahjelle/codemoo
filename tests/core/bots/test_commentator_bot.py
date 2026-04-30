@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from codemoo.chat.app import ChatApp
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.commentator_bot import (
     _PERSONAS,
@@ -55,7 +55,7 @@ class _MockBackend:
         self._response = response
         self.calls: list[list[Message]] = []
 
-    async def complete(self, messages: list[Message]) -> str:
+    async def complete(self, messages: list[Message], tools: object = None) -> str:
         self.calls.append(messages)
         return self._response
 
@@ -102,7 +102,7 @@ async def test_comment_passes_event_info_in_prompt() -> None:
 
 
 class _FailingBackend:
-    async def complete(self, messages: list[Message]) -> str:
+    async def complete(self, messages: list[Message], tools: object = None) -> str:
         msg = "LLM exploded"
         raise RuntimeError(msg)
 
@@ -159,16 +159,15 @@ _TOOL_USE = ToolUse(
 
 
 class _SingleStepBackend:
-    def __init__(self, step: TextResponse | ToolUse) -> None:
+    def __init__(self, step: str | ToolUse) -> None:
         self._step = step
 
-    async def complete(self, messages: list[Message]) -> str:
+    async def complete(
+        self, messages: list[Message], tools: object = None
+    ) -> str | ToolUse:
+        if tools is not None:
+            return self._step
         return "done"
-
-    async def complete_step(
-        self, messages: list[Message], tools: object
-    ) -> TextResponse | ToolUse:
-        return self._step
 
 
 @pytest.mark.asyncio
@@ -205,15 +204,12 @@ async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
 
 
 class _MultiStepBackend:
-    def __init__(self, steps: list[TextResponse | ToolUse]) -> None:
+    def __init__(self, steps: list[str | ToolUse]) -> None:
         self._steps = list(steps)
 
-    async def complete(self, messages: list[Message]) -> str:
-        pytest.fail("AgentBot should not call complete()")
-
-    async def complete_step(
-        self, messages: list[Message], tools: object
-    ) -> TextResponse | ToolUse:
+    async def complete(
+        self, messages: list[Message], tools: object = None
+    ) -> str | ToolUse:
         return self._steps.pop(0)
 
 
@@ -241,9 +237,7 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
     mock_commentator = AsyncMock()
     mock_commentator.comment = AsyncMock(side_effect=comment_events.append)
 
-    backend = _MultiStepBackend(
-        [_tool_use("c1"), _tool_use("c2"), TextResponse(text="all done")]
-    )
+    backend = _MultiStepBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = AgentBot(
         name="Loom",
         emoji="🌀",
@@ -265,7 +259,7 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
 
 
 class _NullBackend:
-    async def complete(self, messages: object) -> str:
+    async def complete(self, messages: object, tools: object = None) -> str:
         return ""
 
 

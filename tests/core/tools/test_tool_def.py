@@ -1,11 +1,12 @@
 from typing import cast
+from unittest.mock import MagicMock
 
 from codemoo.core.bots import run_init_hooks
 from codemoo.core.tools import ToolDef, ToolParam
 from codemoo.core.tools.files import read_file, write_file
 from codemoo.core.tools.shell import run_shell
 from codemoo.core.tools.strings import reverse_string
-from codemoo.llm.mistral import _tool_schema
+from codemoo.llm.mistral import _MistralBackend
 from codemoo.m365.tools import M365_TOOL_REGISTRY
 
 
@@ -121,7 +122,8 @@ def test_run_init_hooks_skips_none_init() -> None:
 
 
 def test_reverse_string_schema_top_level_fields() -> None:
-    schema = _tool_schema(reverse_string)
+    backend = _MistralBackend(client=MagicMock(), model="test")
+    schema = backend._tool_schema(reverse_string)
     assert schema["type"] == "function"
     fn_block = schema["function"]
     assert isinstance(fn_block, dict)

@@ -46,24 +46,24 @@ class SingleTurnToolBot:
             ],
             Message(role="user", content=message.text),
         ]
-        step = await self.llm.complete_step(messages, self.tools)
-        if isinstance(step, ToolUse):
+        response = await self.llm.complete(messages, self.tools)
+        if isinstance(response, ToolUse):
             tool_map = {t.name: t for t in self.tools}
             if self.commentator is not None:
                 await self.commentator.comment(
                     ToolCallEvent(
                         bot_name=self.name,
-                        tool_name=step.name,
-                        arguments=step.arguments,
+                        tool_name=response.name,
+                        arguments=response.arguments,
                     )
                 )
-            tool_output = tool_map[step.name].fn(**step.arguments)
+            tool_output = tool_map[response.name].fn(**response.arguments)
             follow_up = [
                 *messages,
-                step.assistant_message,
-                Message(role="tool", content=tool_output, tool_call_id=step.call_id),
+                response.assistant_message,
+                Message(
+                    role="tool", content=tool_output, tool_call_id=response.call_id
+                ),
             ]
-            text = await self.llm.complete(follow_up) or _INTERRUPTED
-        else:
-            text = step.text  # TextResponse
-        return ChatMessage(sender=self.name, text=text)
+            response = await self.llm.complete(follow_up) or _INTERRUPTED
+        return ChatMessage(sender=self.name, text=response)

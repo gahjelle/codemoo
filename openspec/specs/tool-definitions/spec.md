@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the `ToolDef` abstraction, the `reverse_string` built-in tool, and the `complete_step` backend method that enables structured single-turn LLM responses with tool-calling support.
+Defines the `ToolDef` abstraction, the `reverse_string` built-in tool, and the unified `complete` backend method that enables both simple text completion and structured single-turn LLM responses with tool-calling support.
 
 ## Requirements
 
@@ -50,13 +50,21 @@ The `tools` module SHALL export `write_file` in its `__all__` list. When invoked
 - **WHEN** `write_file.fn` is called with a valid `path` and `content`
 - **THEN** it SHALL write `content` to disk and return a string containing the byte count
 
-### Requirement: LLMBackend exposes complete_step for structured single-turn responses
-`LLMBackend` SHALL expose a `complete_step(messages, tools) -> TextResponse | ToolUse` method. It SHALL send one request to the LLM with the provided tools list and return either a `TextResponse(text: str)` if the LLM replied with text, or a `ToolUse(name: str, arguments: dict)` if the LLM requested a tool call. It SHALL NOT invoke the tool function or re-submit to the LLM — that is the caller's responsibility.
+### Requirement: LLMBackend exposes complete for unified text and tool completion
+`LLMBackend` SHALL expose a unified `complete(messages, tools=None)` method that replaces both `complete()` and `complete_step()`. It SHALL send one request to the LLM with the provided tools list and return either a `str` if the LLM replied with text, or a `ToolUse(name: str, arguments: dict)` if the LLM requested a tool call. It SHALL NOT invoke the tool function or re-submit to the LLM — that is the caller's responsibility.
 
-#### Scenario: LLM replies with text — TextResponse is returned
+#### Scenario: LLM replies with text — str is returned
 - **WHEN** the LLM responds with a plain text message (no tool call)
-- **THEN** `complete_step` SHALL return a `TextResponse` with the response text
+- **THEN** `complete` SHALL return a `str` with the response text
 
 #### Scenario: LLM requests a tool call — ToolUse is returned
 - **WHEN** the LLM responds with a tool-call request
-- **THEN** `complete_step` SHALL return a `ToolUse` with the tool name and argument dict, without invoking the tool
+- **THEN** `complete` SHALL return a `ToolUse` with the tool name and argument dict, without invoking the tool
+
+#### Scenario: Text completion when no tools provided
+- **WHEN** `complete(messages)` is called without tools parameter
+- **THEN** it SHALL behave as text-only completion and return `str`
+
+#### Scenario: Tool calling when tools provided
+- **WHEN** `complete(messages, tools=[...])` is called and LLM requests tool
+- **THEN** it SHALL return a `ToolUse` instance

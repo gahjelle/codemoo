@@ -2,10 +2,11 @@
 
 import json
 import os
+from typing import overload
 
 import anthropic as anthropic_sdk
 
-from codemoo.core.backend import Message, TextResponse, ToolLLMBackend, ToolUse
+from codemoo.core.backend import Message, ToolLLMBackend, ToolUse
 from codemoo.core.tools import ToolDef
 from codemoo.llm.exceptions import BackendUnavailableError
 
@@ -87,24 +88,20 @@ class _AnthropicBackend:
         self._client = client
         self._model = model
 
-    async def complete(self, messages: list[Message]) -> str:
-        """Call Anthropic messages API and return the response text."""
-        system, conversation = _serialize(messages)
-        response = await self._client.messages.create(
-            model=self._model,
-            max_tokens=4096,
-            system=system,
-            messages=conversation,  # ty: ignore[invalid-argument-type]
-        )
-        block = response.content[0]
-        return block.text if hasattr(block, "text") else str(block)
+    @overload
+    async def complete(self, messages: list[Message], tools: None = ...) -> str: ...
 
-    async def complete_step(
+    @overload
+    async def complete(
+        self, messages: list[Message], tools: list[ToolDef]
+    ) -> str | ToolUse: ...
+
+    async def complete(
         self,
         messages: list[Message],
-        tools: list[ToolDef],
-    ) -> TextResponse | ToolUse:
-        """Call Anthropic with tools; return TextResponse or ToolUse."""
+        tools: list[ToolDef] | None = None,
+    ) -> str | ToolUse:
+        """Call Anthropic messages API; return text or a tool-call descriptor."""
         system, conversation = _serialize(messages)
         response = await self._client.messages.create(
             model=self._model,
@@ -138,11 +135,10 @@ class _AnthropicBackend:
                     call_id=tool_call_id,
                     assistant_message=assistant_message,
                 )
-        # Text response
         for block in response.content:
             if hasattr(block, "text"):
-                return TextResponse(text=block.text)
-        return TextResponse(text="")
+                return block.text
+        return ""
 
 
 def create_anthropic_backend(model: str) -> ToolLLMBackend:

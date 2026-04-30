@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from codemoo.core.backend import Message, TextResponse, ToolUse
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.guard_bot import ApprovalRequest, Approved, Denied, GuardBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, ToolParam, run_shell
@@ -29,16 +29,13 @@ def _tool_use(name: str = "run_shell", call_id: str = "c1") -> ToolUse:
 
 
 class _SequentialBackend:
-    def __init__(self, steps: list[TextResponse | ToolUse]) -> None:
+    def __init__(self, steps: list[str | ToolUse]) -> None:
         self._steps = list(steps)
         self.step_calls: list[list[Message]] = []
 
-    async def complete(self, messages: list[Message]) -> str:
-        pytest.fail("GuardBot should never call complete()")
-
-    async def complete_step(
-        self, messages: list[Message], tools: list[ToolDef]
-    ) -> TextResponse | ToolUse:
+    async def complete(
+        self, messages: list[Message], tools: list[ToolDef] | None = None
+    ) -> str | ToolUse:
         self.step_calls.append(list(messages))
         return self._steps.pop(0)
 
@@ -95,7 +92,7 @@ def test_approval_request_fields() -> None:
 
 
 def test_guard_bot_is_not_human() -> None:
-    backend = _SequentialBackend([TextResponse(text="hi")])
+    backend = _SequentialBackend(["hi"])
     assert _make_bot(backend).is_human is False
 
 
@@ -106,7 +103,7 @@ def test_guard_bot_is_not_human() -> None:
 
 @pytest.mark.asyncio
 async def test_default_ask_fn_approves_dangerous_tool() -> None:
-    backend = _SequentialBackend([_tool_use("run_shell"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
 
     reply = await bot.on_message(_msg("You", "run something"), [])
@@ -128,7 +125,7 @@ async def test_safe_tool_bypasses_gate() -> None:
         ask_calls.append(req)
         return Approved()
 
-    backend = _SequentialBackend([_tool_use("read_file"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("read_file"), "done"])
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
@@ -150,7 +147,7 @@ async def test_dangerous_tool_invokes_ask_fn() -> None:
         ask_calls.append(req)
         return Approved()
 
-    backend = _SequentialBackend([_tool_use("run_shell"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
@@ -171,7 +168,7 @@ async def test_approved_tool_runs_and_output_in_context() -> None:
     async def ask_fn(req: ApprovalRequest) -> Approved | Denied:
         return Approved()
 
-    backend = _SequentialBackend([_tool_use("run_shell"), TextResponse(text="done")])
+    backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
@@ -193,7 +190,7 @@ async def test_plain_deny_produces_standard_message() -> None:
     async def ask_fn(req: ApprovalRequest) -> Approved | Denied:
         return Denied()
 
-    backend = _SequentialBackend([_tool_use("run_shell"), TextResponse(text="ok")])
+    backend = _SequentialBackend([_tool_use("run_shell"), "ok"])
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
@@ -218,7 +215,7 @@ async def test_deny_with_reason_includes_reason() -> None:
     async def ask_fn(req: ApprovalRequest) -> Approved | Denied:
         return Denied(reason="use archive/ instead")
 
-    backend = _SequentialBackend([_tool_use("run_shell"), TextResponse(text="ok")])
+    backend = _SequentialBackend([_tool_use("run_shell"), "ok"])
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
@@ -243,7 +240,7 @@ async def test_loop_continues_after_denial() -> None:
         [
             _tool_use("run_shell"),
             _tool_use("run_shell", "c2"),
-            TextResponse(text="gave up"),
+            "gave up",
         ]
     )
     bot = _make_bot(backend)
@@ -296,7 +293,7 @@ async def test_only_dangerous_tools_require_approval() -> None:
         assistant_message=Message(role="assistant", content="", tool_calls_json="[]"),
     )
 
-    backend = _SequentialBackend([safe_use, danger_use, TextResponse(text="done")])
+    backend = _SequentialBackend([safe_use, danger_use, "done"])
     bot = GuardBot(
         name="Cato",
         emoji="🔒",

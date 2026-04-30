@@ -1,7 +1,7 @@
 """LLM backend port: types, protocol, and pure context-building function."""
 
 import dataclasses
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol, overload
 
 if TYPE_CHECKING:
     from codemoo.core.tools import ToolDef
@@ -16,20 +16,13 @@ class Message:
     role: Role
     content: str
     tool_call_id: str | None = None
-    # JSON-serialized tool_calls; only set on assistant messages from complete_step
+    # JSON-serialized tool_calls; only set on assistant messages that request a tool
     tool_calls_json: str | None = None
-
-
-@dataclasses.dataclass(frozen=True)
-class TextResponse:
-    """A plain-text LLM reply from complete_step."""
-
-    text: str
 
 
 @dataclasses.dataclass
 class ToolUse:
-    """A tool-call request returned by complete_step.
+    """A tool-call request returned by complete().
 
     Carries everything needed to invoke the tool and re-submit the result:
     the tool name, parsed arguments, the call ID for correlation, and the
@@ -44,27 +37,39 @@ class ToolUse:
 
 
 class LLMBackend(Protocol):
-    """Structural protocol for LLM completion backends."""
+    """Structural protocol for LLM completion backends.
 
-    async def complete(self, messages: list[Message]) -> str:
-        """Send messages to the LLM and return the response text."""
+    Pass tools to enable tool calling; omit tools (or pass None) for plain
+    text completion. The overloads allow callers to get a plain str return type
+    when they know no tools are involved, avoiding unnecessary type narrowing.
+    """
+
+    @overload
+    async def complete(
+        self,
+        messages: list[Message],
+        tools: None = ...,
+    ) -> str: ...
+
+    @overload
+    async def complete(
+        self,
+        messages: list[Message],
+        tools: "list[ToolDef]",
+    ) -> "str | ToolUse": ...
+
+    async def complete(
+        self,
+        messages: list[Message],
+        tools: "list[ToolDef] | None" = None,
+    ) -> "str | ToolUse":
+        """Send messages to the LLM; return text or a tool-call descriptor."""
         ...
 
 
 class ToolLLMBackend(LLMBackend, Protocol):
-    """LLMBackend extended with a single-step tool-aware call.
+    """LLMBackend marker for backends that fully support tool calling.
 
-    Bots that need tools use this narrower protocol; bots that only do
-    text completion continue using LLMBackend, keeping their mocks simple.
+    Bots that need tools use this narrower type annotation to make their
+    intent clear; the underlying complete() signature is identical to LLMBackend.
     """
-
-    async def complete_step(
-        self,
-        messages: list[Message],
-        tools: list["ToolDef"],
-    ) -> TextResponse | ToolUse:
-        """Send one LLM request with tools; return text or a tool-call descriptor.
-
-        Does NOT invoke the tool or re-submit. The caller drives re-submission.
-        """
-        ...

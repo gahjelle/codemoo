@@ -121,7 +121,7 @@ class CommentatorBot:
                 Message(role="system", content=system),
                 Message(role="user", content=prompt),
             ]
-            text = await self.llm.complete(messages)
+            response = await self.llm.complete(messages)
         except Exception:  # noqa: BLE001
             fallback = f"{event.bot_name} calls {full_sig}"
             self._post_fn(ChatMessage(sender=_STREIK_NAME, text=fallback))
@@ -130,5 +130,5 @@ class CommentatorBot:
             event.tool_name, event.arguments, max_value_len=40
         )
         self._post_fn(
-            ChatMessage(sender=persona.name, text=f"[dim]{display_sig}[/]\n{text}")
+            ChatMessage(sender=persona.name, text=f"[dim]{display_sig}[/]\n{response}")
         )
