@@ -1,5 +1,7 @@
 """Bot participants for the Codemoo chat loop."""
 
+from collections.abc import Iterable
+
 from codemoo.config.schema import BotConfig, BotRef, BotType, ResolvedBotConfig, resolve
 from codemoo.core.backend import ToolLLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
@@ -17,6 +19,9 @@ from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import TOOL_REGISTRY, ToolDef
+from codemoo.m365.tools import M365_TOOL_REGISTRY
+
+_ALL_TOOLS: dict[str, ToolDef] = {**TOOL_REGISTRY, **M365_TOOL_REGISTRY}
 
 __all__ = [
     "AgentBot",
@@ -35,17 +40,26 @@ __all__ = [
     "ToolBot",
     "make_bots",
     "resolve_bot",
+    "run_init_hooks",
 ]
+
+
+def run_init_hooks(tools: Iterable[ToolDef]) -> None:
+    """Call each unique init hook once, deduplicated by function identity."""
+    seen: set[object] = set()
+    for tool in tools:
+        if tool.init is not None and tool.init not in seen:
+            seen.add(tool.init)
+            tool.init()
 
 
 def _make_bot(  # noqa: C901, PLR0911
     bot: ResolvedBotConfig,
     llm: ToolLLMBackend,
     commentator: CommentatorBot | None,
-    registry: dict[str, ToolDef],
 ) -> ChatParticipant:
-    """Construct a single bot by type, resolving tools from the merged registry."""
-    tools = [registry[name] for name in bot.tools]
+    """Construct a single bot by type, resolving tools from the combined registry."""
+    tools = [_ALL_TOOLS[name] for name in bot.tools]
     match bot.bot_type:
         case "EchoBot":
             return EchoBot(name=bot.name, emoji=bot.emoji)
@@ -135,12 +149,10 @@ def make_bots(
     cfg: dict[BotType, BotConfig],
     bot_refs: list[BotRef],
     commentator: CommentatorBot | None = None,
-    extra_tools: dict[str, ToolDef] | None = None,
 ) -> tuple[list[ChatParticipant], list[ResolvedBotConfig]]:
     """Return bots and their resolved configs, in the order given by bot_refs."""
-    registry = {**TOOL_REGISTRY, **(extra_tools or {})}
     resolved_list = [resolve(cfg, ref) for ref in bot_refs]
-    bots = [_make_bot(bot, llm, commentator, registry) for bot in resolved_list]
+    bots = [_make_bot(bot, llm, commentator) for bot in resolved_list]
     return bots, resolved_list
 
 

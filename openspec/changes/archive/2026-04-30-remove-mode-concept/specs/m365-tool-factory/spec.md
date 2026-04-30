@@ -1,10 +1,4 @@
-# Spec: m365-tool-factory
-
-## Purpose
-
-TBD — defines M365/Graph `ToolDef` instances as module-level constants registered in `TOOL_REGISTRY`. Graph tools carry a shared `_init_m365` hook and access `config.m365` directly.
-
-## Requirements
+## ADDED Requirements
 
 ### Requirement: M365 tools are module-level constants with a shared _init_m365 hook
 `src/codemoo/m365/tools/__init__.py` SHALL define all Graph `ToolDef` instances as module-level constants. Each SHALL have `init=_init_m365` where `_init_m365` is a single shared module-level function. The tools SHALL be exported into `TOOL_REGISTRY` in `core/tools/__init__.py`.
@@ -24,9 +18,12 @@ Each Graph tool implementation SHALL access `config.m365` directly (imported at 
 - **WHEN** any Graph tool `fn` is invoked
 - **THEN** it SHALL use `config.m365` to obtain the Bearer token without requiring a config argument
 
-### Requirement: graph_read.py and graph_write.py no longer exist in core/tools
-The files `src/codemoo/core/tools/graph_read.py` and `src/codemoo/core/tools/graph_write.py` SHALL be deleted. No `_token`, `_set_token`, or `_headers` symbols SHALL exist in `core/tools/`.
+## REMOVED Requirements
 
-#### Scenario: Importing from graph_read raises ImportError
-- **WHEN** code attempts `from codemoo.core.tools.graph_read import anything`
-- **THEN** it SHALL raise `ImportError`
+### Requirement: make_graph_tools factory constructs Graph ToolDefs as closures
+**Reason**: M365 tools are now module-level constants that use `config.m365` directly. The factory pattern was needed only to inject `cfg` into closures; that indirection is no longer necessary.
+**Migration**: Remove all call sites of `make_graph_tools(cfg)`. Remove the `extra_tools` argument from `make_bots`. M365 tools are automatically available via `TOOL_REGISTRY`.
+
+### Requirement: Graph tool implementations call get_access_token on each invocation
+**Reason**: Replaced by a more specific requirement — implementations now call `get_access_token(config.m365, config.m365.scopes)` directly using the module-level config import, not a cfg closure.
+**Migration**: The behavior is equivalent; the implementation detail changes from closure capture to direct module-level access.

@@ -6,21 +6,21 @@ from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, Label, SelectionList
 
-from codemoo.core.participant import ChatParticipant
+from codemoo.config.schema import ResolvedBotConfig
 
 
-def _bot_label(bot: ChatParticipant) -> str:
-    """Format a bot's selection list label as 'Emoji Name (TypeName)'."""
-    return f"{bot.emoji} {bot.name} ({type(bot).__name__})"
+def _bot_label(bot: ResolvedBotConfig) -> str:
+    """Format a resolved bot's selection label as 'Emoji Name (Type) • variant'."""
+    return f"{bot.emoji} {bot.name} ({bot.bot_type}) \N{BULLET} {bot.variant}"
 
 
-class SelectionApp(App[list[ChatParticipant]]):
+class SelectionApp(App[list[ResolvedBotConfig]]):
     """Startup screen that lets the user pick which bots join the session."""
 
     CSS_PATH = Path(__file__).parent / "chat.tcss"
 
-    def __init__(self, available_bots: list[ChatParticipant]) -> None:
-        """Initialise with the full candidate bot list."""
+    def __init__(self, available_bots: list[ResolvedBotConfig]) -> None:
+        """Initialise with the full catalog of resolved bot configs."""
         super().__init__()
         self._available_bots = available_bots
 

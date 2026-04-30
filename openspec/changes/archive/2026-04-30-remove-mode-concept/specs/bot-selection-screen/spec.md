@@ -1,10 +1,4 @@
-# Spec: bot-selection-screen
-
-## Purpose
-
-TBD — defines the startup bot selection screen that allows the user to choose which bot participants to include before launching the chat session.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Selection screen presents all bot/variant combinations from config in definition order
 The startup selection screen SHALL display a multi-select list of all `ResolvedBotConfig` entries derived from `config.bots` — every `(bot_type, variant)` pair — in the order they are defined in the config. Each item SHALL show the bot emoji, display name, type in parentheses, and variant separated by `\N{BULLET}`, e.g. `✦  Cato (GuardBot)  •  code`.
@@ -16,21 +10,6 @@ The startup selection screen SHALL display a multi-select list of all `ResolvedB
 #### Scenario: Each item shows emoji, name, type, and variant
 - **WHEN** an entry for `GuardBot` with variant `"code"` and name `"Cato"` is in the catalog
 - **THEN** its list entry SHALL display the emoji, `"Cato"`, `"GuardBot"`, and `"code"`
-
-### Requirement: User can select zero or more bots before starting the chat
-The selection screen SHALL allow the user to toggle any combination of bots on or off, including selecting none. Confirming with zero bots selected SHALL be valid and SHALL start a session with only the human participant.
-
-#### Scenario: All bots selected
-- **WHEN** the user selects all available bots and confirms
-- **THEN** the chat session SHALL start with all eight bot types plus the human participant
-
-#### Scenario: No bots selected
-- **WHEN** the user confirms with no bots selected
-- **THEN** the chat session SHALL start with only the human participant and no bots
-
-#### Scenario: Subset of bots selected
-- **WHEN** the user selects only LLMBot and confirms
-- **THEN** the chat session SHALL start with the human participant and LLMBot only
 
 ### Requirement: SelectionApp takes list[ResolvedBotConfig] not list[ChatParticipant]
 `SelectionApp.__init__` SHALL accept `list[ResolvedBotConfig]` as its input. Bot instantiation SHALL NOT occur before `SelectionApp` runs. The selection screen SHALL operate on metadata only.
@@ -53,14 +32,3 @@ When the user confirms their selection, `SelectionApp` SHALL return the selected
 #### Scenario: Confirmed selection launches chat with instantiated participants
 - **WHEN** the user confirms a selection
 - **THEN** `ChatApp` SHALL start with the human participant plus the selected bots in config definition order
-
-### Requirement: Selection screen is accessed via the select subcommand
-The selection screen SHALL only be shown when the user explicitly runs `codemoo select`. It SHALL NOT appear on bare `codemoo` invocation.
-
-#### Scenario: select subcommand shows the selection screen
-- **WHEN** the user runs `codemoo select`
-- **THEN** `SelectionApp` SHALL be displayed
-
-#### Scenario: Bare invocation does not show the selection screen
-- **WHEN** the user runs `codemoo` with no arguments
-- **THEN** `SelectionApp` SHALL NOT be shown

@@ -17,8 +17,8 @@ The `tools` module SHALL export a `ToolParam` dataclass with fields `name: str`,
 - **WHEN** a `ToolParam` is constructed with `type="integer"`
 - **THEN** the `type` field SHALL hold `"integer"`
 
-### Requirement: ToolDef has first-class name, description, and parameters fields
-The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `parameters: list[ToolParam]`, `fn: Callable[..., str]`, and `requires_approval: bool = False`. The `schema: dict` field SHALL be removed.
+### Requirement: ToolDef has first-class name, description, parameters, and init fields
+The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `parameters: list[ToolParam]`, `fn: Callable[..., str]`, `requires_approval: bool = False`, and `init: Callable[[], None] | None = None`. The `schema: dict` field SHALL NOT be present.
 
 #### Scenario: ToolDef exposes name directly
 - **WHEN** a `ToolDef` is accessed via `tool.name`
@@ -26,7 +26,7 @@ The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `para
 
 #### Scenario: ToolDef can be constructed with all fields
 - **WHEN** a `ToolDef` is constructed with `name`, `description`, `parameters`, and `fn`
-- **THEN** all fields SHALL be accessible as attributes and `requires_approval` SHALL default to `False`
+- **THEN** all fields SHALL be accessible as attributes, `requires_approval` SHALL default to `False`, and `init` SHALL default to `None`
 
 #### Scenario: requires_approval defaults to False
 - **WHEN** a `ToolDef` is constructed without specifying `requires_approval`
@@ -35,6 +35,14 @@ The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `para
 #### Scenario: requires_approval can be set to True
 - **WHEN** a `ToolDef` is constructed with `requires_approval=True`
 - **THEN** `tool.requires_approval` SHALL be `True`
+
+#### Scenario: init defaults to None
+- **WHEN** a `ToolDef` is constructed without specifying `init`
+- **THEN** `tool.init` SHALL be `None`
+
+#### Scenario: init can be set to a callable
+- **WHEN** a `ToolDef` is constructed with `init=some_function`
+- **THEN** `tool.init` SHALL be `some_function`
 
 ### Requirement: Each backend module provides a _tool_schema converter function
 Each backend module (`llm/mistral.py`, `llm/anthropic.py`, `llm/openrouter.py`) SHALL provide a module-private `_tool_schema(tool: ToolDef) -> dict` function that converts a `ToolDef` to the wire format expected by that provider. Mistral and OpenRouter SHALL use the OpenAI function-calling shape; Anthropic SHALL use the Anthropic tool shape with `input_schema`.

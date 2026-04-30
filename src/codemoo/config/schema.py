@@ -21,7 +21,6 @@ type BotType = Literal[
     "SendBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
-type ModeName = Literal["code", "business"]
 type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
 
 
@@ -133,7 +132,6 @@ class ModelsConfig(StrictModel):
 class ScriptConfig(StrictModel):
     """Configure one demo script."""
 
-    mode: ModeName
     bots: list[BotRef]
 
 
@@ -152,7 +150,6 @@ class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
     language: str
-    main_bot: dict[ModeName, BotRef]
     paths: PathsConfig
     bots: dict[BotType, BotConfig]
     scripts: dict[ScriptName, ScriptConfig]

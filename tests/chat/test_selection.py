@@ -1,27 +1,45 @@
 """Tests for SelectionApp's pure helper functions."""
 
 from codemoo.chat.selection import _bot_label
-from codemoo.core.backend import LLMBackend
-from codemoo.core.bots import ChatBot, EchoBot, LlmBot
+from codemoo.config.schema import ResolvedBotConfig
 
 
-class _StubBackend:
-    async def complete(self, messages: object) -> str:
-        return ""
+def _resolved(
+    *,
+    bot_type: str = "EchoBot",
+    name: str = "Coco",
+    emoji: str = "\N{PARROT}",
+    variant: str = "default",
+) -> ResolvedBotConfig:
+    return ResolvedBotConfig(
+        bot_type=bot_type,  # type: ignore[arg-type]
+        name=name,
+        emoji=emoji,
+        variant=variant,
+        sources=[],
+        description="",
+        tools=[],
+        prompts=[],
+        instructions="",
+    )
 
 
-_BACKEND: LLMBackend = _StubBackend()
-
-
-def test_label_includes_name_and_type() -> None:
-    bot = LlmBot(name="Llm", emoji="\N{SPARKLES}", llm=_BACKEND)
-    assert _bot_label(bot) == "\N{SPARKLES} Llm (LlmBot)"
+def test_label_includes_name_type_and_variant() -> None:
+    bot = _resolved(
+        bot_type="LlmBot", name="Mono", emoji="\N{SPARKLES}", variant="default"
+    )
+    assert _bot_label(bot) == "\N{SPARKLES} Mono (LlmBot) \N{BULLET} default"
 
 
 def test_label_echo_bot() -> None:
-    assert _bot_label(EchoBot(name="Echo", emoji="O")) == "O Echo (EchoBot)"
+    bot = _resolved(
+        bot_type="EchoBot", name="Coco", emoji="\N{PARROT}", variant="default"
+    )
+    assert _bot_label(bot) == "\N{PARROT} Coco (EchoBot) \N{BULLET} default"
 
 
-def test_label_chat_bot() -> None:
-    bot = ChatBot(name="Chat", emoji="O", llm=_BACKEND)
-    assert _bot_label(bot) == "O Chat (ChatBot)"
+def test_label_guard_bot_business_variant() -> None:
+    bot = _resolved(
+        bot_type="GuardBot", name="Cato", emoji="\N{LOCK}", variant="business"
+    )
+    assert _bot_label(bot) == "\N{LOCK} Cato (GuardBot) \N{BULLET} business"

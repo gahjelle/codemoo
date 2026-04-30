@@ -1,7 +1,4 @@
 language = "English"
-[main_bot]
-code = { type = "GuardBot", variant = "code" }
-business = { type = "GuardBot", variant = "business" }
 
 [paths]
 bots_dir = "{project_path}/src/codemoo/core/bots"
@@ -11,7 +8,6 @@ m365_token_path = "{cache_path}/token_cache.bin"
 # Scripts
 #
 [scripts.default]
-mode = "code"
 bots = [
     { type = "EchoBot", variant = "default" },
     { type = "LlmBot", variant = "default" },
@@ -25,7 +21,6 @@ bots = [
 ]
 
 [scripts.focused]
-mode = "code"
 bots = [
     { type = "LlmBot", variant = "default" },
     { type = "ChatBot", variant = "default" },
@@ -34,7 +29,6 @@ bots = [
 ]
 
 [scripts.m365]
-mode = "business"
 bots = [
     { type = "EchoBot", variant = "default" },
     { type = "LlmBot", variant = "default" },
@@ -48,7 +42,6 @@ bots = [
 ]
 
 [scripts.m365_lite]
-mode = "business"
 bots = [
     { type = "EchoBot", variant = "default" },
     { type = "LlmBot", variant = "default" },

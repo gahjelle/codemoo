@@ -47,6 +47,12 @@ def get_access_token(cfg: M365Config, scopes: list[str]) -> str:
     return result["access_token"]
 
 
+def _init_m365() -> None:
+    """Init hook for M365 tools: authenticate eagerly before any tool is invoked."""
+    init_graph_auth(config.m365)
+    get_access_token(config.m365, config.m365.scopes)
+
+
 def _persist_cache() -> None:
     if _token_cache is not None and _token_cache.has_state_changed:
         config.paths.m365_token_path.parent.mkdir(parents=True, exist_ok=True)

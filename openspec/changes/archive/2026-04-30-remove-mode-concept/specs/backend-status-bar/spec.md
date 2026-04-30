@@ -1,10 +1,4 @@
-# Spec: backend-status-bar
-
-## Purpose
-
-TBD — Defines the `BackendStatus` widget that displays the active backend name and model in the chat UI.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: BackendStatus widget shows active bots and backend in its two sections
 The chat UI SHALL display a `BackendStatus` widget at the bottom of `ChatApp`. The left section SHALL show the active bot(s) as `{BotType} ({variant})` entries joined by `  \N{BULLET}  `, followed by `  \N{BULLET}  {version}`. The right section SHALL show the backend name and model. Example left label: `GuardBot (code)  •  v2026.4.6`. For multiple bots: `GuardBot (code)  •  AgentBot (code)  •  v2026.4.6`.
@@ -21,28 +15,6 @@ The chat UI SHALL display a `BackendStatus` widget at the bottom of `ChatApp`. T
 - **WHEN** `ChatApp` is launched with a `BackendInfo(name="mistral", model="mistral-small-latest")`
 - **THEN** the right label SHALL display text containing both `"mistral"` and `"mistral-small-latest"`
 
-#### Scenario: Status bar is visible in non-demo mode
-- **WHEN** `ChatApp` is launched without a `demo_context`
-- **THEN** the `BackendStatus` widget SHALL still be visible
-
-#### Scenario: Status bar is visible in demo mode
-- **WHEN** `ChatApp` is launched with a `demo_context`
-- **THEN** the `BackendStatus` widget SHALL be visible alongside the `DemoHeader`
-
-### Requirement: ChatApp accepts a backend_info parameter
-`ChatApp.__init__` SHALL accept a `backend_info: BackendInfo` parameter and pass it to the `BackendStatus` widget. The `BackendInfo` type is imported from `llm/factory.py`.
-
-#### Scenario: ChatApp composes BackendStatus last
-- **WHEN** `ChatApp.compose()` is called
-- **THEN** `BackendStatus` SHALL be the last widget yielded, placing it at the bottom of the layout
-
-### Requirement: BackendStatus structural CSS lives in DEFAULT_CSS; visual styling in chat.tcss
-The `BackendStatus` widget SHALL define `height: 1` and `layout: horizontal` in `DEFAULT_CSS`. Color, padding, and text style SHALL be defined in `chat.tcss`.
-
-#### Scenario: DEFAULT_CSS sets height and layout only
-- **WHEN** `BackendStatus.DEFAULT_CSS` is inspected
-- **THEN** it SHALL set `height: 1` and `layout: horizontal` and SHALL NOT include color or border properties
-
 ### Requirement: BackendStatus accepts a list of ResolvedBotConfig instead of mode
 `BackendStatus.__init__` SHALL accept `resolved_bots: list[ResolvedBotConfig]` and `backend_info: BackendInfo`. It SHALL NOT accept a `mode` parameter.
 
@@ -56,3 +28,9 @@ The `BackendStatus` widget SHALL define `height: 1` and `layout: horizontal` in 
 #### Scenario: ChatApp composes BackendStatus with participant bot configs
 - **WHEN** `ChatApp.compose()` is called
 - **THEN** `BackendStatus` SHALL be constructed with the resolved configs of all non-human participants
+
+## REMOVED Requirements
+
+### Requirement: BackendStatus accepts a mode parameter
+**Reason**: Mode is removed. The left section now shows bot/variant instead of mode name.
+**Migration**: Replace `mode=...` with `resolved_bots=[...]` at all `BackendStatus` construction sites.

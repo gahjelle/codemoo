@@ -46,6 +46,7 @@ class ToolDef:
     parameters: list[ToolParam]
     fn: Callable[..., str]
     requires_approval: bool = False
+    init: Callable[[], None] | None = None
 
 
 from codemoo.core.tools.files import list_files, read_file, write_file  # noqa: E402

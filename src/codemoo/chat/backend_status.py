@@ -1,16 +1,16 @@
-"""BackendStatus widget showing the active LLM backend and model."""
+"""BackendStatus widget showing the active bot(s) and LLM backend."""
 
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Label
 
 from codemoo import __version__
-from codemoo.config.schema import ModeName
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.llm.factory import BackendInfo
 
 
 class BackendStatus(Widget):
-    """Footer bar showing the active mode, backend name, and model.
+    """Footer bar showing the active bot(s), backend name, and model.
 
     Always visible, regardless of demo mode.
     Structural layout lives in DEFAULT_CSS; visual styling in chat.tcss.
@@ -23,13 +23,18 @@ class BackendStatus(Widget):
     }
     """
 
-    def __init__(self, backend_info: BackendInfo, mode: ModeName = "code") -> None:
-        """Initialise with the active backend info and current mode."""
+    def __init__(
+        self, backend_info: BackendInfo, resolved_bots: list[ResolvedBotConfig]
+    ) -> None:
+        """Initialise with the active backend info and participant bot configs."""
         super().__init__()
-        self._mode_text = f"{mode}  \N{BULLET}  {__version__}"
+        bot_parts = "  \N{BULLET}  ".join(
+            f"{r.bot_type} ({r.variant})" for r in resolved_bots
+        )
+        self._left_text = f"{bot_parts}  \N{BULLET}  {__version__}"
         self._backend_text = f"{backend_info.name}  \N{BULLET}  {backend_info.model}"
 
     def compose(self) -> ComposeResult:
-        """Yield mode label on the left and backend/model label on the right."""
-        yield Label(self._mode_text, id="mode-label")
+        """Yield bot label on the left and backend/model label on the right."""
+        yield Label(self._left_text, id="mode-label")
         yield Label(self._backend_text, id="backend-label")

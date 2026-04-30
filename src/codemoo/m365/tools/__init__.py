@@ -1,20 +1,31 @@
-"""Microsoft Graph tool factory."""
+"""Microsoft Graph tool definitions."""
 
-from codemoo.config.schema import M365Config
 from codemoo.core.tools import ToolDef
-from codemoo.m365.auth import get_access_token
-from codemoo.m365.tools.read import make_read_tools
-from codemoo.m365.tools.write import make_write_tools
+from codemoo.m365.tools.read import (
+    list_calendar,
+    list_email,
+    list_sharepoint,
+    read_email,
+    read_sharepoint,
+)
+from codemoo.m365.tools.write import (
+    create_calendar_event,
+    post_teams_message,
+    send_email,
+    write_sharepoint,
+)
 
-
-def make_graph_tools(cfg: M365Config) -> dict[str, ToolDef]:
-    """Construct all Graph ToolDefs, sharing a single token-fetching closure."""
-
-    def _get_headers() -> dict[str, str]:
-        return {"Authorization": f"Bearer {get_access_token(cfg, cfg.scopes)}"}
-
-    tools = [
-        *make_read_tools(_get_headers, cfg.graph_base_url),
-        *make_write_tools(_get_headers, cfg.graph_base_url),
+M365_TOOL_REGISTRY: dict[str, ToolDef] = {
+    t.name: t
+    for t in [
+        list_sharepoint,
+        read_sharepoint,
+        list_email,
+        read_email,
+        list_calendar,
+        send_email,
+        create_calendar_event,
+        post_teams_message,
+        write_sharepoint,
     ]
-    return {tool.name: tool for tool in tools}
+}

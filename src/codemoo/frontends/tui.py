@@ -17,17 +17,18 @@ from codemoo.config import config
 from codemoo.config.schema import (
     BotRef,
     BotType,
-    ModeName,
     ResolvedBotConfig,
     ScriptName,
+    resolve,
 )
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import ToolLLMBackend
-from codemoo.core.bots import make_bots, resolve_bot
+from codemoo.core.bots import make_bots, resolve_bot, run_init_hooks
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
+from codemoo.m365.tools import M365_TOOL_REGISTRY
 
 
 @dataclass
@@ -48,32 +49,18 @@ code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 business_app = cyclopts.App(help="Enterproose - demo enterprise agents step by step.")
 
 
-def _default_script_for_mode(mode: ModeName) -> ScriptName:
-    return next(name for name, s in config.scripts.items() if s.mode == mode)
-
-
-def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResult:
+def _setup(script: ScriptName = "default") -> SetupResult:
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
 
-    extra_tools = None
-    if mode == "business":
-        from codemoo.m365.auth import get_access_token, init_graph_auth  # noqa: PLC0415
-        from codemoo.m365.tools import make_graph_tools  # noqa: PLC0415
-
-        init_graph_auth(config.m365)
-        get_access_token(config.m365, config.m365.scopes)
-        extra_tools = make_graph_tools(config.m365)
-
     available, resolved_bots = make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
-        extra_tools=extra_tools,
     )
     return SetupResult(
         llm=llm_backend,
@@ -87,37 +74,45 @@ def _setup(script: ScriptName = "default", mode: ModeName = "code") -> SetupResu
 
 
 @code_app.default
-def code_chat(
-    *, bot: str = config.main_bot["code"].type, mode: ModeName = "code"
-) -> None:
-    """Launch the code chat with the main bot, or a specific one via --bot."""
+def code_chat(*, bot: BotType = "GuardBot", variant: str = "code") -> None:
+    """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
-        return _chat(bot=bot, mode=mode)
+        return _chat(bot=bot, variant=variant)
     except ValueError as err:
         _raise_error(str(err))
 
 
 @business_app.default
-def business_chat(
-    *, bot: str = config.main_bot["business"].type, mode: ModeName = "business"
-) -> None:
-    """Launch the business chat with the main bot, or a specific one via --bot."""
+def business_chat(*, bot: BotType = "GuardBot", variant: str = "business") -> None:
+    """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
-        return _chat(bot=bot, mode=mode)
+        return _chat(bot=bot, variant=variant)
     except ValueError as err:
         _raise_error(str(err))
 
 
-def _chat(*, bot: str, mode: ModeName) -> None:
-    """Launch the chat in any mode."""
-    setup = _setup(_default_script_for_mode(mode), mode=mode)
-    chosen = resolve_bot(bot, setup.available)
+def _chat(*, bot: BotType, variant: str) -> None:
+    """Instantiate a single bot and launch the chat."""
+    bot_ref = BotRef(type=bot, variant=variant)
+    llm_backend, backend_info = resolve_backend(config)
+    human = HumanParticipant()
+    language = config.language
+    error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+
+    available, resolved_bots = make_bots(
+        llm_backend,
+        cfg=config.bots,
+        bot_refs=[bot_ref],
+        commentator=commentator_bot,
+    )
+    _run_init_hooks_for_resolved(resolved_bots)
     ChatApp(
-        participants=[setup.human, chosen],
-        error_bot=setup.error_bot,
-        commentator_bot=setup.commentator_bot,
-        backend_info=setup.backend_info,
-        mode=mode,
+        participants=[human, available[0]],
+        error_bot=error_bot,
+        commentator_bot=commentator_bot,
+        backend_info=backend_info,
+        resolved_bots=resolved_bots,
     ).run()
 
 
@@ -149,37 +144,31 @@ def list_scripts() -> None:
     """List all configured scripts with their ordered bot types."""
     table = Table(show_header=True)
     table.add_column("Script")
-    table.add_column("Mode")
     table.add_column("Bots")
     for name, script_cfg in config.scripts.items():
         bots_str = ", ".join(f"{r.type}:{r.variant}" for r in script_cfg.bots)
-        table.add_row(name, script_cfg.mode, bots_str)
+        table.add_row(name, bots_str)
     Console().print(table)
 
 
 @code_app.command(name="select")
-def code_select(*, mode: ModeName = "code") -> None:
-    """Choose bots interactively before starting the code chat."""
-    return _select(mode=mode)
-
-
 @business_app.command(name="select")
-def business_select(*, mode: ModeName = "business") -> None:
-    """Choose bots interactively before starting the business chat."""
-    return _select(mode=mode)
+def select() -> None:
+    """Choose a bot interactively before starting the chat."""
+    _select()
 
 
-def _select(*, mode: ModeName) -> None:
-    """Choose bots interactively before starting the chat."""
-    # Deduplicated union of bots across scripts with the given mode; first variant wins
-    mode_bot_refs: list[BotRef] = []
-    seen: set[BotType] = set()
-    for script_cfg in config.scripts.values():
-        if script_cfg.mode == mode:
-            for ref in script_cfg.bots:
-                if ref.type not in seen:
-                    seen.add(ref.type)
-                    mode_bot_refs.append(ref)
+def _select() -> None:
+    """Show the full bot catalog and start chat with the chosen bot(s)."""
+    all_resolved = [
+        resolve(config.bots, BotRef(type=bot_type, variant=variant_name))
+        for bot_type, bot_cfg in config.bots.items()
+        for variant_name in bot_cfg.variants
+    ]
+
+    selected: list[ResolvedBotConfig] | None = SelectionApp(all_resolved).run()
+    if not selected:
+        return
 
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
@@ -187,31 +176,22 @@ def _select(*, mode: ModeName) -> None:
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
 
-    extra_tools = None
-    if mode == "business":
-        from codemoo.m365.auth import get_access_token, init_graph_auth  # noqa: PLC0415
-        from codemoo.m365.tools import make_graph_tools  # noqa: PLC0415
+    _run_init_hooks_for_resolved(selected)
 
-        init_graph_auth(config.m365)
-        get_access_token(config.m365, config.m365.scopes)
-        extra_tools = make_graph_tools(config.m365)
-
-    available, _ = make_bots(
+    bot_refs = [BotRef(type=r.bot_type, variant=r.variant) for r in selected]
+    available, resolved_bots = make_bots(
         llm_backend,
         cfg=config.bots,
-        bot_refs=mode_bot_refs,
+        bot_refs=bot_refs,
         commentator=commentator_bot,
-        extra_tools=extra_tools,
     )
-
-    selected = SelectionApp(available).run()
-    participants: list[ChatParticipant] = [human, *(selected or [])]
+    participants: list[ChatParticipant] = [human, *available]
     ChatApp(
         participants=participants,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
-        mode=mode,
+        resolved_bots=resolved_bots,
     ).run()
 
 
@@ -239,8 +219,7 @@ def business_demo(
 
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
-    mode: ModeName = config.scripts[script].mode
-    setup = _setup(script, mode)
+    setup = _setup(script)
     start_index = (
         setup.available.index(resolve_bot(start, setup.available))
         if start is not None
@@ -253,6 +232,10 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
     )
     demo_bots = setup.available[start_index : end_index + 1]
     demo_resolved = setup.resolved_bots[start_index : end_index + 1]
+
+    # Run all init hooks upfront so auth fires before the first slide
+    _run_init_hooks_for_resolved(setup.resolved_bots[start_index : end_index + 1])
+
     for i, bot in enumerate(demo_bots):
         prev_bot = demo_bots[i - 1] if i > 0 else None
         context = DemoContext(
@@ -269,10 +252,21 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
             commentator_bot=setup.commentator_bot,
             demo_context=context,
             backend_info=setup.backend_info,
-            mode=mode,
+            resolved_bots=[demo_resolved[i]],
         ).run_async()
         if result != "next":
             break
+
+
+def _run_init_hooks_for_resolved(resolved_bots: list[ResolvedBotConfig]) -> None:
+    """Collect all tools across the resolved bots and run unique init hooks."""
+    all_tools = [
+        M365_TOOL_REGISTRY[name]
+        for r in resolved_bots
+        for name in r.tools
+        if name in M365_TOOL_REGISTRY
+    ]
+    run_init_hooks(all_tools)
 
 
 def _raise_error(text: str) -> NoReturn:

@@ -1,10 +1,12 @@
 from typing import cast
 
+from codemoo.core.bots import run_init_hooks
 from codemoo.core.tools import ToolDef, ToolParam
 from codemoo.core.tools.files import read_file, write_file
 from codemoo.core.tools.shell import run_shell
 from codemoo.core.tools.strings import reverse_string
 from codemoo.llm.mistral import _tool_schema
+from codemoo.m365.tools import M365_TOOL_REGISTRY
 
 
 def test_tool_def_exposes_name_and_fn() -> None:
@@ -61,6 +63,61 @@ def test_reverse_string_empty() -> None:
 def test_reverse_string_unicode() -> None:
     assert reverse_string.fn(text="abc") == "cba"
     assert reverse_string.fn(text="élève") == "evèlé"
+
+
+def test_tool_def_init_defaults_to_none() -> None:
+    def my_fn(x: str) -> str:
+        return x
+
+    t = ToolDef(name="t", description="", parameters=[], fn=my_fn)
+    assert t.init is None
+
+
+def test_code_tools_have_no_init_hook() -> None:
+    for tool in [read_file, write_file, run_shell, reverse_string]:
+        assert tool.init is None
+
+
+def test_m365_tools_have_init_hook() -> None:
+    for tool in M365_TOOL_REGISTRY.values():
+        assert tool.init is not None
+
+
+def test_m365_tools_share_same_init_hook() -> None:
+    tools = list(M365_TOOL_REGISTRY.values())
+    assert all(t.init is tools[0].init for t in tools)
+
+
+def test_run_init_hooks_calls_hook_once_per_unique_fn() -> None:
+    call_log: list[str] = []
+
+    def hook_a() -> None:
+        call_log.append("a")
+
+    def hook_b() -> None:
+        call_log.append("b")
+
+    def noop(x: str) -> str:
+        return x
+
+    tools = [
+        ToolDef(name="t1", description="", parameters=[], fn=noop, init=hook_a),
+        ToolDef(name="t2", description="", parameters=[], fn=noop, init=hook_a),
+        ToolDef(name="t3", description="", parameters=[], fn=noop, init=hook_b),
+    ]
+    run_init_hooks(tools)
+    assert call_log == ["a", "b"]
+
+
+def test_run_init_hooks_skips_none_init() -> None:
+    called: list[bool] = []
+
+    def noop(x: str) -> str:
+        return x
+
+    tools = [ToolDef(name="t", description="", parameters=[], fn=noop, init=None)]
+    run_init_hooks(tools)
+    assert called == []
 
 
 def test_reverse_string_schema_top_level_fields() -> None:

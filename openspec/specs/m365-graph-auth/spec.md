@@ -82,10 +82,3 @@ Graph tool implementations SHALL call `get_access_token(cfg, cfg.scopes)` on eac
 #### Scenario: Silent token acquisition is used when a cached token exists
 - **WHEN** `get_access_token` is called and a valid cached token exists for the requested scopes
 - **THEN** it SHALL return the token without printing any device code prompt
-
-### Requirement: Eager auth is performed at business-mode startup
-When `tui.py` initialises business mode, it SHALL call `init_graph_auth(config.m365)` followed by `get_access_token(config.m365, config.m365.scopes)` before constructing any bots. If no cached token exists, the device code flow SHALL be triggered at this point, not during a subsequent tool call.
-
-#### Scenario: Device code flow fires at startup, not on first tool call
-- **WHEN** business mode is started with no cached token
-- **THEN** the device code URL and code SHALL be printed before the chat UI appears

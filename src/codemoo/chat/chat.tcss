@@ -96,15 +96,6 @@ BackendStatus {
     text-align: right;
 }
 
-/* Per-mode background tints — subtle shift from the neutral dark background */
-.mode-code {
-    background: #1e1035;
-}
-
-.mode-business {
-    background: #0d250d;
-}
-
 /* Slide overlay modal */
 SlideScreen {
     background: $background 80%;

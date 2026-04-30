@@ -1,25 +1,15 @@
 """Tests for TUI helper functions."""
 
-import pytest
-
-from codemoo.frontends.tui import _default_script_for_mode
-
-
-def test_default_script_for_code_mode() -> None:
-    # "default" is the first code-mode script declared in codemoo.toml
-    assert _default_script_for_mode("code") == "default"
+from codemoo.config import config
+from codemoo.config.schema import BotRef, resolve
+from codemoo.frontends.tui import _run_init_hooks_for_resolved
 
 
-def test_default_script_for_business_mode() -> None:
-    # "m365" is the first business-mode script declared in codemoo.toml
-    assert _default_script_for_mode("business") == "m365"
+def test_run_init_hooks_for_resolved_no_m365_tools_does_not_raise() -> None:
+    """Bots with only code tools should not trigger any init hooks."""
+    resolved = [resolve(config.bots, BotRef(type="EchoBot", variant="default"))]
+    _run_init_hooks_for_resolved(resolved)  # should not raise
 
 
-def test_default_script_raises_for_missing_mode(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import codemoo.frontends.tui as tui_module
-
-    monkeypatch.setattr(tui_module, "config", type("_Cfg", (), {"scripts": {}})())
-    with pytest.raises(StopIteration):
-        _default_script_for_mode("code")
+def test_run_init_hooks_for_resolved_empty_list_does_not_raise() -> None:
+    _run_init_hooks_for_resolved([])

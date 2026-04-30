@@ -1,10 +1,4 @@
-# Spec: demo-scripts
-
-## Purpose
-
-TBD — defines the `[scripts]` TOML section and associated config schema that allows named, ordered subsets of bots to be selected for a demo session.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: [scripts] TOML section defines named structured script objects
 The `configs/codemoo.toml` file SHALL contain a `[scripts]` section. Each key SHALL be a script name; its value SHALL be a structured object with only `bots: list[BotRef]`. The `mode` field SHALL NOT be present on script objects. A `"default"` script SHALL always be present and SHALL list `BotRef` inline tables for the standard coding progression. Each `BotRef` SHALL use `{type = "<BotType>", variant = "<variant>"}` inline-table syntax.
@@ -21,13 +15,8 @@ The `configs/codemoo.toml` file SHALL contain a `[scripts]` section. Each key SH
 - **WHEN** a script entry such as `focused` is present
 - **THEN** `config.scripts["focused"].bots` SHALL be the configured list of `BotRef` instances
 
-### Requirement: make_bots() accepts a bot_refs parameter of type list[BotRef]
-`make_bots()` SHALL accept a `bot_refs: list[BotRef]` parameter (replacing `bot_order: list[str]`). It SHALL construct bots in the order given by `bot_refs`.
+## REMOVED Requirements
 
-#### Scenario: make_bots respects BotRef order
-- **WHEN** `make_bots(backend, human_name, cfg, bot_refs=[BotRef(type="LlmBot", variant="default"), BotRef(type="AgentBot", variant="code")])` is called
-- **THEN** the returned list SHALL contain exactly two bots: an `LlmBot` instance followed by an `AgentBot` instance
-
-#### Scenario: _make_bot raises for unhandled bot type
-- **WHEN** `_make_bot` is called with a `BotType` value that has no match arm
-- **THEN** it SHALL raise `ValueError` with a descriptive message
+### Requirement: [scripts] TOML section mode field
+**Reason**: `ScriptConfig.mode` is removed. Scripts are pure ordered bot lists; authentication requirements are expressed by the tools each bot uses.
+**Migration**: Remove the `mode = ...` line from every `[scripts.*]` section in `codemoo.toml`. Update `ScriptConfig` in the Python schema to remove the `mode` field.

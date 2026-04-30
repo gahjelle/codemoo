@@ -1,10 +1,4 @@
-# Spec: frontend-tui
-
-## Purpose
-
-TBD — defines the CLI entry point and startup modes for the `codemoo` command, including the default chat mode, bot selection, and demo progression.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Default invocation launches chat with hardcoded default bot and variant
 When `codemoo` is run with no arguments, the application SHALL launch `ChatApp` with `GuardBot` using variant `"code"`. When `enterproose` is run with no arguments, it SHALL use `GuardBot` with variant `"business"`. These defaults SHALL be expressed as Python default parameter values in `code_chat` and `business_chat` respectively. There SHALL be no `main_bot` config section.
@@ -81,24 +75,20 @@ Both `code_app` and `business_app` SHALL register a `select` subcommand. It SHAL
 - **WHEN** the user runs `codemoo list-scripts`
 - **THEN** the table SHALL NOT include a Mode column
 
-### Requirement: list-bots subcommand is registered on the CLI
-The `codemoo` command SHALL expose a `list-bots` subcommand alongside `select`, `demo`, and `list-scripts`.
+## REMOVED Requirements
 
-#### Scenario: list-bots subcommand is accessible
-- **WHEN** the user runs `codemoo list-bots`
-- **THEN** the command SHALL execute the list-bots logic without error
+### Requirement: _chat selects the first script whose mode matches the requested mode
+**Reason**: Scripts no longer have a `mode` field. `_chat()` now instantiates the bot directly from `--bot` and `--variant` without loading a script.
+**Migration**: Remove `_default_script_for_mode()` and the script-loading path from `_chat()`.
 
-#### Scenario: list-bots appears in help output
-- **WHEN** the user runs `codemoo --help`
-- **THEN** `list-bots` SHALL appear in the list of available subcommands
+### Requirement: chat command accepts a --mode flag
+**Reason**: Mode is removed. Bot and variant together fully specify the desired bot.
+**Migration**: Replace `--mode` with `--variant` at call sites.
 
-### Requirement: list-scripts subcommand is registered on the CLI
-The `codemoo` command SHALL expose a `list-scripts` subcommand alongside `list-bots`, `select`, and `demo`.
+### Requirement: select command accepts a --mode flag and filters bots by mode
+**Reason**: The full catalog is shown regardless of entry point. Mode filtering is no longer meaningful.
+**Migration**: Remove `--mode` from `select` subcommand. Both apps show the same catalog.
 
-#### Scenario: list-scripts subcommand is accessible
-- **WHEN** the user runs `codemoo list-scripts`
-- **THEN** the command SHALL execute without error
-
-#### Scenario: list-scripts appears in help output
-- **WHEN** the user runs `codemoo --help`
-- **THEN** `list-scripts` SHALL appear in the list of available subcommands
+### Requirement: _setup() accepts a mode parameter
+**Reason**: `_setup()` no longer gates M365 auth on mode. Auth is handled by init hooks.
+**Migration**: Remove `mode` parameter from `_setup()`. Remove the `if mode == "business"` auth block.

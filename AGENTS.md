@@ -71,15 +71,15 @@ Tools are split into two locations: generic code tools in `src/codemoo/core/tool
 
 ### M365 tools — `src/codemoo/m365/tools/`
 
-- **`__init__.py`** — `make_graph_tools(cfg)` factory; constructs all Graph ToolDefs with a shared auth closure
+- **`__init__.py`** — `M365_TOOL_REGISTRY` dict of all Graph ToolDefs; each tool carries `init=_init_m365`
 - **`read.py`** — Microsoft Graph read operations (list_calendar, list_email, list_sharepoint, etc.)
 - **`write.py`** — Microsoft Graph write operations (send_email, create_calendar_event, etc.)
 
-Graph tools are not in `TOOL_REGISTRY`. They are constructed at startup via `make_graph_tools(config.m365)` and injected into `make_bots(extra_tools=...)` when running in business mode.
+Graph tools carry an `init` hook (`_init_m365`) that triggers M365 authentication when called. `make_bots` merges `TOOL_REGISTRY` and `M365_TOOL_REGISTRY` into a combined registry; no `extra_tools` injection is needed.
 
 ### Using Tools
 
-Code tools are accessed via `TOOL_REGISTRY`, the single source of truth at runtime:
+Code tools are accessed via `TOOL_REGISTRY`; M365 tools via `M365_TOOL_REGISTRY`. Both are merged automatically by `make_bots`:
 
 ```python
 from codemoo.core.tools import TOOL_REGISTRY

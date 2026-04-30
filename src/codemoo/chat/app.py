@@ -16,7 +16,7 @@ from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
-from codemoo.config.schema import ModeName
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.guard_bot import ApprovalRequest, GuardDecision
@@ -37,7 +37,7 @@ class ChatApp(App[str | None]):
         commentator_bot: CommentatorBot | None = None,
         demo_context: DemoContext | None = None,
         backend_info: BackendInfo | None = None,
-        mode: ModeName = "code",
+        resolved_bots: list[ResolvedBotConfig] | None = None,
     ) -> None:
         """Initialise with an ordered list of chat participants and the error bot."""
         super().__init__()
@@ -45,7 +45,7 @@ class ChatApp(App[str | None]):
         self._error_bot = error_bot
         self._demo_context = demo_context
         self._backend_info = backend_info
-        self._mode = mode
+        self._resolved_bots = resolved_bots or []
 
         # Build a lookup from sender name → (emoji, is_human, css_class)
         def _bubble_class(p: ChatParticipant) -> str:
@@ -77,11 +77,10 @@ class ChatApp(App[str | None]):
         yield ThinkingStatus()
         yield Input(placeholder="Type a message and press Enter...")
         if self._backend_info is not None:
-            yield BackendStatus(self._backend_info, mode=self._mode)
+            yield BackendStatus(self._backend_info, self._resolved_bots)
 
     def on_mount(self) -> None:
         """Push the slide overlay when entering demo mode and focus the input."""
-        self.add_class(f"mode-{self._mode}")
         if self._demo_context is not None:
             self.push_screen(SlideScreen(self._demo_context))
         self.query_one(Input).focus()
