@@ -4,7 +4,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Bugs
 
-- select command doesn't start properly
+- Rune crashes when using more tools?
 
 ## Questions
 

@@ -29,7 +29,10 @@ class SelectionApp(App[list[ResolvedBotConfig]]):
         with Vertical(id="selection-container"):
             yield Label("Choose bots to join the conversation", id="selection-title")
             yield SelectionList(
-                *[(_bot_label(bot), bot) for bot in self._available_bots],
+                *[
+                    (_bot_label(bot), idx)
+                    for idx, bot in enumerate(self._available_bots)
+                ],
                 id="bot-list",
             )
             yield Button("Start Chat", id="start-btn", variant="primary")
@@ -39,4 +42,4 @@ class SelectionApp(App[list[ResolvedBotConfig]]):
         if event.button.id != "start-btn":
             return
         selection_list = self.query_one("#bot-list", SelectionList)
-        self.exit(selection_list.selected)
+        self.exit([self._available_bots[i] for i in selection_list.selected])
