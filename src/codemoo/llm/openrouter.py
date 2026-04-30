@@ -4,7 +4,7 @@ import os
 
 import openai
 
-from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.backend import LLMBackend
 from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
@@ -33,8 +33,8 @@ class _OpenRouterBackend(OpenAILikeBackend):
         )
 
 
-def create_openrouter_backend(model: str) -> ToolLLMBackend:
-    """Create an OpenRouter-backed ToolLLMBackend.
+def create_openrouter_backend(model: str) -> LLMBackend:
+    """Create an OpenRouter-backed LLMBackend.
 
     Reads OPENROUTER_API_KEY from the environment. Raises BackendUnavailableError
     if the key is absent.

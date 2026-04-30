@@ -6,7 +6,7 @@ from typing import overload
 
 import anthropic as anthropic_sdk
 
-from codemoo.core.backend import Message, ToolLLMBackend, ToolUse
+from codemoo.core.backend import LLMBackend, Message, ToolUse
 from codemoo.core.tools import ToolDef
 from codemoo.llm.exceptions import BackendUnavailableError
 
@@ -141,8 +141,8 @@ class _AnthropicBackend:
         return ""
 
 
-def create_anthropic_backend(model: str) -> ToolLLMBackend:
-    """Create an Anthropic-backed ToolLLMBackend.
+def create_anthropic_backend(model: str) -> LLMBackend:
+    """Create an Anthropic-backed LLMBackend.
 
     Reads ANTHROPIC_API_KEY from the environment. Raises BackendUnavailableError
     if the key is absent.

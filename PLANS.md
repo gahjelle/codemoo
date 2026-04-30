@@ -5,12 +5,10 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Bugs
 
 - select command doesn't start properly
--
 
 ## Questions
 
 - Should tool output be added to conversation history?
-- Can llm.complete() and llm.complete_step() be merged into a single llm.complete()?
 - Can we control shell scripts to only touch session folder
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?

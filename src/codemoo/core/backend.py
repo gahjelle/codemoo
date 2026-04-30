@@ -65,11 +65,3 @@ class LLMBackend(Protocol):
     ) -> "str | ToolUse":
         """Send messages to the LLM; return text or a tool-call descriptor."""
         ...
-
-
-class ToolLLMBackend(LLMBackend, Protocol):
-    """LLMBackend marker for backends that fully support tool calling.
-
-    Bots that need tools use this narrower type annotation to make their
-    intent clear; the underlying complete() signature is identical to LLMBackend.
-    """

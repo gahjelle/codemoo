@@ -4,7 +4,7 @@ import dataclasses
 import logging
 
 from codemoo.config.schema import CodemooConfig
-from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.backend import LLMBackend
 from codemoo.llm.exceptions import BackendUnavailableError
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class BackendInfo:
     model: str
 
 
-def resolve_backend(config: CodemooConfig) -> tuple[ToolLLMBackend, BackendInfo]:
+def resolve_backend(config: CodemooConfig) -> tuple[LLMBackend, BackendInfo]:
     """Try the configured primary backend, then each fallback in order.
 
     Catches BackendUnavailableError (missing API key) and moves to the next
@@ -46,7 +46,7 @@ def resolve_backend(config: CodemooConfig) -> tuple[ToolLLMBackend, BackendInfo]
     raise RuntimeError(msg)
 
 
-def _create(name: str, model: str) -> ToolLLMBackend:
+def _create(name: str, model: str) -> LLMBackend:
     """Dispatch to the appropriate backend factory by name."""
     from codemoo.llm.anthropic import create_anthropic_backend  # noqa: PLC0415
     from codemoo.llm.mistral import create_mistral_backend  # noqa: PLC0415

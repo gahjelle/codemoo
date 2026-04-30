@@ -4,7 +4,7 @@ import os
 
 from mistralai.client import Mistral
 
-from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.backend import LLMBackend
 from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
@@ -32,8 +32,8 @@ class _MistralBackend(OpenAILikeBackend):
 def create_mistral_backend(
     model: str,
     timeout_ms: int = 120_000,
-) -> ToolLLMBackend:
-    """Create a Mistral-backed ToolLLMBackend.
+) -> LLMBackend:
+    """Create a Mistral-backed LLMBackend.
 
     Reads MISTRAL_API_KEY from the environment. Raises BackendUnavailableError
     if the key is absent.

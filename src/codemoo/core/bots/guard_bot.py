@@ -5,8 +5,8 @@ from collections.abc import Awaitable, Callable
 from typing import ClassVar
 
 from codemoo.core.backend import (
+    LLMBackend,
     Message,
-    ToolLLMBackend,
     ToolUse,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
@@ -57,7 +57,7 @@ class GuardBot:
 
     name: str
     emoji: str
-    llm: ToolLLMBackend
+    llm: LLMBackend
     tools: list[ToolDef]
     instructions: str
     commentator: CommentatorBot | None = None

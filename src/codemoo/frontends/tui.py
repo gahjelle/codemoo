@@ -22,7 +22,7 @@ from codemoo.config.schema import (
     resolve,
 )
 from codemoo.core import bots as bot_module
-from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.backend import LLMBackend
 from codemoo.core.bots import make_bots, resolve_bot, run_init_hooks
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
@@ -35,7 +35,7 @@ from codemoo.m365.tools import M365_TOOL_REGISTRY
 class SetupResult:
     """Basic set up of the coding assistant."""
 
-    llm: ToolLLMBackend
+    llm: LLMBackend
     backend_info: BackendInfo
     human: HumanParticipant
     available: list[ChatParticipant]

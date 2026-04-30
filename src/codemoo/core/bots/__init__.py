@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 
 from codemoo.config.schema import BotConfig, BotRef, BotType, ResolvedBotConfig, resolve
-from codemoo.core.backend import ToolLLMBackend
+from codemoo.core.backend import LLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.bots.chat_bot import ChatBot
@@ -55,7 +55,7 @@ def run_init_hooks(tools: Iterable[ToolDef]) -> None:
 
 def _make_bot(  # noqa: C901, PLR0911
     bot: ResolvedBotConfig,
-    llm: ToolLLMBackend,
+    llm: LLMBackend,
     commentator: CommentatorBot | None,
 ) -> ChatParticipant:
     """Construct a single bot by type, resolving tools from the combined registry."""
@@ -144,7 +144,7 @@ def _make_bot(  # noqa: C901, PLR0911
 
 
 def make_bots(
-    llm: ToolLLMBackend,
+    llm: LLMBackend,
     *,
     cfg: dict[BotType, BotConfig],
     bot_refs: list[BotRef],
