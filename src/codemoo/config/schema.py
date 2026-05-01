@@ -103,6 +103,13 @@ class ResolvedBotConfig:
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
     """Merge a BotConfig and one of its BotVariantConfigs into a ResolvedBotConfig."""
     cfg = bots[ref.type]
+    if ref.variant not in cfg.variants:
+        available = sorted(cfg.variants.keys())
+        msg = (
+            f"Unknown variant {ref.variant!r} for {ref.type}. "
+            f"Available variants: {', '.join(available)}"
+        )
+        raise ValueError(msg)
     variant = cfg.variants[ref.variant]
     return ResolvedBotConfig(
         bot_type=ref.type,

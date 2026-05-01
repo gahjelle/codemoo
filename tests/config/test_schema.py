@@ -111,5 +111,34 @@ def test_resolve_raises_for_unknown_variant() -> None:
         )
     }
     ref = BotRef(type="EchoBot", variant="nonexistent")
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError, match="Unknown variant"):
         resolve(bots, ref)  # type: ignore[arg-type]
+
+
+def test_resolve_error_message_contains_variant_info() -> None:
+    bots = {
+        "EchoBot": BotConfig(
+            name="Coco",
+            emoji="PARROT",
+            sources=[],
+            variants={
+                "zebra": _variant(),
+                "alpha": _variant(),
+                "beta": _variant(),
+            },
+        )
+    }
+    ref = BotRef(type="EchoBot", variant="bad")
+    with pytest.raises(ValueError, match="Unknown variant") as exc_info:
+        resolve(bots, ref)  # type: ignore[arg-type]
+
+    msg = str(exc_info.value)
+    assert "bad" in msg
+    assert "EchoBot" in msg
+    assert "alpha" in msg
+    assert "beta" in msg
+    assert "zebra" in msg
+    alpha_pos = msg.index("alpha")
+    beta_pos = msg.index("beta")
+    zebra_pos = msg.index("zebra")
+    assert alpha_pos < beta_pos < zebra_pos, "variants should be listed alphabetically"

@@ -44,7 +44,7 @@ def resolve_backend(config: CodemooConfig) -> tuple[LLMBackend, BackendInfo]:
 
     tried = "\n- ".join(errors)
     msg = f"No LLM backend available. Tried:\n- {tried}"
-    raise RuntimeError(msg)
+    raise ValueError(msg)
 
 
 def _create(name: str, model: str, base_url: str | None) -> LLMBackend:

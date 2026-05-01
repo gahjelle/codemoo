@@ -78,7 +78,7 @@ def code_chat(*, bot: BotType = "GuardBot", variant: str = "code") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
         return _chat(bot=bot, variant=variant)
-    except Exception as err:  # noqa: BLE001
+    except ValueError as err:
         _raise_error(str(err))
 
 
@@ -87,7 +87,7 @@ def business_chat(*, bot: BotType = "GuardBot", variant: str = "business") -> No
     """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
         return _chat(bot=bot, variant=variant)
-    except Exception as err:  # noqa: BLE001
+    except ValueError as err:
         _raise_error(str(err))
 
 
