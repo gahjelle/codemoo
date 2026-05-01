@@ -2,7 +2,7 @@
 
 
 def load_names(path: str) -> list[str]:
-    with open(path, encoding="ascii") as f:
+    with open(path, mode="r", encoding="ascii") as f:
         return [line.strip() for line in f if line.strip()]
 
 

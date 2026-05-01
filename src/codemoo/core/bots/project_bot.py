@@ -1,4 +1,4 @@
-"""LLM bot that loops tool calls, pausing for human approval before dangerous ones."""
+"""GuardBot that reads project context before acting."""
 
 import dataclasses
 from collections.abc import Awaitable, Callable
@@ -10,6 +10,7 @@ from codemoo.core.backend import (
     ToolUse,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
+from codemoo.core.context import read_project_context
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
 
@@ -46,13 +47,20 @@ def _denial_message(decision: Denied) -> str:
     )
 
 
-@dataclasses.dataclass(eq=False)
-class GuardBot:
-    """Chat participant that loops tool calls with human approval before dangerous ones.
+async def _async_approved(_: ApprovalRequest) -> GuardDecision:
+    return Approved()
 
-    Identical to AgentBot except that tools flagged requires_approval=True are
-    gated: the bot awaits a GuardDecision from the registered ask_fn before
-    executing. The loop continues in all cases, feeding the result back to the LLM.
+
+@dataclasses.dataclass(eq=False)
+class ProjectBot:
+    """Chat participant that loads project context and loops tool calls.
+
+    Identical to GuardBot except that:
+    1. Reads AGENTS.md (or SharePoint doc) on each message
+    2. Injects context into system prompt
+    3. Proceeds with standard tool loop + approval gates
+
+    If context file is not found, proceeds without context (graceful degradation).
     """
 
     name: str
@@ -60,6 +68,7 @@ class GuardBot:
     llm: LLMBackend
     tools: list[ToolDef]
     instructions: str
+    context_source: dict[str, str] | None
     commentator: CommentatorBot | None = None
     is_human: ClassVar[bool] = False
 
@@ -75,9 +84,21 @@ class GuardBot:
     async def on_message(
         self, message: ChatMessage, history: list[ChatMessage]
     ) -> ChatMessage | None:
-        """Respond, invoking tools repeatedly until the LLM returns plain text."""
+        """Respond, loading context and invoking tools with approval gates."""
+        context = None
+        if self.commentator is not None:
+            context = await read_project_context(
+                context_source=self.context_source,
+                bot_name=self.name,
+                commentator=self.commentator,
+            )
+
+        system_content = self.instructions
+        if context:
+            system_content = f"{self.instructions}\n\n# Project Context\n\n{context}"
+
         messages: list[Message] = [
-            Message(role="system", content=self.instructions),
+            Message(role="system", content=system_content),
             *[
                 Message(
                     role="assistant" if m.sender == self.name else "user",
@@ -119,7 +140,3 @@ class GuardBot:
                     role="tool", content=tool_output, tool_call_id=response.call_id
                 ),
             ]
-
-
-async def _async_approved(_: ApprovalRequest) -> GuardDecision:
-    return Approved()

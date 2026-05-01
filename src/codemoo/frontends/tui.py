@@ -74,7 +74,7 @@ def _setup(script: ScriptName = "default") -> SetupResult:
 
 
 @code_app.default
-def code_chat(*, bot: BotType = "GuardBot", variant: str = "code") -> None:
+def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
         return _chat(bot=bot, variant=variant)
@@ -83,7 +83,7 @@ def code_chat(*, bot: BotType = "GuardBot", variant: str = "code") -> None:
 
 
 @business_app.default
-def business_chat(*, bot: BotType = "GuardBot", variant: str = "business") -> None:
+def business_chat(*, bot: BotType = "ProjectBot", variant: str = "business") -> None:
     """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
         return _chat(bot=bot, variant=variant)

@@ -4,7 +4,7 @@ Requirements:
 
 - `uv`
 - An API key for at least one LLM provider (Mistral, OpenAI, Google, OpenRouter, or Anthropic), or a running [Ollama](https://ollama.com) server for local use
-- Microsoft Graph access is required for `m365` mode
+- Microsoft Graph access is required for `business` mode
 
 ## Installation
 
@@ -151,7 +151,7 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 8   | 🌀 Loom     | Agent — full agentic loop with planning          |
 | 9   | 🔒 Cato     | Guard — human-in-the-loop before risky actions   |
 
-**Business path** (`--script m365`):
+**Business path** (`--script business`):
 
 | #   | Bot        | Capability                                            |
 | --- | ---------- | ----------------------------------------------------- |

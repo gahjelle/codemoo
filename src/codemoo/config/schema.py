@@ -19,6 +19,7 @@ type BotType = Literal[
     "GuardBot",
     "ScanBot",
     "SendBot",
+    "ProjectBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
 type ModelBackend = Literal[
@@ -39,6 +40,13 @@ class PathsConfig(StrictModel):
     m365_token_path: Path
 
 
+class ContextSource(StrictModel):
+    """Configuration for project context source."""
+
+    type: Literal["file", "sharepoint"]
+    name: str
+
+
 class BotVariantConfig(StrictModel):
     """Profile-specific settings for one bot variant."""
 
@@ -46,6 +54,7 @@ class BotVariantConfig(StrictModel):
     tools: list[str] = []
     prompts: list[str] = []
     instructions: str = ""
+    context_source: ContextSource | None = None
 
 
 class BotConfig(StrictModel):
@@ -98,6 +107,7 @@ class ResolvedBotConfig:
     tools: list[str]
     prompts: list[str]
     instructions: str
+    context_source: dict[str, str] | None
 
 
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
@@ -111,6 +121,12 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         )
         raise ValueError(msg)
     variant = cfg.variants[ref.variant]
+    context_source_dict: dict[str, str] | None = None
+    if variant.context_source:
+        context_source_dict = {
+            "type": variant.context_source.type,
+            "name": variant.context_source.name,
+        }
     return ResolvedBotConfig(
         bot_type=ref.type,
         name=cfg.name,
@@ -121,6 +137,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         tools=variant.tools,
         prompts=variant.prompts,
         instructions=variant.instructions,
+        context_source=context_source_dict,
     )
 
 

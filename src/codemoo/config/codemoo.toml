@@ -18,6 +18,7 @@ bots = [
     { type = "ChangeBot", variant = "code" },
     { type = "AgentBot", variant = "code" },
     { type = "GuardBot", variant = "code" },
+    { type = "ProjectBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -39,6 +40,7 @@ bots = [
     { type = "SendBot", variant = "business" },
     { type = "AgentBot", variant = "business" },
     { type = "GuardBot", variant = "business" },
+    { type = "ProjectBot", variant = "business" },
 ]
 
 [scripts.m365_lite]
@@ -52,6 +54,7 @@ bots = [
     { type = "SendBot", variant = "business_lite" },
     { type = "AgentBot", variant = "business" },
     { type = "GuardBot", variant = "business" },
+    { type = "ProjectBot", variant = "business" },
 ]
 
 
@@ -284,6 +287,36 @@ prompts = [
     "Read my latest email and write a short summary",
     "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
 ]
+
+[bots.ProjectBot]
+name = "Lore"
+emoji = "OPEN BOOK"
+sources = ["project_bot.py"]
+
+[bots.ProjectBot.variants.code]
+description = "Read AGENTS.md for project context before acting."
+instructions = "You are Lore, a helpful coding assistant. You have access to tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read the project context before acting, which helps you understand conventions and known issues."
+context_source = { type = "file", name = "AGENTS.md" }
+tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
+prompts = [
+    "greeter.py is crashing. Read AGENTS.md, then diagnose and fix the bug.",
+    "Run the tests and fix any failures.",
+]
+
+[bots.ProjectBot.variants.business]
+description = "Read team context from SharePoint before acting."
+instructions = "You are Lore, a helpful business assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context from SharePoint before acting."
+context_source = { type = "sharepoint", name = "TEAM.md" }
+tools = [
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_email",
+    "send_email",
+    "create_calendar_event",
+    "post_teams_message",
+]
+prompts = ["What projects are currently active? Check the team context."]
 
 #
 # Microsoft 365 / Graph API

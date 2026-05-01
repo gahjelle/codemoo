@@ -5,6 +5,7 @@ import random
 from collections.abc import Callable
 
 from codemoo.core.backend import LLMBackend, Message
+from codemoo.core.context import ContextLoadEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import format_tool_call
 
@@ -106,16 +107,61 @@ class CommentatorBot:
         info[_STREIK_NAME] = (_STREIK_EMOJI, False, "bubble--commentator")
         return info
 
-    async def comment(self, event: ToolCallEvent) -> None:
+    async def comment(self, event: ToolCallEvent | ContextLoadEvent) -> None:
         """Generate and post a persona-driven aside for the given event."""
-        persona = random.choice(_PERSONAS)  # noqa: S311
+        if isinstance(event, ToolCallEvent):
+            await self._comment_on_tool_call(event)
+        elif isinstance(event, ContextLoadEvent):
+            await self._comment_on_context(event)
+
+    async def _comment_on_tool_call(self, event: ToolCallEvent) -> None:
+        """Generate commentary about a tool call."""
         full_sig = format_tool_call(event.tool_name, event.arguments)
+        display_sig = format_tool_call(
+            event.tool_name, event.arguments, max_value_len=40
+        )
+        prompt = (
+            f"{event.bot_name} is calling the '{event.tool_name}' tool"
+            f" with arguments: {full_sig}."
+            " Give a brief, in-character one-sentence aside to the viewer."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"{event.bot_name} calls {full_sig}",
+            dim_prefix=display_sig,
+        )
+
+    async def _comment_on_context(self, event: ContextLoadEvent) -> None:
+        """Generate commentary about context loading."""
+        preview_len = 200
+        content_preview = (
+            event.content[:preview_len]
+            if len(event.content) > preview_len
+            else event.content
+        )
+        source_desc = "SharePoint" if event.source == "sharepoint" else event.path
+        prompt = (
+            f"{event.bot_name} just loaded project context from {source_desc}."
+            f" The context is {len(event.content)} characters long"
+            f" and starts with:\n\n{content_preview}\n\n"
+            f"Give a brief, in-character reaction to what {event.bot_name} now"
+            f" knows about the project."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"{event.bot_name} loaded project context from {source_desc}",
+            dim_prefix=f"Loaded {source_desc}",
+        )
+
+    async def _generate_comment(
+        self,
+        prompt: str,
+        fallback: str,
+        dim_prefix: str,
+    ) -> None:
+        """Generate and post commentary using a random persona."""
+        persona = random.choice(_PERSONAS)  # noqa: S311
         try:
-            prompt = (
-                f"{event.bot_name} is calling the '{event.tool_name}' tool"
-                f" with arguments: {full_sig}."
-                " Give a brief, in-character one-sentence aside to the viewer."
-            )
             system = f"{persona.instructions} Answer in {self.language}"
             messages = [
                 Message(role="system", content=system),
@@ -123,12 +169,8 @@ class CommentatorBot:
             ]
             response = await self.llm.complete(messages)
         except Exception:  # noqa: BLE001
-            fallback = f"{event.bot_name} calls {full_sig}"
             self._post_fn(ChatMessage(sender=_STREIK_NAME, text=fallback))
             return
-        display_sig = format_tool_call(
-            event.tool_name, event.arguments, max_value_len=40
-        )
         self._post_fn(
-            ChatMessage(sender=persona.name, text=f"[dim]{display_sig}[/]\n{response}")
+            ChatMessage(sender=persona.name, text=f"[dim]{dim_prefix}[/]\n{response}")
         )

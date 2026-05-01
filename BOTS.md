@@ -19,6 +19,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | SendBot   | business       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`     | Sends email, events, messages     |
 | AgentBot  | code, business | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                  |
 | GuardBot  | code, business | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
+| ProjectBot| code, business | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`       | Reads project context             |
 
 ### Full Progression (not all implemented yet)
 
@@ -63,6 +64,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 7   | * SendBot | Aero | Sends email, creates events, posts to Teams  | Now it can change things against your M365 tenant                                         |
 | 8   | AgentBot  | Loom | Full tool loop, multi-step actions           | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot  | Cato | Human-in-the-loop before destructive actions | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
+| 10  | ProjectBot| Lore | Reads team context from SharePoint          | Now it reads the room. It understands your team before acting on M365 data               |
 
 Bot types marked with * are unique to `business` mode.
 

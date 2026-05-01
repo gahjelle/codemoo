@@ -44,6 +44,7 @@ def _resolved(
         tools=tools or [],
         prompts=[],
         instructions="",
+        context_source=None,
     )
 
 

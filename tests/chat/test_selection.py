@@ -21,6 +21,7 @@ def _resolved(
         tools=[],
         prompts=[],
         instructions="",
+        context_source=None,
     )
 
 

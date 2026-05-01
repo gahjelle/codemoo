@@ -2,7 +2,7 @@ from codemoo.config import config
 from codemoo.config.schema import BotConfig, BotRef, BotVariantConfig
 from codemoo.core.bots import make_bots
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.guard_bot import GuardBot
+from codemoo.core.bots.project_bot import ProjectBot
 
 
 class _MockBackend:
@@ -19,16 +19,16 @@ def _bots() -> list:
     return bots
 
 
-def test_make_bots_returns_nine_bots() -> None:
-    assert len(_bots()) == 9
+def test_make_bots_returns_ten_bots() -> None:
+    assert len(_bots()) == 10
 
 
 def test_make_bots_first_is_echo_bot() -> None:
     assert isinstance(_bots()[0], EchoBot)
 
 
-def test_make_bots_last_is_guard_bot() -> None:
-    assert isinstance(_bots()[-1], GuardBot)
+def test_make_bots_last_is_project_bot() -> None:
+    assert isinstance(_bots()[-1], ProjectBot)
 
 
 def test_make_bots_resolved_configs_carry_variant_prompts() -> None:

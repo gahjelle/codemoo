@@ -12,6 +12,7 @@ from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.bots.llm_bot import LlmBot
+from codemoo.core.bots.project_bot import ProjectBot
 from codemoo.core.bots.read_bot import ReadBot
 from codemoo.core.bots.scan_bot import ScanBot
 from codemoo.core.bots.send_bot import SendBot
@@ -33,6 +34,7 @@ __all__ = [
     "ErrorBot",
     "GuardBot",
     "LlmBot",
+    "ProjectBot",
     "ReadBot",
     "ScanBot",
     "SendBot",
@@ -139,6 +141,16 @@ def _make_bot(  # noqa: C901, PLR0911
                 llm=llm,
                 tools=tools,
                 instructions=bot.instructions,
+                commentator=commentator,
+            )
+        case "ProjectBot":
+            return ProjectBot(
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                tools=tools,
+                instructions=bot.instructions,
+                context_source=bot.context_source,
                 commentator=commentator,
             )
 
