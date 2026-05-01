@@ -152,13 +152,14 @@ def test_slide_content_description_comes_from_resolved_config() -> None:
 
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     resolved = _resolved(description="M365 variant — not the code description")
-    content = SlideContent(
-        current_bot=bot,
-        current_resolved=resolved,
+    ctx = DemoContext(
+        all_bots=[bot],
+        resolved_configs=[resolved],
         prev_bot=None,
-        prev_resolved=None,
         llm=_MockBackend(),
+        position=(1, 1),
     )
+    content = SlideContent(ctx)
     description_labels = [
         w
         for w in content.compose()

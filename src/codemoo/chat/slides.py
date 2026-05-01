@@ -27,6 +27,7 @@ class DemoContext:
     llm: LLMBackend
     position: tuple[int, int]
     prompts: list[str] = dataclasses.field(default_factory=list)
+    cached_explanation: str | None = None
 
 
 def _parse_numbered_list(text: str, expected: int) -> list[str] | None:
@@ -136,30 +137,22 @@ class SlideContent(Widget):
     }
     """
 
-    def __init__(
-        self,
-        current_bot: ChatParticipant,
-        current_resolved: ResolvedBotConfig,
-        prev_bot: ChatParticipant | None,
-        prev_resolved: ResolvedBotConfig | None,
-        llm: LLMBackend,
-    ) -> None:
-        """Initialise with current/previous bots, resolved configs, and llm."""
+    def __init__(self, demo_ctx: DemoContext) -> None:
+        """Initialise with the full demo context for this session."""
         super().__init__()
-        self._current_bot = current_bot
-        self._current_resolved = current_resolved
-        self._prev_bot = prev_bot
-        self._prev_resolved = prev_resolved
-        self._llm = llm
+        self._demo_ctx = demo_ctx
+
+    def _current_index(self) -> int:
+        return self._demo_ctx.position[0] - 1
 
     def compose(self) -> ComposeResult:
         """Yield the title, description, what's-new area, and dismiss button."""
+        resolved = self._demo_ctx.resolved_configs[self._current_index()]
         yield Label(
-            f"Meet {self._current_resolved.name},"
-            f" the {self._current_resolved.bot_type}",
+            f"Meet {resolved.name}, the {resolved.bot_type}",
             id="slide-title",
         )
-        yield Label(self._current_resolved.description, id="slide-description")
+        yield Label(resolved.description, id="slide-description")
         yield Markdown("Generating\N{HORIZONTAL ELLIPSIS}", id="slide-whats-new")
         yield Button("OK", id="slide-ok", variant="primary")
 
@@ -168,8 +161,17 @@ class SlideContent(Widget):
         self.run_worker(self._load_explanation(), exclusive=True)
 
     async def _load_explanation(self) -> None:
-        prompt = _build_llm_prompt(self._current_resolved, self._prev_resolved)
-        text = await self._llm.complete([Message(role="user", content=prompt)])
+        if self._demo_ctx.cached_explanation is not None:
+            await self.query_one("#slide-whats-new", Markdown).update(
+                self._demo_ctx.cached_explanation
+            )
+            return
+        idx = self._current_index()
+        current_resolved = self._demo_ctx.resolved_configs[idx]
+        prev_resolved = self._demo_ctx.resolved_configs[idx - 1] if idx > 0 else None
+        prompt = _build_llm_prompt(current_resolved, prev_resolved)
+        text = await self._demo_ctx.llm.complete([Message(role="user", content=prompt)])
+        self._demo_ctx.cached_explanation = text
         await self.query_one("#slide-whats-new", Markdown).update(text)
 
 
@@ -184,23 +186,10 @@ class SlideScreen(ModalScreen[None]):
     def compose(self) -> ComposeResult:
         """Yield the two-column slide layout."""
         current_index = self._demo_ctx.position[0] - 1
-        current_bot = self._demo_ctx.all_bots[current_index]
-        current_resolved = self._demo_ctx.resolved_configs[current_index]
-        prev_resolved = (
-            self._demo_ctx.resolved_configs[current_index - 1]
-            if current_index > 0
-            else None
-        )
         with Vertical(id="slide-outer"):
             yield Horizontal(
                 AgendaColumn(self._demo_ctx.all_bots, current_index),
-                SlideContent(
-                    current_bot,
-                    current_resolved,
-                    self._demo_ctx.prev_bot,
-                    prev_resolved,
-                    self._demo_ctx.llm,
-                ),
+                SlideContent(self._demo_ctx),
                 id="slide-layout",
             )
 

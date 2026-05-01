@@ -12,9 +12,9 @@ def test_header_contains_bot_name() -> None:
     assert "Coco" in str(header.render())
 
 
-def test_header_contains_bot_type() -> None:
+def test_header_doesnt_contain_bot_type() -> None:
     header = _make_header(1, 8)
-    assert "EchoBot" in str(header.render())
+    assert "EchoBot" not in str(header.render())
 
 
 def test_header_contains_position() -> None:
@@ -50,15 +50,10 @@ def test_header_shows_remaining_count() -> None:
     assert "3 left" in str(header.render())
 
 
-def test_header_shows_last_example_when_one_remains() -> None:
-    header = _make_header(1, 8, prompt_count=1)
-    assert "last example" in str(header.render())
-
-
 def test_update_prompt_state_reflects_new_count() -> None:
     header = _make_header(1, 8, prompt_count=3)
     header.update_prompt_state(1)
-    assert "last example" in str(header.render())
+    assert "1 left" in str(header.render())
 
 
 def test_update_prompt_state_zero_shows_exhaustion() -> None:

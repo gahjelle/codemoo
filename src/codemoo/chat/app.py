@@ -184,13 +184,22 @@ class ChatApp(App[str | None]):
         return ask_fn
 
     def on_key(self, event: Key) -> None:
-        """Handle demo-mode keys: Ctrl-N advances bot, Ctrl-E inserts a prompt."""
+        """Handle demo-mode keyboard shortcuts (Ctrl-N, Ctrl-E, Ctrl-S)."""
         if self._demo_context is None:
             return
         if event.key == "ctrl+n":
             self.exit("next")
         elif event.key == "ctrl+e":
             self._insert_next_prompt()
+        elif event.key == "ctrl+s":
+            self._reopen_slide()
+
+    def _reopen_slide(self) -> None:
+        if self._demo_context is None:
+            return
+        if any(isinstance(s, SlideScreen) for s in self.screen_stack):
+            return
+        self.push_screen(SlideScreen(self._demo_context))
 
     def _insert_next_prompt(self) -> None:
         if self._demo_context is None:

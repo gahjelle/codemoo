@@ -28,17 +28,15 @@ class DemoHeader(Label):
 
     def _build_text(self) -> Text:
         current, total = self._position
-        bot_type = type(self._bot).__name__
         parts = [
-            f"{self._bot.emoji} {self._bot.name} ({bot_type})",
+            f"{self._bot.emoji} {self._bot.name}",
             f"{current} of {total}",
             "Ctrl-N: next bot",
+            "Ctrl-S: slide",
         ]
         if self._total > 0:
             if self._remaining == 0:
                 parts.append("(no more examples)")
-            elif self._remaining == 1:
-                parts.append("Ctrl-E: last example")
             else:
                 parts.append(f"Ctrl-E: example ({self._remaining} left)")
         return Text("  \N{BULLET}  ".join(parts))
