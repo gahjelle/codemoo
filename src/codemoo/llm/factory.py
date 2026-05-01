@@ -33,8 +33,9 @@ def resolve_backend(config: CodemooConfig) -> tuple[LLMBackend, BackendInfo]:
             errors.append(f"{name}: no backend config entry")
             continue
         model = backend_cfg.model_name
+        base_url = backend_cfg.base_url
         try:
-            backend = _create(name, model)
+            backend = _create(name, model, base_url)
         except BackendUnavailableError as exc:
             logger.warning("Backend %r unavailable: %s", name, exc)
             errors.append(f"{name}: {exc}")
@@ -46,10 +47,13 @@ def resolve_backend(config: CodemooConfig) -> tuple[LLMBackend, BackendInfo]:
     raise RuntimeError(msg)
 
 
-def _create(name: str, model: str) -> LLMBackend:
+def _create(name: str, model: str, base_url: str | None) -> LLMBackend:
     """Dispatch to the appropriate backend factory by name."""
     from codemoo.llm.anthropic import create_anthropic_backend  # noqa: PLC0415
+    from codemoo.llm.google import create_google_backend  # noqa: PLC0415
     from codemoo.llm.mistral import create_mistral_backend  # noqa: PLC0415
+    from codemoo.llm.ollama import create_ollama_backend  # noqa: PLC0415
+    from codemoo.llm.openai import create_openai_backend  # noqa: PLC0415
     from codemoo.llm.openrouter import create_openrouter_backend  # noqa: PLC0415
 
     if name == "mistral":
@@ -57,6 +61,12 @@ def _create(name: str, model: str) -> LLMBackend:
     if name == "anthropic":
         return create_anthropic_backend(model=model)
     if name == "openrouter":
-        return create_openrouter_backend(model=model)
+        return create_openrouter_backend(model=model, base_url=base_url or "")
+    if name == "openai":
+        return create_openai_backend(model=model, base_url=base_url)
+    if name == "google":
+        return create_google_backend(model=model, base_url=base_url or "")
+    if name == "ollama":
+        return create_ollama_backend(model=model, base_url=base_url or "")
     msg = f"Unknown backend: {name!r}"
     raise BackendUnavailableError(msg)

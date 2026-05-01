@@ -16,7 +16,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Improve error message when choosing a bad variant, e.g uv run codemoo --variant bad
-- Add more LLM providers: Ollama, OpenAI, Google/Gemini
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file

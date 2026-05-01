@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the `OpenAILikeBackend` base class that provides common implementation for OpenAI-compatible LLM backends (Mistral, OpenRouter, and future providers using the OpenAI API format).
+Defines the `OpenAILikeBackend` base class that provides common implementation for OpenAI-compatible LLM backends (Mistral, OpenRouter, OpenAI, Google, and Ollama).
 
 ## Requirements
 
@@ -40,7 +40,7 @@ The base class SHALL implement the unified `complete(messages, tools=None)` meth
 - **THEN** it SHALL return the text as `str`
 
 ### Requirement: Concrete backends inherit from base class
-MistralBackend and OpenRouterBackend SHALL inherit from `OpenAILikeBackend` and provide only the minimal necessary overrides.
+MistralBackend, OpenRouterBackend, OpenAIBackend, GoogleBackend, and OllamaBackend SHALL all inherit from `OpenAILikeBackend` and provide only the minimal necessary overrides: a constructor that stores the client and model, and a `_call()` implementation that invokes the provider API. Base-URL configuration is the responsibility of the factory function, not the class.
 
 #### Scenario: MistralBackend inherits from base class
 - **WHEN** `MistralBackend` is inspected
@@ -48,4 +48,16 @@ MistralBackend and OpenRouterBackend SHALL inherit from `OpenAILikeBackend` and 
 
 #### Scenario: OpenRouterBackend inherits from base class
 - **WHEN** `OpenRouterBackend` is inspected
+- **THEN** it SHALL be a subclass of `OpenAILikeBackend`
+
+#### Scenario: OpenAIBackend inherits from base class
+- **WHEN** `_OpenAIBackend` is inspected
+- **THEN** it SHALL be a subclass of `OpenAILikeBackend`
+
+#### Scenario: GoogleBackend inherits from base class
+- **WHEN** `_GoogleBackend` is inspected
+- **THEN** it SHALL be a subclass of `OpenAILikeBackend`
+
+#### Scenario: OllamaBackend inherits from base class
+- **WHEN** `_OllamaBackend` is inspected
 - **THEN** it SHALL be a subclass of `OpenAILikeBackend`

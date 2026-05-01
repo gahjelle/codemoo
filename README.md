@@ -3,7 +3,7 @@
 Requirements:
 
 - `uv`
-- An API key for either Mistral, Openrouter, or Anthropic
+- An API key for at least one LLM provider (Mistral, OpenAI, Google, OpenRouter, or Anthropic), or a running [Ollama](https://ollama.com) server for local use
 - Microsoft Graph access is required for `m365` mode
 
 ## Installation
@@ -31,15 +31,25 @@ Codemoo can run in two different modes:
 
 **LLM Backends**
 
-| Variable                   | Default                     | Description                                            |
-| -------------------------- | --------------------------- | ------------------------------------------------------ |
-| `CODEMOO_BACKEND`          | `mistral`                   | Name of LLM backend: mistral, openrouter, or anthropic |
-| `MISTRAL_API_KEY`          | —                           | Mistral API key (required for mistral backend)         |
-| `CODEMOO_MISTRAL_MODEL`    | `mistral-small-latest`      | Mistral model used for all LLM calls                   |
-| `OPENROUTER_API_KEY`       | —                           | Openrouter API key (required for openrouter backend)   |
-| `CODEMOO_OPENROUTER_MODEL` | `z-ai/glm-4.5-air:free`     | Openrouter model used for all LLM calls                |
-| `ANTHROPIC_API_KEY`        | —                           | Anthropic API key (required for anthropic backend)     |
-| `CODEMOO_ANTHROPIC_MODEL`  | `claude-haiku-4-5-20251001` | Anthropic model used for all LLM calls                 |
+| Variable                   | Default                     | Description                                                                          |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
+| `CODEMOO_BACKEND`          | `mistral`                   | Active backend: `mistral`, `ollama`, `openrouter`, `google`, `anthropic`, or `openai` |
+| `MISTRAL_API_KEY`          | —                           | Mistral API key (required for mistral backend)                                       |
+| `CODEMOO_MISTRAL_MODEL`    | `mistral-small-latest`      | Mistral model override                                                               |
+| `OLLAMA_API_KEY`           | `ollama`                    | Ollama API key (optional; defaults to `ollama` for unauthenticated local servers)    |
+| `CODEMOO_OLLAMA_MODEL`     | `llama3.2`                  | Ollama model override                                                                |
+| `OPENROUTER_API_KEY`       | —                           | OpenRouter API key (required for openrouter backend)                                 |
+| `CODEMOO_OPENROUTER_MODEL` | `z-ai/glm-4.5-air:free`     | OpenRouter model override                                                            |
+| `GOOGLE_API_KEY`           | —                           | Google AI API key (required for google backend)                                      |
+| `CODEMOO_GOOGLE_MODEL`     | `gemini-2.0-flash`          | Google model override                                                                |
+| `ANTHROPIC_API_KEY`        | —                           | Anthropic API key (required for anthropic backend)                                   |
+| `CODEMOO_ANTHROPIC_MODEL`  | `claude-haiku-4-5-20251001` | Anthropic model override                                                             |
+| `OPENAI_API_KEY`           | —                           | OpenAI API key (required for openai backend)                                         |
+| `CODEMOO_OPENAI_MODEL`     | `gpt-4o-mini`               | OpenAI model override                                                                |
+
+The fallback order when the primary backend is unavailable is: `mistral → ollama → openrouter → google → anthropic → openai`.
+
+For local Ollama usage, install [Ollama](https://ollama.com), pull a model (`ollama pull llama3.2`), and set `CODEMOO_BACKEND=ollama`. No API key is required. The `base_url` for each provider can also be overridden in a local `codemoo.toml` — useful for pointing the `openai` backend at Azure AI Foundry or other compatible endpoints.
 
 **Microsoft Graph**
 

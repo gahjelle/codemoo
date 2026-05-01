@@ -301,13 +301,25 @@ scopes = ["https://graph.microsoft.com/.default"]
 #
 [models]
 backend = "mistral"
-fallbacks = ["mistral", "openrouter", "anthropic"]
+fallbacks = ["mistral", "ollama", "openrouter", "google", "anthropic", "openai"]
 
 [models.backends.mistral]
 model_name = "mistral-small-latest"
 
-[models.backends.anthropic]
-model_name = "claude-haiku-4-5-20251001"
+[models.backends.ollama]
+model_name = "llama3.2"
+base_url = "http://localhost:11434/v1"
 
 [models.backends.openrouter]
 model_name = "z-ai/glm-4.5-air:free"
+base_url = "https://openrouter.ai/api/v1"
+
+[models.backends.google]
+model_name = "gemini-2.0-flash"
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+[models.backends.anthropic]
+model_name = "claude-haiku-4-5-20251001"
+
+[models.backends.openai]
+model_name = "gpt-4o-mini"

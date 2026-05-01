@@ -1,4 +1,4 @@
-"""OpenRouter LLM backend implementation (OpenAI-compatible API)."""
+"""Google Gemini LLM backend implementation (OpenAI-compatible endpoint)."""
 
 import os
 
@@ -9,8 +9,8 @@ from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
 
-class _OpenRouterBackend(OpenAILikeBackend):
-    """LLMBackend implementation backed by OpenRouter (OpenAI-compatible)."""
+class _GoogleBackend(OpenAILikeBackend):
+    """LLMBackend backed by Google Gemini via its OpenAI-compatible API."""
 
     def __init__(self, client: openai.AsyncOpenAI, model: str) -> None:
         self._client = client
@@ -21,7 +21,7 @@ class _OpenRouterBackend(OpenAILikeBackend):
         serialized_messages: list[dict[str, object]],
         tool_schemas: list[dict[str, object]] | None,
     ) -> object:
-        """Call OpenRouter chat completion API."""
+        """Call Google Gemini chat completion API."""
         return await self._client.chat.completions.create(
             model=self._model,
             messages=serialized_messages,  # ty: ignore[invalid-argument-type]
@@ -31,20 +31,21 @@ class _OpenRouterBackend(OpenAILikeBackend):
         )
 
 
-def create_openrouter_backend(model: str, base_url: str) -> LLMBackend:
-    """Create an OpenRouter-backed LLMBackend.
+def create_google_backend(model: str, base_url: str) -> LLMBackend:
+    """Create a Google Gemini-backed LLMBackend.
 
-    Reads OPENROUTER_API_KEY from the environment. Raises BackendUnavailableError
-    if the key is absent. base_url must be provided via BackendConfig in codemoo.toml.
+    Reads GOOGLE_API_KEY from the environment. Raises BackendUnavailableError
+    if the key is absent. base_url must point to Google's OpenAI-compatible endpoint
+    (configured via BackendConfig.base_url in codemoo.toml).
     """
-    api_key = os.environ.get("OPENROUTER_API_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         msg = (
-            "OPENROUTER_API_KEY environment variable is not set. "
-            "Set it to your OpenRouter API key before using this backend."
+            "GOOGLE_API_KEY environment variable is not set. "
+            "Set it to your Google AI API key before using this backend."
         )
         raise BackendUnavailableError(msg)
-    return _OpenRouterBackend(
+    return _GoogleBackend(
         client=openai.AsyncOpenAI(api_key=api_key, base_url=base_url),
         model=model,
     )

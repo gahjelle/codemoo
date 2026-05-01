@@ -21,7 +21,9 @@ type BotType = Literal[
     "SendBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
-type ModelBackend = Literal["mistral", "anthropic", "openrouter"]
+type ModelBackend = Literal[
+    "mistral", "anthropic", "openrouter", "openai", "google", "ollama"
+]
 
 
 class StrictModel(BaseModel):
@@ -119,6 +121,7 @@ class BackendConfig(StrictModel):
     """Configure one LLM backend."""
 
     model_name: str
+    base_url: str | None = None
 
 
 class ModelsConfig(StrictModel):
