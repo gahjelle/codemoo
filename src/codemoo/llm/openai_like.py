@@ -6,6 +6,7 @@ from typing import overload
 
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.tools import ToolDef
+from codemoo.core.tracer import Tracer
 
 
 class OpenAILikeBackend:
@@ -15,6 +16,14 @@ class OpenAILikeBackend:
     conversion, and response parsing are shared here because the OpenAI wire
     format is identical across providers.
     """
+
+    def __init__(
+        self, model: str = "", tracer: Tracer | None = None, url: str = ""
+    ) -> None:
+        """Store model, optional tracer, and endpoint URL for subclass use."""
+        self._model = model
+        self._tracer = tracer
+        self._url = url
 
     def _serialize(self, messages: list[Message]) -> list[dict[str, object]]:
         """Convert Message objects to OpenAI-compatible request dicts."""
@@ -71,7 +80,14 @@ class OpenAILikeBackend:
         """Unified completion: handles both text and tool-calling responses."""
         serialized = self._serialize(messages)
         tool_schemas = [self._tool_schema(t) for t in tools] if tools else None
+        payload: dict[str, object] = {"model": self._model, "messages": serialized}
+        if tool_schemas is not None:
+            payload["tools"] = tool_schemas
+        if self._tracer and self._tracer.on_request:
+            self._tracer.on_request(self._url, payload)
         response = await self._call(serialized, tool_schemas)
+        if self._tracer and self._tracer.on_response:
+            self._tracer.on_response(response.model_dump())  # ty: ignore[unresolved-attribute]
         message = response.choices[0].message  # ty: ignore[unresolved-attribute]
         if message.tool_calls:
             tool_call = message.tool_calls[0]

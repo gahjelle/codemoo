@@ -8,6 +8,7 @@ import anthropic as anthropic_sdk
 
 from codemoo.core.backend import LLMBackend, Message, ToolUse
 from codemoo.core.tools import ToolDef
+from codemoo.core.tracer import Tracer
 from codemoo.llm.exceptions import BackendUnavailableError
 
 
@@ -84,9 +85,16 @@ def _tool_schema(tool: ToolDef) -> dict[str, object]:
 class _AnthropicBackend:
     """LLMBackend implementation backed by the Anthropic API."""
 
-    def __init__(self, client: anthropic_sdk.AsyncAnthropic, model: str) -> None:
+    def __init__(
+        self,
+        client: anthropic_sdk.AsyncAnthropic,
+        model: str,
+        tracer: Tracer | None = None,
+    ) -> None:
         self._client = client
         self._model = model
+        self._tracer = tracer
+        self._url = str(client.base_url) + "messages"
 
     @overload
     async def complete(self, messages: list[Message], tools: None = ...) -> str: ...
@@ -103,13 +111,25 @@ class _AnthropicBackend:
     ) -> str | ToolUse:
         """Call Anthropic messages API; return text or a tool-call descriptor."""
         system, conversation = _serialize(messages)
+        tool_schemas = [_tool_schema(t) for t in tools] if tools else []
+        payload: dict[str, object] = {
+            "model": self._model,
+            "max_tokens": 4096,
+            "system": system,
+            "messages": conversation,
+            "tools": tool_schemas,
+        }
+        if self._tracer and self._tracer.on_request:
+            self._tracer.on_request(self._url, payload)
         response = await self._client.messages.create(
             model=self._model,
             max_tokens=4096,
             system=system,
             messages=conversation,  # ty: ignore[invalid-argument-type]
-            tools=[_tool_schema(t) for t in tools] if tools else [],  # ty: ignore[invalid-argument-type]
+            tools=tool_schemas,  # ty: ignore[invalid-argument-type]
         )
+        if self._tracer and self._tracer.on_response:
+            self._tracer.on_response(response.model_dump())
         for block in response.content:
             if block.type == "tool_use":
                 tool_call_id = block.id
@@ -141,7 +161,7 @@ class _AnthropicBackend:
         return ""
 
 
-def create_anthropic_backend(model: str) -> LLMBackend:
+def create_anthropic_backend(model: str, tracer: Tracer | None = None) -> LLMBackend:
     """Create an Anthropic-backed LLMBackend.
 
     Reads ANTHROPIC_API_KEY from the environment. Raises BackendUnavailableError
@@ -157,4 +177,5 @@ def create_anthropic_backend(model: str) -> LLMBackend:
     return _AnthropicBackend(
         client=anthropic_sdk.AsyncAnthropic(api_key=api_key),
         model=model,
+        tracer=tracer,
     )

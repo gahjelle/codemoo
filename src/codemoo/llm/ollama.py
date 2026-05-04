@@ -6,6 +6,7 @@ import httpx
 import openai
 
 from codemoo.core.backend import LLMBackend
+from codemoo.core.tracer import Tracer
 from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
@@ -13,9 +14,15 @@ from codemoo.llm.openai_like import OpenAILikeBackend
 class _OllamaBackend(OpenAILikeBackend):
     """LLMBackend implementation backed by a local Ollama server."""
 
-    def __init__(self, client: openai.AsyncOpenAI, model: str) -> None:
+    def __init__(
+        self,
+        client: openai.AsyncOpenAI,
+        model: str,
+        tracer: Tracer | None = None,
+        url: str = "",
+    ) -> None:
+        super().__init__(model=model, tracer=tracer, url=url)
         self._client = client
-        self._model = model
 
     async def _call(
         self,
@@ -32,7 +39,11 @@ class _OllamaBackend(OpenAILikeBackend):
         )
 
 
-def create_ollama_backend(model: str, base_url: str) -> LLMBackend:
+def create_ollama_backend(
+    model: str,
+    base_url: str,
+    tracer: Tracer | None = None,
+) -> LLMBackend:
     """Create an Ollama-backed LLMBackend.
 
     Availability is determined by pinging GET {base_url}/models with a 2-second
@@ -51,7 +62,6 @@ def create_ollama_backend(model: str, base_url: str) -> LLMBackend:
         raise BackendUnavailableError(msg) from exc
 
     api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
-    return _OllamaBackend(
-        client=openai.AsyncOpenAI(api_key=api_key, base_url=base_url),
-        model=model,
-    )
+    client = openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+    url = str(client.base_url).rstrip("/") + "/chat/completions"
+    return _OllamaBackend(client=client, model=model, tracer=tracer, url=url)

@@ -5,6 +5,7 @@ import os
 import openai
 
 from codemoo.core.backend import LLMBackend
+from codemoo.core.tracer import Tracer
 from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
@@ -12,9 +13,15 @@ from codemoo.llm.openai_like import OpenAILikeBackend
 class _GoogleBackend(OpenAILikeBackend):
     """LLMBackend backed by Google Gemini via its OpenAI-compatible API."""
 
-    def __init__(self, client: openai.AsyncOpenAI, model: str) -> None:
+    def __init__(
+        self,
+        client: openai.AsyncOpenAI,
+        model: str,
+        tracer: Tracer | None = None,
+        url: str = "",
+    ) -> None:
+        super().__init__(model=model, tracer=tracer, url=url)
         self._client = client
-        self._model = model
 
     async def _call(
         self,
@@ -31,7 +38,11 @@ class _GoogleBackend(OpenAILikeBackend):
         )
 
 
-def create_google_backend(model: str, base_url: str) -> LLMBackend:
+def create_google_backend(
+    model: str,
+    base_url: str,
+    tracer: Tracer | None = None,
+) -> LLMBackend:
     """Create a Google Gemini-backed LLMBackend.
 
     Reads GOOGLE_API_KEY from the environment. Raises BackendUnavailableError
@@ -45,7 +56,6 @@ def create_google_backend(model: str, base_url: str) -> LLMBackend:
             "Set it to your Google AI API key before using this backend."
         )
         raise BackendUnavailableError(msg)
-    return _GoogleBackend(
-        client=openai.AsyncOpenAI(api_key=api_key, base_url=base_url),
-        model=model,
-    )
+    client = openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+    url = str(client.base_url).rstrip("/") + "/chat/completions"
+    return _GoogleBackend(client=client, model=model, tracer=tracer, url=url)

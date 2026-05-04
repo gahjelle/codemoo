@@ -16,8 +16,14 @@ This project uses `uv` for package management.
 # Install dependencies
 uv sync
 
-# Run the CLI entry point
+# Run the TUI (main chat interface)
 uv run codemoo
+
+# Run the demoo CLI (single-shot demo commands with request/response tracing)
+uv run demoo llm "Some query"          # single LLM call, full trace
+uv run demoo tool "Some query"         # one tool call + follow-up, full trace
+uv run demoo agent "Some query"        # agentic tool loop, per-round trace
+# Both tool and agent accept --system to override the default system prompt
 
 # Run Python directly
 uv run python
