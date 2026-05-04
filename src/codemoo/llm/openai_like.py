@@ -89,7 +89,7 @@ class OpenAILikeBackend:
         if self._tracer and self._tracer.on_response:
             self._tracer.on_response(response.model_dump())  # ty: ignore[unresolved-attribute]
         message = response.choices[0].message  # ty: ignore[unresolved-attribute]
-        if message.tool_calls:
+        if tools and message.tool_calls:
             tool_call = message.tool_calls[0]
             raw_args = tool_call.function.arguments
             arguments: dict[str, object] = (
