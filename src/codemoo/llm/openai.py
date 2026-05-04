@@ -5,6 +5,7 @@ import os
 import openai as openai_sdk
 
 from codemoo.core.backend import LLMBackend
+from codemoo.core.tracer import Tracer
 from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
@@ -12,9 +13,15 @@ from codemoo.llm.openai_like import OpenAILikeBackend
 class _OpenAIBackend(OpenAILikeBackend):
     """LLMBackend implementation backed by the OpenAI API."""
 
-    def __init__(self, client: openai_sdk.AsyncOpenAI, model: str) -> None:
+    def __init__(
+        self,
+        client: openai_sdk.AsyncOpenAI,
+        model: str,
+        tracer: Tracer | None = None,
+        url: str = "",
+    ) -> None:
+        super().__init__(model=model, tracer=tracer, url=url)
         self._client = client
-        self._model = model
 
     async def _call(
         self,
@@ -31,7 +38,11 @@ class _OpenAIBackend(OpenAILikeBackend):
         )
 
 
-def create_openai_backend(model: str, base_url: str | None = None) -> LLMBackend:
+def create_openai_backend(
+    model: str,
+    base_url: str | None = None,
+    tracer: Tracer | None = None,
+) -> LLMBackend:
     """Create an OpenAI-backed LLMBackend.
 
     Reads OPENAI_API_KEY from the environment. Raises BackendUnavailableError
@@ -48,7 +59,6 @@ def create_openai_backend(model: str, base_url: str | None = None) -> LLMBackend
     kwargs: dict[str, object] = {"api_key": api_key}
     if base_url is not None:
         kwargs["base_url"] = base_url
-    return _OpenAIBackend(
-        client=openai_sdk.AsyncOpenAI(**kwargs),  # ty: ignore[invalid-argument-type]
-        model=model,
-    )
+    client = openai_sdk.AsyncOpenAI(**kwargs)  # ty: ignore[invalid-argument-type]
+    url = str(client.base_url).rstrip("/") + "/chat/completions"
+    return _OpenAIBackend(client=client, model=model, tracer=tracer, url=url)

@@ -2,10 +2,6 @@
 
 These are plans and ideas for updating the current capabilities (bots) of Codemoo. Plans for new bots are in [BOTS.md](BOTS.md).
 
-## Bugs
-
-- Rune crashes when using more tools?
-
 ## Questions
 
 - Should tool output be added to conversation history?
