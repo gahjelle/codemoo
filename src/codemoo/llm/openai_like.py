@@ -73,7 +73,7 @@ class OpenAILikeBackend:
         tool_schemas = [self._tool_schema(t) for t in tools] if tools else None
         response = await self._call(serialized, tool_schemas)
         message = response.choices[0].message  # ty: ignore[unresolved-attribute]
-        if message.tool_calls:
+        if tools and message.tool_calls:
             tool_call = message.tool_calls[0]
             raw_args = tool_call.function.arguments
             arguments: dict[str, object] = (

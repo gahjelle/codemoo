@@ -144,6 +144,18 @@ async def test_complete_without_tools_passes_none_to_call(
 
 
 @pytest.mark.asyncio
+async def test_complete_without_tools_ignores_tool_calls_in_response(
+    backend: _MistralBackend, mock_api: AsyncMock
+) -> None:
+    mock_api.return_value = _make_tool_response("reverse_string", {"text": "hello"})
+
+    result = await backend.complete([Message(role="user", content="hi")])
+
+    assert isinstance(result, str)
+    assert result == ""
+
+
+@pytest.mark.asyncio
 async def test_complete_with_tools_passes_schemas_to_call(
     backend: _MistralBackend, mock_api: AsyncMock
 ) -> None:

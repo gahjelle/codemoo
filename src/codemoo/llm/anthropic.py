@@ -111,7 +111,7 @@ class _AnthropicBackend:
             tools=[_tool_schema(t) for t in tools] if tools else [],  # ty: ignore[invalid-argument-type]
         )
         for block in response.content:
-            if block.type == "tool_use":
+            if block.type == "tool_use" and tools:
                 tool_call_id = block.id
                 assistant_message = Message(
                     role="assistant",

@@ -7,6 +7,7 @@ import pytest
 
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.tools import reverse_string
+from codemoo.llm.anthropic import _AnthropicBackend
 from codemoo.llm.mistral import _MistralBackend
 
 
@@ -38,9 +39,28 @@ def _make_tool_response(name: str, arguments: dict, call_id: str = "c1") -> Magi
     return response
 
 
+def _make_anthropic_tool_use_response(name: str, arguments: dict) -> MagicMock:
+    block = MagicMock(spec=["type", "id", "name", "input"])
+    block.type = "tool_use"
+    block.id = "tu_1"
+    block.name = name
+    block.input = arguments
+    response = MagicMock()
+    response.content = [block]
+    return response
+
+
 @pytest.fixture
 def mock_api() -> AsyncMock:
     return AsyncMock()
+
+
+@pytest.fixture
+def anthropic_backend() -> _AnthropicBackend:
+    client = MagicMock()
+    client.messages = MagicMock()
+    client.messages.create = AsyncMock()
+    return _AnthropicBackend(client=client, model="claude-haiku-4-5-20251001")
 
 
 @pytest.fixture
@@ -112,6 +132,32 @@ async def test_complete_with_tools_and_text_response_returns_str(
     )
 
     assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_openai_like_without_tools_ignores_tool_calls_in_response(
+    mistral_backend: _MistralBackend, mock_api: AsyncMock
+) -> None:
+    mock_api.return_value = _make_tool_response("reverse_string", {"text": "hello"})
+
+    result = await mistral_backend.complete([Message(role="user", content="hi")])
+
+    assert isinstance(result, str)
+    assert result == ""
+
+
+@pytest.mark.asyncio
+async def test_anthropic_without_tools_ignores_tool_use_in_response(
+    anthropic_backend: _AnthropicBackend,
+) -> None:
+    anthropic_backend._client.messages.create.return_value = (  # ty: ignore[unresolved-attribute]
+        _make_anthropic_tool_use_response("reverse_string", {"text": "hello"})
+    )
+
+    result = await anthropic_backend.complete([Message(role="user", content="hi")])
+
+    assert isinstance(result, str)
+    assert result == ""
 
 
 @pytest.mark.asyncio
