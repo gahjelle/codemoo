@@ -9,46 +9,17 @@ from codemoo.core.backend import (
     Message,
     ToolUse,
 )
+from codemoo.core.bots.approval import (
+    ApprovalRequest,
+    Denied,
+    GuardDecision,
+    _async_approved,
+    _denial_message,
+)
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.context import read_project_context
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef
-
-
-@dataclasses.dataclass(frozen=True)
-class Approved:
-    """The user approved the tool call — execute as planned."""
-
-
-@dataclasses.dataclass(frozen=True)
-class Denied:
-    """The user denied the tool call, with an optional instruction."""
-
-    reason: str | None = None
-
-
-type GuardDecision = Approved | Denied
-
-
-@dataclasses.dataclass(frozen=True)
-class ApprovalRequest:
-    """Carries the context needed to display an approval modal."""
-
-    bot_name: str
-    tool_use: ToolUse
-
-
-def _denial_message(decision: Denied) -> str:
-    if decision.reason:
-        return f"Tool call denied: {decision.reason}"
-    return (
-        "The user denied this tool call."
-        " Do not attempt it again — move on to the next step."
-    )
-
-
-async def _async_approved(_: ApprovalRequest) -> GuardDecision:
-    return Approved()
 
 
 @dataclasses.dataclass(eq=False)

@@ -55,7 +55,10 @@ The tool loop SHALL continue in all cases, sending the tool output back to the L
 - **THEN** that function SHALL be awaited for every tool with `requires_approval=True`
 
 ### Requirement: ApprovalRequest carries the information needed to display the modal
-`ApprovalRequest` SHALL be a frozen dataclass with fields `bot_name: str` and `tool_use: ToolUse`. It SHALL be defined in `guard_bot.py` and used as the sole argument to `ask_fn`.
+`ApprovalRequest` SHALL be a frozen dataclass with fields `bot_name: str` and
+`tool_use: ToolUse`. It SHALL be defined in `approval.py` (not `guard_bot.py`)
+and used as the sole argument to `ask_fn`. All gated bots SHALL import it from
+`codemoo.core.bots.approval`.
 
 #### Scenario: ApprovalRequest fields are accessible
 - **WHEN** an `ApprovalRequest` is constructed with a bot name and a ToolUse

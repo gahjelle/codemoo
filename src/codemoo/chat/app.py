@@ -17,9 +17,9 @@ from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.config.schema import ResolvedBotConfig
+from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.bots.guard_bot import ApprovalRequest, GuardDecision
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 from codemoo.llm.factory import BackendInfo

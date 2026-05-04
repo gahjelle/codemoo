@@ -299,8 +299,8 @@ instructions = "You are Lore, a helpful coding assistant. You have access to too
 context_source = { type = "file", name = "AGENTS.md" }
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
 prompts = [
-    "greeter.py is crashing. Read AGENTS.md, then diagnose and fix the bug.",
-    "Run the tests and fix any failures.",
+    "Describe the current project in three sentences",
+    "Which coding conventions do you follow?",
 ]
 
 [bots.ProjectBot.variants.business]

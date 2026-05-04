@@ -8,7 +8,7 @@ from textual.events import Key
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label
 
-from codemoo.core.bots.guard_bot import (
+from codemoo.core.bots.approval import (
     ApprovalRequest,
     Approved,
     Denied,

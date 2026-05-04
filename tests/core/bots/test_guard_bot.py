@@ -5,7 +5,8 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.core.backend import Message, ToolUse
-from codemoo.core.bots.guard_bot import ApprovalRequest, Approved, Denied, GuardBot
+from codemoo.core.bots.approval import ApprovalRequest, Approved, Denied
+from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, ToolParam, run_shell
 
