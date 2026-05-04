@@ -94,7 +94,7 @@ class _AnthropicBackend:
         self._client = client
         self._model = model
         self._tracer = tracer
-        self._url = str(client.base_url) + "messages"
+        self._url = str(client.base_url) + "/messages"
 
     @overload
     async def complete(self, messages: list[Message], tools: None = ...) -> str: ...
