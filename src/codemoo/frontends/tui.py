@@ -29,6 +29,7 @@ from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
 from codemoo.m365.tools import M365_TOOL_REGISTRY
+from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
 
 
 @dataclass
@@ -83,7 +84,7 @@ def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> None:
 
 
 @business_app.default
-def business_chat(*, bot: BotType = "ProjectBot", variant: str = "business") -> None:
+def business_chat(*, bot: BotType = "ProjectBot", variant: str = "workspace") -> None:
     """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
         return _chat(bot=bot, variant=variant)
@@ -203,7 +204,10 @@ def code_demo(
 
 @business_app.command(name="demo")
 def business_demo(
-    *, script: ScriptName = "m365", start: str | None = None, end: str | None = None
+    *,
+    script: ScriptName = "workspace",
+    start: str | None = None,
+    end: str | None = None,
 ) -> None:
     """Run the bot progression demo. Use Ctrl-N to advance to the next bot."""
     try:
@@ -253,13 +257,17 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
             break
 
 
+PLATFORM_REGISTRIES = [M365_TOOL_REGISTRY, WORKSPACE_TOOL_REGISTRY]
+
+
 def _run_init_hooks_for_resolved(resolved_bots: list[ResolvedBotConfig]) -> None:
     """Collect all tools across the resolved bots and run unique init hooks."""
     all_tools = [
-        M365_TOOL_REGISTRY[name]
+        registry[name]
         for r in resolved_bots
         for name in r.tools
-        if name in M365_TOOL_REGISTRY
+        for registry in PLATFORM_REGISTRIES
+        if name in registry
     ]
     run_init_hooks(all_tools)
 

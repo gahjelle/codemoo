@@ -66,7 +66,7 @@ When modifying `demo/` files for other reasons, preserve these intentional issue
 
 ## Tools Architecture
 
-Tools are split into two locations: generic code tools in `src/codemoo/core/tools/` and M365-specific tools in `src/codemoo/m365/tools/`.
+Tools are split into three locations: generic code tools in `src/codemoo/core/tools/`, M365-specific tools in `src/codemoo/m365/tools/`, and Google Workspace tools in `src/codemoo/workspace/tools/`.
 
 ### Code tools — `src/codemoo/core/tools/`
 
@@ -78,14 +78,24 @@ Tools are split into two locations: generic code tools in `src/codemoo/core/tool
 ### M365 tools — `src/codemoo/m365/tools/`
 
 - **`__init__.py`** — `M365_TOOL_REGISTRY` dict of all Graph ToolDefs; each tool carries `init=_init_m365`
-- **`read.py`** — Microsoft Graph read operations (list_calendar, list_email, list_sharepoint, etc.)
-- **`write.py`** — Microsoft Graph write operations (send_email, create_calendar_event, etc.)
+- **`read.py`** — Microsoft Graph read operations (list_outlook_email, read_outlook_email, list_outlook_calendar, list_sharepoint, read_sharepoint)
+- **`write.py`** — Microsoft Graph write operations (send_outlook_email, create_outlook_calendar_event, post_teams_message, write_sharepoint)
 
-Graph tools carry an `init` hook (`_init_m365`) that triggers M365 authentication when called. `make_bots` merges `TOOL_REGISTRY` and `M365_TOOL_REGISTRY` into a combined registry; no `extra_tools` injection is needed.
+Graph tools carry an `init` hook (`_init_m365`) that triggers M365 authentication when called.
+
+### Workspace tools — `src/codemoo/workspace/tools/`
+
+- **`__init__.py`** — `WORKSPACE_TOOL_REGISTRY` dict of all Workspace ToolDefs; each tool carries `init=_init_workspace`
+- **`read.py`** — Google Workspace read operations (list_gmail, read_gmail, list_gcal)
+- **`write.py`** — Google Workspace write operations (send_gmail, create_gcal_event, post_chat_message)
+
+Workspace tools carry an `init` hook (`_init_workspace`) that triggers Google OAuth when called.
+
+`make_bots` merges `TOOL_REGISTRY`, `M365_TOOL_REGISTRY`, and `WORKSPACE_TOOL_REGISTRY` into `_ALL_TOOLS`; no `extra_tools` injection is needed.
 
 ### Using Tools
 
-Code tools are accessed via `TOOL_REGISTRY`; M365 tools via `M365_TOOL_REGISTRY`. Both are merged automatically by `make_bots`:
+Code tools are accessed via `TOOL_REGISTRY`; platform tools via their respective registries. All are merged automatically by `make_bots`:
 
 ```python
 from codemoo.core.tools import TOOL_REGISTRY
@@ -110,9 +120,13 @@ from codemoo.core.tools.shell import run_shell
 
 **M365 tools** (Graph API operations):
 
-1. Add the implementation closure to `src/codemoo/m365/tools/read.py` or `write.py`
-2. Add the ToolDef to the returned list in `make_read_tools()` or `make_write_tools()`
-3. The tool is automatically included when `make_graph_tools()` is called at startup
+1. Add the implementation to `src/codemoo/m365/tools/read.py` or `write.py`
+2. Add the ToolDef (with `init=_init_m365`) to `M365_TOOL_REGISTRY` in `__init__.py`
+
+**Workspace tools** (Google APIs):
+
+1. Add the implementation to `src/codemoo/workspace/tools/read.py` or `write.py`
+2. Add the ToolDef (with `init=_init_workspace`) to `WORKSPACE_TOOL_REGISTRY` in `__init__.py`
 
 Each tool module should import `ToolDef` and `ToolParam` from `codemoo.core.tools` to avoid circular imports.
 

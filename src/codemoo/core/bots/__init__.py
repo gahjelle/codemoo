@@ -21,8 +21,13 @@ from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import TOOL_REGISTRY, ToolDef
 from codemoo.m365.tools import M365_TOOL_REGISTRY
+from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
 
-_ALL_TOOLS: dict[str, ToolDef] = {**TOOL_REGISTRY, **M365_TOOL_REGISTRY}
+_ALL_TOOLS: dict[str, ToolDef] = {
+    **TOOL_REGISTRY,
+    **M365_TOOL_REGISTRY,
+    **WORKSPACE_TOOL_REGISTRY,
+}
 
 __all__ = [
     "AgentBot",

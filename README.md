@@ -4,7 +4,8 @@ Requirements:
 
 - `uv`
 - An API key for at least one LLM provider (Mistral, OpenAI, Google, OpenRouter, or Anthropic), or a running [Ollama](https://ollama.com) server for local use
-- Microsoft Graph access is required for `business` mode
+- Microsoft Graph access is required for `m365` mode
+- Google Workspace OAuth credentials are required for `workspace` mode
 
 ## Installation
 
@@ -18,10 +19,11 @@ uv tool install . --editable
 
 ## Configuration
 
-Codemoo can run in two different modes:
+Codemoo can run in several modes:
 
 - **`code`** is the default mode where it is your friendly coding assistant (similar to Claude Code, OpenCode, Codex, and GitHub Copilot).
-- **`business`** requires access to [Microsoft Graph](#microsoft-graph) and gives Codemoo access to your E-mail, Teams, Calendar and Sharepoint, very much like M365 Copilot.
+- **`m365`** requires access to [Microsoft Graph](#microsoft-graph) and gives Codemoo access to your Outlook email, Teams, Calendar, and SharePoint — similar to M365 Copilot.
+- **`workspace`** requires [Google Workspace](#google-workspace) OAuth credentials and gives Codemoo access to Gmail, Google Calendar, and Google Chat.
 
 **General Setup**
 
@@ -77,7 +79,7 @@ The business chat is named Collebra, and can be run in the same way as Codemoo (
 
 ```console
 uv run collebra
-uv run codemoo --variant business
+uv run codemoo --variant m365
 ```
 
 Use `--bot` to start with a specific bot by type:
@@ -151,25 +153,39 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 8   | 🌀 Loom     | Agent — full agentic loop with planning          |
 | 9   | 🔒 Cato     | Guard — human-in-the-loop before risky actions   |
 
-**Business path** (`--script business`):
+**M365 path** (`--script m365`):
 
-| #   | Bot        | Capability                                            |
-| --- | ---------- | ----------------------------------------------------- |
-| 1   | 🦜 Coco     | Echo — repeats your message back                      |
-| 2   | ✨ Mono     | LLM — single-turn language model call                 |
-| 3   | 🧿 Iris     | Chat — multi-turn conversation with history           |
-| 4   | 🎭 Sona     | System prompt — chat with a persona                   |
-| 5   | 🔧 Telo     | Tools — can call a tool and act on the result         |
-| 6   | 🚶 **Roam** | ScanBot — reads SharePoint, email, and calendar       |
-| 7   | 📤 **Aero** | SendBot — sends email, creates events, posts to Teams |
-| 8   | 🌀 Loom     | Agent — full agentic loop over M365 data              |
-| 9   | 🔒 Cato     | Guard — human approval before M365 actions            |
+| #   | Bot        | Capability                                                    |
+| --- | ---------- | ------------------------------------------------------------- |
+| 1   | 🦜 Coco     | Echo — repeats your message back                              |
+| 2   | ✨ Mono     | LLM — single-turn language model call                         |
+| 3   | 🧿 Iris     | Chat — multi-turn conversation with history                   |
+| 4   | 🎭 Sona     | System prompt — chat with a persona                           |
+| 5   | 🔧 Telo     | Tools — can call a tool and act on the result                 |
+| 6   | 🚶 **Roam** | ScanBot — reads SharePoint, Outlook email, and calendar       |
+| 7   | 📤 **Aero** | SendBot — sends Outlook email, creates events, posts to Teams |
+| 8   | 🌀 Loom     | Agent — full agentic loop over M365 data                      |
+| 9   | 🔒 Cato     | Guard — human approval before M365 actions                    |
+
+**Workspace path** (`--script workspace`):
+
+| #   | Bot        | Capability                                                   |
+| --- | ---------- | ------------------------------------------------------------ |
+| 1   | 🦜 Coco     | Echo — repeats your message back                             |
+| 2   | ✨ Mono     | LLM — single-turn language model call                        |
+| 3   | 🧿 Iris     | Chat — multi-turn conversation with history                  |
+| 4   | 🎭 Sona     | System prompt — chat with a persona                          |
+| 5   | 🔧 Telo     | Tools — can call a tool and act on the result                |
+| 6   | 🚶 **Roam** | ScanBot — reads Gmail and Google Calendar                    |
+| 7   | 📤 **Aero** | SendBot — sends Gmail, creates Calendar events, posts to Chat |
+| 8   | 🌀 Loom     | Agent — full agentic loop over Google Workspace data         |
+| 9   | 🔒 Cato     | Guard — human approval before Workspace actions              |
 
 See [BOTS.md](BOTS.md) for more information about the bots.
 
 ## Microsoft Graph
 
-If you run in `business` mode, you need to set up access to your Microsoft Graph tenant.
+If you run in `m365` mode, you need to set up access to your Microsoft Graph tenant.
 
 ### Register an Entra app
 
@@ -211,7 +227,7 @@ export CODEMOO_M365_SHAREPOINT_SITE=/sites/<your-site>
 
 ### Authenticate
 
-The first time you run in `business` mode, Codemoo will print a device code and a URL:
+The first time you run in `m365` mode, Codemoo will print a device code and a URL:
 
 ```plain
 To sign in, use a web browser to open the page https://microsoft.com/devicelogin
@@ -219,3 +235,34 @@ and enter the code ABCD1234 to authenticate.
 ```
 
 Open the URL, enter the code, and sign in with your Microsoft account. The token is cached at `~/.cache/codemoo/token_cache.bin` so subsequent runs are silent for up to 90 days.
+
+## Google Workspace
+
+If you run in `workspace` mode, you need OAuth2 credentials from a Google Cloud project.
+
+### Create a Google Cloud project
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → **New Project**
+2. Enable the APIs you need: **Gmail API**, **Google Calendar API**, **Google Chat API**
+3. Go to **APIs & Services** → **Credentials** → **Create credentials** → **OAuth client ID**
+4. Choose **Desktop app**, download the JSON, and note the `client_id` and `client_secret`
+
+### Configure Codemoo
+
+Set the credentials via environment variables:
+
+```console
+export CODEMOO_WORKSPACE_CLIENT_ID=<your-client-id>
+export CODEMOO_WORKSPACE_CLIENT_SECRET=<your-client-secret>
+```
+
+### Authenticate
+
+The first time you run in `workspace` mode, Codemoo will print an authorization URL:
+
+```plain
+Please visit this URL to authorize this application: https://accounts.google.com/o/oauth2/auth?...
+Enter the authorization code:
+```
+
+Open the URL, grant the requested permissions, and paste the authorization code back. The token is cached at `~/.cache/codemoo/workspace_token.pkl` so subsequent runs skip auth.

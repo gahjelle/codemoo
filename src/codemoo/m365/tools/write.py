@@ -13,7 +13,7 @@ def _get_headers() -> dict[str, str]:
     }
 
 
-def _send_email(to: str, subject: str, body: str) -> str:
+def _send_outlook_email(to: str, subject: str, body: str) -> str:
     url = f"{config.m365.graph_base_url}/me/sendMail"
     payload = {
         "message": {
@@ -28,21 +28,23 @@ def _send_email(to: str, subject: str, body: str) -> str:
     return f"Email sent to {to}"
 
 
-send_email = ToolDef(
-    name="send_email",
-    description="Send an email via Microsoft Graph.",
+send_outlook_email = ToolDef(
+    name="send_outlook_email",
+    description="Send an email via Microsoft Outlook / Graph.",
     parameters=[
         ToolParam(name="to", description="Recipient email address."),
         ToolParam(name="subject", description="Email subject line."),
         ToolParam(name="body", description="Plain-text email body."),
     ],
-    fn=_send_email,
+    fn=_send_outlook_email,
     requires_approval=True,
     init=_init_m365,
 )
 
 
-def _create_calendar_event(subject: str, start: str, end: str, body: str = "") -> str:
+def _create_outlook_calendar_event(
+    subject: str, start: str, end: str, body: str = ""
+) -> str:
     url = f"{config.m365.graph_base_url}/me/events"
     payload = {
         "subject": subject,
@@ -58,9 +60,9 @@ def _create_calendar_event(subject: str, start: str, end: str, body: str = "") -
     return f"Event created: {event.get('subject', subject)} (id={event_id})"
 
 
-create_calendar_event = ToolDef(
-    name="create_calendar_event",
-    description="Create a calendar event via Microsoft Graph.",
+create_outlook_calendar_event = ToolDef(
+    name="create_outlook_calendar_event",
+    description="Create a calendar event via Microsoft Outlook / Graph.",
     parameters=[
         ToolParam(name="subject", description="Event title."),
         ToolParam(name="start", description="Start datetime in ISO 8601 UTC format."),
@@ -71,7 +73,7 @@ create_calendar_event = ToolDef(
             required=False,
         ),
     ],
-    fn=_create_calendar_event,
+    fn=_create_outlook_calendar_event,
     requires_approval=True,
     init=_init_m365,
 )

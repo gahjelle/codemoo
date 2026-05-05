@@ -65,7 +65,7 @@ read_sharepoint = ToolDef(
 )
 
 
-def _list_email(folder: str = "inbox", top: str = "10") -> str:
+def _list_outlook_email(folder: str = "inbox", top: str = "10") -> str:
     url = f"{config.m365.graph_base_url}/me/mailFolders/{folder}/messages"
     params = {"$top": top, "$select": "subject,from,receivedDateTime"}
     resp = httpx.get(url, headers=_get_headers(), params=params)
@@ -81,8 +81,8 @@ def _list_email(folder: str = "inbox", top: str = "10") -> str:
     return "\n".join(lines)
 
 
-list_email = ToolDef(
-    name="list_email",
+list_outlook_email = ToolDef(
+    name="list_outlook_email",
     description="List recent email messages from a mail folder (default: inbox).",
     parameters=[
         ToolParam(
@@ -96,12 +96,12 @@ list_email = ToolDef(
             required=False,
         ),
     ],
-    fn=_list_email,
+    fn=_list_outlook_email,
     init=_init_m365,
 )
 
 
-def _read_email(subject_keyword: str) -> str:
+def _read_outlook_email(subject_keyword: str) -> str:
     url = f"{config.m365.graph_base_url}/me/messages"
     params = {
         "$filter": f"contains(subject, '{subject_keyword}')",
@@ -120,10 +120,11 @@ def _read_email(subject_keyword: str) -> str:
     return f"From: {sender}\nSubject: {msg.get('subject', '')}\n\n{body}"
 
 
-read_email = ToolDef(
-    name="read_email",
+read_outlook_email = ToolDef(
+    name="read_outlook_email",
     description=(
-        "Read the body of the first email whose subject contains the given keyword."
+        "Read the body of the first Outlook email whose subject"
+        " contains the given keyword."
     ),
     parameters=[
         ToolParam(
@@ -131,12 +132,12 @@ read_email = ToolDef(
             description="Keyword to search for in email subjects.",
         )
     ],
-    fn=_read_email,
+    fn=_read_outlook_email,
     init=_init_m365,
 )
 
 
-def _list_calendar(days: str = "7") -> str:
+def _list_outlook_calendar(days: str = "7") -> str:
     now = datetime.now(tz=UTC)
     end = now + timedelta(days=int(days))
     url = f"{config.m365.graph_base_url}/me/calendarView"
@@ -158,9 +159,9 @@ def _list_calendar(days: str = "7") -> str:
     return "\n".join(lines) if lines else "No events found"
 
 
-list_calendar = ToolDef(
-    name="list_calendar",
-    description="List calendar events for the next N days (default: 7).",
+list_outlook_calendar = ToolDef(
+    name="list_outlook_calendar",
+    description="List Outlook calendar events for the next N days (default: 7).",
     parameters=[
         ToolParam(
             name="days",
@@ -168,6 +169,6 @@ list_calendar = ToolDef(
             required=False,
         )
     ],
-    fn=_list_calendar,
+    fn=_list_outlook_calendar,
     init=_init_m365,
 )

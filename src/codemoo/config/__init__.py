@@ -26,6 +26,8 @@ config = (
             "M365_CLIENT_ID": "m365.client_id",
             "SHAREPOINT_HOST": "m365.sharepoint_host",
             "SHAREPOINT_SITE": "m365.sharepoint_site",
+            "WORKSPACE_CLIENT_ID": "workspace.client_id",
+            "WORKSPACE_CLIENT_SECRET": "workspace.client_secret",
         },
         prefix="CODEMOO_",
     )

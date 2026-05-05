@@ -21,7 +21,9 @@ type BotType = Literal[
     "SendBot",
     "ProjectBot",
 ]
-type ScriptName = Literal["default", "focused", "m365", "m365_lite"]
+type ScriptName = Literal[
+    "default", "focused", "m365", "m365_lite", "workspace", "workspace_lite", "contrast"
+]
 type ModelBackend = Literal[
     "mistral", "anthropic", "openrouter", "openai", "google", "ollama"
 ]
@@ -38,6 +40,7 @@ class PathsConfig(StrictModel):
 
     bots_dir: Path
     m365_token_path: Path
+    workspace_token_path: Path
 
 
 class ContextSource(StrictModel):
@@ -173,6 +176,14 @@ class M365Config(StrictModel):
     scopes: list[str]
 
 
+class WorkspaceConfig(StrictModel):
+    """Configure Google Workspace / OAuth access."""
+
+    client_id: str
+    client_secret: str
+    scopes: list[str]
+
+
 class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
@@ -182,3 +193,4 @@ class CodemooConfig(StrictModel):
     scripts: dict[ScriptName, ScriptConfig]
     models: ModelsConfig
     m365: M365Config
+    workspace: WorkspaceConfig

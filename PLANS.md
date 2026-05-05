@@ -14,7 +14,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- Add a Google docs parallel to the m365 business path
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file
