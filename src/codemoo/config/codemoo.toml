@@ -68,6 +68,46 @@ bots = [
 
 
 #
+# Named tool lists — reference with @name inside a variant's tools array
+#
+[tool_lists]
+code_read  = ["reverse_string", "read_file", "list_files"]
+code_write = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
+m365_read  = [
+    "get_datetime",
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_outlook_email",
+    "list_outlook_email",
+    "list_outlook_calendar",
+]
+m365_write = [
+    "get_datetime",
+    "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_outlook_email",
+    "send_outlook_email",
+    "create_outlook_calendar_event",
+    "post_teams_message",
+]
+workspace_read  = ["get_datetime", "reverse_string", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
+workspace_write = [
+    "get_datetime",
+    "reverse_string",
+    "read_gmail",
+    "list_gmail",
+    "send_gmail",
+    "list_gcal",
+    "create_gcal_event",
+    "post_chat_message",
+    "list_gdrive",
+    "read_gdrive",
+    "write_gdrive",
+]
+
+#
 # Bots — coding path
 #
 [bots.EchoBot]
@@ -126,7 +166,7 @@ sources = ["read_bot.py", "single_turn_tool_bot.py"]
 [bots.ReadBot.variants.code]
 description = "Read files from disk to answer questions about your code."
 instruction_file = "read_bot-code.txt"
-tools = ["reverse_string", "read_file", "list_files"]
+tools = ["@code_read"]
 prompts_file = "read_bot-code.txt"
 
 [bots.ScanBot]
@@ -137,21 +177,13 @@ sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 [bots.ScanBot.variants.m365]
 description = "Read SharePoint docs, email, and calendar — observational M365 access."
 instruction_file = "scan_bot-m365.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
-    "list_outlook_email",
-    "list_outlook_calendar",
-]
+tools = ["@m365_read"]
 prompts_file = "scan_bot-m365.txt"
 
 [bots.ScanBot.variants.workspace]
 description = "Read Gmail, Google Calendar, and Google Drive — observational Workspace access."
 instruction_file = "scan_bot-workspace.txt"
-tools = ["get_datetime", "reverse_string", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
+tools = ["@workspace_read"]
 prompts_file = "scan_bot-workspace.txt"
 
 [bots.ChangeBot]
@@ -162,7 +194,7 @@ sources = ["change_bot.py", "single_turn_tool_bot.py"]
 [bots.ChangeBot.variants.code]
 description = "Execute shell commands and write files — now it can change things."
 instruction_file = "change_bot-code.txt"
-tools = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
+tools = ["@code_write"]
 prompts_file = "change_bot-code.txt"
 
 [bots.SendBot]
@@ -173,37 +205,13 @@ sources = ["send_bot.py", "single_turn_tool_bot.py"]
 [bots.SendBot.variants.m365]
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
 instruction_file = "send_bot-m365.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
-    "list_outlook_email",
-    "list_outlook_calendar",
-    "send_outlook_email",
-    "create_outlook_calendar_event",
-    "post_teams_message",
-    "write_sharepoint",
-]
+tools = ["@m365_read", "send_outlook_email", "create_outlook_calendar_event", "post_teams_message", "write_sharepoint"]
 prompts_file = "send_bot-m365.txt"
 
 [bots.SendBot.variants.workspace]
 description = "Send Gmail, create Google Calendar events, post to Google Chat, write Google Drive files."
 instruction_file = "send_bot-workspace.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_gmail",
-    "list_gmail",
-    "list_gcal",
-    "send_gmail",
-    "create_gcal_event",
-    "post_chat_message",
-    "list_gdrive",
-    "read_gdrive",
-    "write_gdrive",
-]
+tools = ["@workspace_write"]
 prompts_file = "send_bot-workspace.txt"
 
 [bots.AgentBot]
@@ -214,40 +222,19 @@ sources = ["agent_bot.py"]
 [bots.AgentBot.variants.code]
 description = "Loop tool calls until done — pursue goals, not single commands."
 instruction_file = "agent_bot-code.txt"
-tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
+tools = ["@code_write"]
 prompts_file = "agent_bot-code.txt"
 
 [bots.AgentBot.variants.m365]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
 instruction_file = "agent_bot-m365.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
-    "send_outlook_email",
-    "create_outlook_calendar_event",
-    "post_teams_message",
-]
+tools = ["@m365_write"]
 prompts_file = "agent_bot-m365.txt"
 
 [bots.AgentBot.variants.workspace]
 description = "Loop Google Workspace tool calls until done — pursue goals across Gmail, Calendar, and Drive."
 instruction_file = "agent_bot-workspace.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_gmail",
-    "list_gmail",
-    "send_gmail",
-    "list_gcal",
-    "create_gcal_event",
-    "post_chat_message",
-    "list_gdrive",
-    "read_gdrive",
-    "write_gdrive",
-]
+tools = ["@workspace_write"]
 prompts_file = "agent_bot-workspace.txt"
 
 [bots.GuardBot]
@@ -258,40 +245,19 @@ sources = ["guard_bot.py"]
 [bots.GuardBot.variants.code]
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
 instruction_file = "guard_bot-code.txt"
-tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
+tools = ["@code_write"]
 prompts_file = "guard_bot-code.txt"
 
 [bots.GuardBot.variants.m365]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
 instruction_file = "guard_bot-m365.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
-    "send_outlook_email",
-    "create_outlook_calendar_event",
-    "post_teams_message",
-]
+tools = ["@m365_write"]
 prompts_file = "guard_bot-m365.txt"
 
 [bots.GuardBot.variants.workspace]
 description = "Pause before sending Workspace actions — nothing sent without your say-so."
 instruction_file = "guard_bot-workspace.txt"
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_gmail",
-    "list_gmail",
-    "send_gmail",
-    "list_gcal",
-    "create_gcal_event",
-    "post_chat_message",
-    "list_gdrive",
-    "read_gdrive",
-    "write_gdrive",
-]
+tools = ["@workspace_write"]
 prompts_file = "guard_bot-workspace.txt"
 
 [bots.ProjectBot]
@@ -303,42 +269,21 @@ sources = ["project_bot.py"]
 description = "Read AGENTS.md for project context before acting."
 instruction_file = "project_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
-tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
+tools = ["@code_write"]
 prompts_file = "project_bot-code.txt"
 
 [bots.ProjectBot.variants.m365]
 description = "Read team context from SharePoint before acting."
 instruction_file = "project_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
-    "send_outlook_email",
-    "create_outlook_calendar_event",
-    "post_teams_message",
-]
+tools = ["@m365_write"]
 prompts_file = "project_bot-m365.txt"
 
 [bots.ProjectBot.variants.workspace]
 description = "Read team context from Google Drive before acting."
 instruction_file = "project_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
-tools = [
-    "get_datetime",
-    "reverse_string",
-    "read_gmail",
-    "list_gmail",
-    "send_gmail",
-    "list_gcal",
-    "create_gcal_event",
-    "post_chat_message",
-    "list_gdrive",
-    "read_gdrive",
-    "write_gdrive",
-]
+tools = ["@workspace_write"]
 prompts_file = "project_bot-workspace.txt"
 
 #

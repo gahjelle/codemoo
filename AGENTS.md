@@ -86,6 +86,22 @@ multiple lines if needed
 
 Inline values (`instructions = "..."` and `prompts = [...]`) remain fully supported and are used for bots with empty instructions or very short prompt lists. File-based and inline values are resolved to the same `BotVariantConfig` fields before Pydantic validation — nothing downstream changes.
 
+The `[tool_lists]` section defines named tool lists that any variant can reference using `@name` syntax inside its `tools` array:
+
+```toml
+[tool_lists]
+code_write = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
+
+[bots.AgentBot.variants.code]
+tools = ["@code_write"]
+
+# Mix a named list with individual tools
+[bots.FutureBot.variants.code]
+tools = ["@code_write", "extra_tool"]
+```
+
+References are expanded before Pydantic validation; the `[tool_lists]` section is consumed and never appears on `CodemooConfig`. An unknown `@name` raises a `KeyError` at config load time with a message listing available list names.
+
 ## Tools Architecture
 
 Tools are split into three locations: generic code tools in `src/codemoo/core/tools/`, M365-specific tools in `src/codemoo/m365/tools/`, and Google Workspace tools in `src/codemoo/workspace/tools/`.

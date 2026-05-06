@@ -38,7 +38,7 @@ async def test_drive_context_source_emits_event() -> None:
         await read_project_context(
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
-            commentator=commentator
+            commentator=commentator,
         )
     assert len(commentator.events) == 1
     event = commentator.events[0]
@@ -56,7 +56,7 @@ async def test_drive_context_source_file_not_found_returns_none() -> None:
         result = await read_project_context(
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
-            commentator=commentator
+            commentator=commentator,
         )
     assert result is None
     assert commentator.events == []
@@ -72,6 +72,6 @@ async def test_drive_context_source_exception_returns_none() -> None:
         result = await read_project_context(
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
-            commentator=commentator
+            commentator=commentator,
         )
     assert result is None

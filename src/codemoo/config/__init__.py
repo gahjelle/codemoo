@@ -17,6 +17,7 @@ _prompts_dir = config_path.parent / "example_prompts"
 
 
 def _resolve_file_refs(data: dict[str, Any]) -> None:
+    tool_lists = data.pop("tool_lists", {})
     for bot_data in data.get("bots", {}).values():
         for variant in bot_data.get("variants", {}).values():
             if instr_file := variant.pop("instruction_file", None):
@@ -30,6 +31,19 @@ def _resolve_file_refs(data: dict[str, Any]) -> None:
                     for p in re.split(r"^---$", content, flags=re.MULTILINE)
                     if p.strip()
                 ]
+            if tools := variant.get("tools"):
+                expanded: list[str] = []
+                for tool in tools:
+                    if tool.startswith("@"):
+                        name = tool[1:]
+                        if name not in tool_lists:
+                            available = ", ".join(sorted(tool_lists))
+                            msg = f"Unknown tool list {name!r}. Available: {available}"
+                            raise KeyError(msg)
+                        expanded.extend(tool_lists[name])
+                    else:
+                        expanded.append(tool)
+                variant["tools"] = expanded
 
 
 def _load_config(path: Path) -> Configuration:

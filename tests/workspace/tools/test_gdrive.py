@@ -27,8 +27,9 @@ def test_list_gdrive_returns_name_and_id_lines() -> None:
             {"name": "notes.txt", "id": "def456"},
         ]
     }
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=mock_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
     ):
         result = _list_gdrive()
     assert "TEAM.md  |  abc123" in result
@@ -39,8 +40,9 @@ def test_list_gdrive_empty_folder() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.json.return_value = {"files": []}
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=mock_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
     ):
         result = _list_gdrive()
     assert result == "No files found"
@@ -51,8 +53,9 @@ def test_list_gdrive_api_error() -> None:
     mock_resp.is_error = True
     mock_resp.status_code = 403
     mock_resp.text = "Forbidden"
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=mock_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
     ):
         result = _list_gdrive()
     assert result == "Error 403: Forbidden"
@@ -65,8 +68,9 @@ def test_read_gdrive_content_exports_google_doc() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.text = "Doc content"
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=mock_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
     ):
         result = _read_gdrive_content("file-id", _GDOC_MIME)
     assert result == "Doc content"
@@ -76,8 +80,9 @@ def test_read_gdrive_content_downloads_text_file() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.text = "# Hello"
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=mock_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
     ):
         result = _read_gdrive_content("file-id", "text/plain")
     assert result == "# Hello"
@@ -95,14 +100,22 @@ def test_read_gdrive_content_unsupported_mime_type() -> None:
 def test_read_gdrive_fetches_metadata_then_content() -> None:
     meta_resp = MagicMock()
     meta_resp.is_error = False
-    meta_resp.json.return_value = {"id": "abc", "name": "notes.txt", "mimeType": "text/plain"}
+    meta_resp.json.return_value = {
+        "id": "abc",
+        "name": "notes.txt",
+        "mimeType": "text/plain",
+    }
 
     content_resp = MagicMock()
     content_resp.is_error = False
     content_resp.text = "file content"
 
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", side_effect=[meta_resp, content_resp]
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch(
+            "codemoo.workspace.tools.read.httpx.get",
+            side_effect=[meta_resp, content_resp],
+        ),
     ):
         result = _read_gdrive("abc")
     assert result == "file content"
@@ -113,8 +126,9 @@ def test_read_gdrive_metadata_error() -> None:
     meta_resp.is_error = True
     meta_resp.status_code = 404
     meta_resp.text = "Not Found"
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=meta_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=meta_resp),
     ):
         result = _read_gdrive("no-such-id")
     assert "Error 404" in result
@@ -132,8 +146,12 @@ def test_read_gdrive_by_name_returns_content_when_found() -> None:
     content_resp.is_error = False
     content_resp.text = "team context"
 
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", side_effect=[search_resp, content_resp]
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch(
+            "codemoo.workspace.tools.read.httpx.get",
+            side_effect=[search_resp, content_resp],
+        ),
     ):
         result = _read_gdrive_by_name("TEAM.md")
     assert result == "team context"
@@ -143,8 +161,9 @@ def test_read_gdrive_by_name_returns_none_when_not_found() -> None:
     search_resp = MagicMock()
     search_resp.is_error = False
     search_resp.json.return_value = {"files": []}
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=search_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=search_resp),
     ):
         result = _read_gdrive_by_name("TEAM.md")
     assert result is None
@@ -153,8 +172,9 @@ def test_read_gdrive_by_name_returns_none_when_not_found() -> None:
 def test_read_gdrive_by_name_returns_none_on_api_error() -> None:
     search_resp = MagicMock()
     search_resp.is_error = True
-    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.read.httpx.get", return_value=search_resp
+    with (
+        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.read.httpx.get", return_value=search_resp),
     ):
         result = _read_gdrive_by_name("TEAM.md")
     assert result is None
@@ -172,9 +192,11 @@ def test_write_gdrive_creates_new_file() -> None:
     create_resp.is_error = False
     create_resp.json.return_value = {"id": "new-id"}
 
-    with patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.write.httpx.get", return_value=search_resp
-    ), patch("codemoo.workspace.tools.write.httpx.post", return_value=create_resp):
+    with (
+        patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
+        patch("codemoo.workspace.tools.write.httpx.post", return_value=create_resp),
+    ):
         result = _write_gdrive("TEAM.md", "content")
     assert result == "Created TEAM.md (new-id)"
 
@@ -188,9 +210,11 @@ def test_write_gdrive_updates_existing_file() -> None:
     patch_resp.is_error = False
     patch_resp.json.return_value = {"id": "existing-id"}
 
-    with patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.write.httpx.get", return_value=search_resp
-    ), patch("codemoo.workspace.tools.write.httpx.patch", return_value=patch_resp):
+    with (
+        patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
+        patch("codemoo.workspace.tools.write.httpx.patch", return_value=patch_resp),
+    ):
         result = _write_gdrive("TEAM.md", "updated content")
     assert result == "Updated TEAM.md (existing-id)"
 
@@ -200,8 +224,9 @@ def test_write_gdrive_search_error() -> None:
     search_resp.is_error = True
     search_resp.status_code = 500
     search_resp.text = "Internal Error"
-    with patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS), patch(
-        "codemoo.workspace.tools.write.httpx.get", return_value=search_resp
+    with (
+        patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
+        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
     ):
         result = _write_gdrive("TEAM.md", "content")
     assert "Error 500" in result
