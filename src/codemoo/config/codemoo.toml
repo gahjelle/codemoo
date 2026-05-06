@@ -44,20 +44,6 @@ bots = [
     { type = "ProjectBot", variant = "m365" },
 ]
 
-[scripts.m365_lite]
-bots = [
-    { type = "EchoBot", variant = "default" },
-    { type = "LlmBot", variant = "default" },
-    { type = "ChatBot", variant = "default" },
-    { type = "SystemBot", variant = "default" },
-    { type = "ToolBot", variant = "default" },
-    { type = "ScanBot", variant = "m365_lite" },
-    { type = "SendBot", variant = "m365_lite" },
-    { type = "AgentBot", variant = "m365" },
-    { type = "GuardBot", variant = "m365" },
-    { type = "ProjectBot", variant = "m365" },
-]
-
 [scripts.workspace]
 bots = [
     { type = "EchoBot", variant = "default" },
@@ -72,21 +58,7 @@ bots = [
     { type = "ProjectBot", variant = "workspace" },
 ]
 
-[scripts.workspace_lite]
-bots = [
-    { type = "EchoBot", variant = "default" },
-    { type = "LlmBot", variant = "default" },
-    { type = "ChatBot", variant = "default" },
-    { type = "SystemBot", variant = "default" },
-    { type = "ToolBot", variant = "default" },
-    { type = "ScanBot", variant = "workspace_lite" },
-    { type = "SendBot", variant = "workspace_lite" },
-    { type = "AgentBot", variant = "workspace" },
-    { type = "GuardBot", variant = "workspace" },
-    { type = "ProjectBot", variant = "workspace" },
-]
-
-[scripts.contrast]
+[scripts.vs]
 bots = [
     { type = "ReadBot", variant = "code" },
     { type = "ScanBot", variant = "workspace" },
@@ -203,17 +175,7 @@ tools = [
 prompts = [
     "What files are in the demo SharePoint site?",
     "Read my latest email",
-    "What meetings do I have today?",
-]
-
-[bots.ScanBot.variants.m365_lite]
-description = "Read email and calendar — M365 access without SharePoint."
-instructions = "You are Roam, a productivity assistant. You can read Microsoft 365 data using your tools. When the user asks about emails or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
-tools = ["reverse_string", "read_outlook_email", "list_outlook_email", "list_outlook_calendar"]
-prompts = [
-    "Read my latest email",
-    "What meetings do I have today?",
-    "Summarise my inbox",
+    "How does my calendar look this week?",
 ]
 
 [bots.ScanBot.variants.workspace]
@@ -222,16 +184,7 @@ instructions = "You are Roam, a productivity assistant. You can read Google Work
 tools = ["reverse_string", "read_gmail", "list_gmail", "list_gcal"]
 prompts = [
     "Read my latest email",
-    "What meetings do I have today?",
-    "Summarise my inbox",
-]
-
-[bots.ScanBot.variants.workspace_lite]
-description = "Read Gmail inbox — lightweight Workspace access."
-instructions = "You are Roam, a productivity assistant. You can read Google Workspace data using your tools. When the user asks about emails, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
-tools = ["reverse_string", "list_gmail"]
-prompts = [
-    "Read my latest email",
+    "How does my calendar look this week?",
     "Summarise my inbox",
 ]
 
@@ -261,6 +214,11 @@ description = "Send email, create calendar events, post to Teams, write SharePoi
 instructions = "You are Aero, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails, create calendar events, post Teams messages, and write SharePoint documents. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
 tools = [
     "reverse_string",
+    "read_sharepoint",
+    "list_sharepoint",
+    "read_outlook_email",
+    "list_outlook_email",
+    "list_outlook_calendar",
     "send_outlook_email",
     "create_outlook_calendar_event",
     "post_teams_message",
@@ -272,36 +230,22 @@ prompts = [
     "Post a message to the demo Teams channel",
 ]
 
-[bots.SendBot.variants.m365_lite]
-description = "Send email and create calendar events via M365."
-instructions = "You are Aero, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails and create calendar events. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
-tools = ["reverse_string", "send_outlook_email", "create_outlook_calendar_event"]
-prompts = [
-    "Send a summary email of today's demo to me",
-    "Create a calendar event for a follow-up meeting next week",
-]
-
 [bots.SendBot.variants.workspace]
 description = "Send Gmail, create Google Calendar events, post to Google Chat."
 instructions = "You are Aero, a productivity assistant. You can perform Google Workspace actions using your tools: send Gmail messages, create Google Calendar events, and post Google Chat messages. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
 tools = [
     "reverse_string",
+    "read_gmail",
+    "list_gmail",
+    "list_gcal",
     "send_gmail",
     "create_gcal_event",
     "post_chat_message",
 ]
 prompts = [
-    "Send a summary email of today's demo to me",
-    "Create a calendar event for a follow-up meeting next week",
-    "Post a message to the demo Chat space",
-]
-
-[bots.SendBot.variants.workspace_lite]
-description = "Send Gmail and create Google Calendar events."
-instructions = "You are Aero, a productivity assistant. You can perform Google Workspace actions using your tools: send Gmail messages and create Google Calendar events. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
-tools = ["reverse_string", "send_gmail", "create_gcal_event"]
-prompts = [
-    "Send a summary email of today's demo to me",
+    "Summarise my inbox",
+    "What is the latest email from Geir Arne?",
+    "Send a response to him where you confirm that the task is done",
     "Create a calendar event for a follow-up meeting next week",
 ]
 

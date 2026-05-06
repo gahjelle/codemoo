@@ -21,9 +21,7 @@ type BotType = Literal[
     "SendBot",
     "ProjectBot",
 ]
-type ScriptName = Literal[
-    "default", "focused", "m365", "m365_lite", "workspace", "workspace_lite", "contrast"
-]
+type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
 type ModelBackend = Literal[
     "mistral", "anthropic", "openrouter", "openai", "google", "ollama"
 ]
