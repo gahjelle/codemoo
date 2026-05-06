@@ -1,0 +1,3 @@
+Describe the current project in three sentences
+---
+Which coding conventions do you follow?

@@ -1,0 +1,5 @@
+Hello!
+---
+How can I reverse a text string in Python?
+---
+How about in C#?

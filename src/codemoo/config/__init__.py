@@ -1,6 +1,8 @@
 """Codemoo runtime configuration loaded from configs/codemoo.toml."""
 
+import re
 from pathlib import Path
+from typing import Any
 
 import platformdirs
 from configaroo import Configuration
@@ -10,8 +12,34 @@ from codemoo.config.schema import CodemooConfig
 __all__ = ["config"]
 
 config_path = Path(__file__).parent / "codemoo.toml"
+_instructions_dir = config_path.parent / "instructions"
+_prompts_dir = config_path.parent / "example_prompts"
+
+
+def _resolve_file_refs(data: dict[str, Any]) -> None:
+    for bot_data in data.get("bots", {}).values():
+        for variant in bot_data.get("variants", {}).values():
+            if instr_file := variant.pop("instruction_file", None):
+                variant["instructions"] = (_instructions_dir / instr_file).read_text(
+                    encoding="utf-8"
+                )
+            if prompts_file := variant.pop("prompts_file", None):
+                content = (_prompts_dir / prompts_file).read_text(encoding="utf-8")
+                variant["prompts"] = [
+                    p.strip()
+                    for p in re.split(r"^---$", content, flags=re.MULTILINE)
+                    if p.strip()
+                ]
+
+
+def _load_config(path: Path) -> Configuration:
+    data = Configuration.from_file(path).data
+    _resolve_file_refs(data)
+    return Configuration.from_dict(data)
+
+
 config = (
-    Configuration.from_file(config_path)
+    _load_config(config_path)
     .add_envs(
         {
             "LANGUAGE": "language",

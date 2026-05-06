@@ -77,7 +77,7 @@ sources = ["echo_bot.py"]
 
 [bots.EchoBot.variants.default]
 description = "Repeat your message verbatim — no LLM, just a mirror."
-prompts = ["Hello!", "How can I reverse a text string in Python?"]
+prompts_file = "echo_bot-default.txt"
 
 [bots.LlmBot]
 name = "Mono"
@@ -86,7 +86,7 @@ sources = ["llm_bot.py"]
 
 [bots.LlmBot.variants.default]
 description = "Call the LLM once and forget the conversation immediately after."
-prompts = ["Hello!", "How can I reverse a text string in Python?", "How about in C#?"]
+prompts_file = "llm_bot-default.txt"
 
 [bots.ChatBot]
 name = "Iris"
@@ -95,11 +95,7 @@ sources = ["chat_bot.py"]
 
 [bots.ChatBot.variants.default]
 description = "Keep the full conversation history, remember what you said."
-prompts = [
-    "How can I reverse a text string in Python?",
-    "How about in C#?",
-    "Suggest three things to see in Oslo",
-]
+prompts_file = "chat_bot-default.txt"
 
 [bots.SystemBot]
 name = "Sona"
@@ -108,23 +104,8 @@ sources = ["system_bot.py"]
 
 [bots.SystemBot.variants.default]
 description = "Add a system prompt to shape the LLM's persona and behavior."
-instructions = """
-You are Sona, a ruthlessly practical coding assistant.
-Rules you never break:
-(1) Respond only about code and software engineering — for anything else reply
-    with exactly 'Not my domain.' and nothing more.
-(2) Never use pleasantries, filler, or preamble — get straight to the answer.
-(3) Prefer the simplest correct solution; do not over-engineer.
-(4) When showing code, show only the relevant snippet, not the whole file.
-(5) If a question is ambiguous, state your assumption in one line then answer it.
-"""
-prompts = [
-    "How can I reverse a text string in Python?",
-    "How about in C#?",
-    "Suggest three things to see in Oslo",
-    "List all ways to reverse strings in Python",
-    "How do I spell 'Guido van Rossum created Python' backwards?",
-]
+instruction_file = "system_bot-default.txt"
+prompts_file = "system_bot-default.txt"
 
 [bots.ToolBot]
 name = "Telo"
@@ -133,12 +114,9 @@ sources = ["tool_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ToolBot.variants.default]
 description = "Call a tool before replying — the first step toward doing things."
-instructions = "You are Telo, a coding assistant. You have tools available. Use them when they would help answer accurately. Trust the output of the tools."
+instruction_file = "tool_bot-default.txt"
 tools = ["reverse_string"]
-prompts = [
-    "How do I spell 'Guido van Rossum created Python' backwards?",
-    "What is today's date?",
-]
+prompts_file = "tool_bot-default.txt"
 
 [bots.ReadBot]
 name = "Rune"
@@ -147,14 +125,9 @@ sources = ["read_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ReadBot.variants.code]
 description = "Read files from disk to answer questions about your code."
-instructions = "You are Rune, a coding assistant. You can read files and list directory contents using your tools. When the user asks about a file, its contents, or what files exist in a folder, call the appropriate tool to retrieve that information before answering."
+instruction_file = "read_bot-code.txt"
 tools = ["reverse_string", "read_file", "list_files"]
-prompts = [
-    "Read greeter.py — what is this project about?",
-    "List the files in the current directory",
-    "Compare README.md and greeter.py — does the code match the description?",
-    "What is the first line of archive.txt?",
-]
+prompts_file = "read_bot-code.txt"
 
 [bots.ScanBot]
 name = "Roam"
@@ -163,7 +136,7 @@ sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ScanBot.variants.m365]
 description = "Read SharePoint docs, email, and calendar — observational M365 access."
-instructions = "You are Roam, a productivity assistant. You can read Microsoft 365 data using your tools. When the user asks about documents, emails, or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
+instruction_file = "scan_bot-m365.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -173,21 +146,13 @@ tools = [
     "list_outlook_email",
     "list_outlook_calendar",
 ]
-prompts = [
-    "What files are in the demo SharePoint site?",
-    "Read my latest email",
-    "How does my calendar look this week?",
-]
+prompts_file = "scan_bot-m365.txt"
 
 [bots.ScanBot.variants.workspace]
 description = "Read Gmail, Google Calendar, and Google Drive — observational Workspace access."
-instructions = "You are Roam, a productivity assistant. You can read Google Workspace data using your tools. When the user asks about emails, calendar events, or Drive files, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
+instruction_file = "scan_bot-workspace.txt"
 tools = ["get_datetime", "reverse_string", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
-prompts = [
-    "Read my latest email",
-    "How does my calendar look this week?",
-    "Summarise my inbox",
-]
+prompts_file = "scan_bot-workspace.txt"
 
 [bots.ChangeBot]
 name = "Axel"
@@ -196,14 +161,9 @@ sources = ["change_bot.py", "single_turn_tool_bot.py"]
 
 [bots.ChangeBot.variants.code]
 description = "Execute shell commands and write files — now it can change things."
-instructions = "You are Axel, a coding assistant. You can execute shell commands and write files using your tools. When the user asks you to run a command, modify a file, or perform a system operation, call the appropriate tool before answering. These actions change state — proceed carefully."
+instruction_file = "change_bot-code.txt"
 tools = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
-prompts = [
-    "Run greeter.py with uv",
-    "Run the tests: uv run pytest test_greeter.py",
-    "Use cat to list both README.md and greeter.py and compare them — does the code match the description?",
-    "How many names are in names.txt?",
-]
+prompts_file = "change_bot-code.txt"
 
 [bots.SendBot]
 name = "Aero"
@@ -212,7 +172,7 @@ sources = ["send_bot.py", "single_turn_tool_bot.py"]
 
 [bots.SendBot.variants.m365]
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
-instructions = "You are Aero, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails, create calendar events, post Teams messages, and write SharePoint documents. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
+instruction_file = "send_bot-m365.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -226,15 +186,11 @@ tools = [
     "post_teams_message",
     "write_sharepoint",
 ]
-prompts = [
-    "Send a summary email of today's demo to me",
-    "Create a calendar event for a follow-up meeting next week",
-    "Post a message to the demo Teams channel",
-]
+prompts_file = "send_bot-m365.txt"
 
 [bots.SendBot.variants.workspace]
 description = "Send Gmail, create Google Calendar events, post to Google Chat, write Google Drive files."
-instructions = "You are Aero, a productivity assistant. You can perform Google Workspace actions using your tools: send Gmail messages, create Google Calendar events, post Google Chat messages, and read or write Google Drive files. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
+instruction_file = "send_bot-workspace.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -248,12 +204,7 @@ tools = [
     "read_gdrive",
     "write_gdrive",
 ]
-prompts = [
-    "Summarise my inbox",
-    "What is the latest email from Geir Arne?",
-    "Send a response to him where you confirm that the task is done",
-    "Create a calendar event for a follow-up meeting next week",
-]
+prompts_file = "send_bot-workspace.txt"
 
 [bots.AgentBot]
 name = "Loom"
@@ -262,16 +213,13 @@ sources = ["agent_bot.py"]
 
 [bots.AgentBot.variants.code]
 description = "Loop tool calls until done — pursue goals, not single commands."
-instructions = "You are Loom, a helpful coding assistant. You have access to tools — use them as many times as needed to fully complete the user's request before giving your final answer. Focus on the project in the current working directory."
+instruction_file = "agent_bot-code.txt"
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
-prompts = [
-    "Which tools do you have access to?",
-    "greeter.py is crashing when run (uv run greeter.py). Fix the bug and verify with the tests (uv run pytest).",
-]
+prompts_file = "agent_bot-code.txt"
 
 [bots.AgentBot.variants.m365]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
-instructions = "You are Loom, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read email, access SharePoint, create calendar events, and post to Teams."
+instruction_file = "agent_bot-m365.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -282,14 +230,11 @@ tools = [
     "create_outlook_calendar_event",
     "post_teams_message",
 ]
-prompts = [
-    "Which tools do you have access to?",
-    "Summarise my recent emails and create a calendar event for any follow-ups you find.",
-]
+prompts_file = "agent_bot-m365.txt"
 
 [bots.AgentBot.variants.workspace]
 description = "Loop Google Workspace tool calls until done — pursue goals across Gmail, Calendar, and Drive."
-instructions = "You are Loom, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read and send Gmail, list and create Google Calendar events, post to Google Chat, and read or write Google Drive files."
+instruction_file = "agent_bot-workspace.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -303,10 +248,7 @@ tools = [
     "read_gdrive",
     "write_gdrive",
 ]
-prompts = [
-    "Which tools do you have access to?",
-    "Summarise my recent emails and create a calendar event for any follow-ups you find.",
-]
+prompts_file = "agent_bot-workspace.txt"
 
 [bots.GuardBot]
 name = "Cato"
@@ -315,17 +257,13 @@ sources = ["guard_bot.py"]
 
 [bots.GuardBot.variants.code]
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
-instructions = "You are Cato, a helpful coding assistant. You help the user understand the current project, maintain it, and develop it further. You have access to tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt."
+instruction_file = "guard_bot-code.txt"
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
-prompts = [
-    "Read greeter.py and write a short summary to summary.md",
-    "Run the tests with uv run pytest. If they pass, commit the changes. If they don't, then fix the code first.",
-    "Create a new directory named tiemit (typo intentional) and use uv to initialize a new project inside the folder. Create a Streamlit app that will implement a Human vs AI String Reversal Challenge. Requirements: 1. Generate a random string of 5-10 characters (letters and space characters only). 2. Display the string to the user. 3. Allow the user to input their reversed string. 4. Time how long it takes the user to type and submit their answer (start the timer when the user starts typing). 5. Have an AI attempt to reverse the string (simulate the AI with a 70% chance of failure to demonstrate LLM limitations). 6. Show: User's time, user's answer, AI's answer, Correct answer, Who won (user, AI, or tie). 7. Include a 'Play Again' button to generate a new string. Use session state to maintain game state between interactions.",
-]
+prompts_file = "guard_bot-code.txt"
 
 [bots.GuardBot.variants.m365]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
-instructions = "You are Cato, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails or posting to Teams."
+instruction_file = "guard_bot-m365.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -336,14 +274,11 @@ tools = [
     "create_outlook_calendar_event",
     "post_teams_message",
 ]
-prompts = [
-    "Read my latest email and write a short summary",
-    "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
-]
+prompts_file = "guard_bot-m365.txt"
 
 [bots.GuardBot.variants.workspace]
 description = "Pause before sending Workspace actions — nothing sent without your say-so."
-instructions = "You are Cato, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails or writing files."
+instruction_file = "guard_bot-workspace.txt"
 tools = [
     "get_datetime",
     "reverse_string",
@@ -357,10 +292,7 @@ tools = [
     "read_gdrive",
     "write_gdrive",
 ]
-prompts = [
-    "Read my latest email and write a short summary",
-    "Summarise my inbox and draft a reply to the most recent message. Send it only if I approve.",
-]
+prompts_file = "guard_bot-workspace.txt"
 
 [bots.ProjectBot]
 name = "Lore"
@@ -369,17 +301,14 @@ sources = ["project_bot.py"]
 
 [bots.ProjectBot.variants.code]
 description = "Read AGENTS.md for project context before acting."
-instructions = "You are Lore, a helpful coding assistant. You have access to tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read the project context before acting, which helps you understand conventions and known issues."
+instruction_file = "project_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 tools = ["reverse_string", "read_file", "list_files", "write_file", "run_shell"]
-prompts = [
-    "Describe the current project in three sentences",
-    "Which coding conventions do you follow?",
-]
+prompts_file = "project_bot-code.txt"
 
 [bots.ProjectBot.variants.m365]
 description = "Read team context from SharePoint before acting."
-instructions = "You are Lore, a helpful business assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context from SharePoint before acting."
+instruction_file = "project_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
 tools = [
     "get_datetime",
@@ -391,11 +320,11 @@ tools = [
     "create_outlook_calendar_event",
     "post_teams_message",
 ]
-prompts = ["What projects are currently active? Check the team context."]
+prompts_file = "project_bot-m365.txt"
 
 [bots.ProjectBot.variants.workspace]
 description = "Read team context from Google Drive before acting."
-instructions = "You are Lore, a helpful business assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context from Google Drive before acting, which helps you understand the team's priorities and ongoing work."
+instruction_file = "project_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 tools = [
     "get_datetime",
@@ -410,7 +339,7 @@ tools = [
     "read_gdrive",
     "write_gdrive",
 ]
-prompts = ["What projects are currently active? Check the team context."]
+prompts_file = "project_bot-workspace.txt"
 
 #
 # Microsoft 365 / Graph API, see README for set up

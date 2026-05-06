@@ -1,0 +1,7 @@
+Summarise my inbox
+---
+What is the latest email from Geir Arne?
+---
+Send a response to him where you confirm that the task is done
+---
+Create a calendar event for a follow-up meeting next week

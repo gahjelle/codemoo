@@ -1,0 +1,7 @@
+Read greeter.py — what is this project about?
+---
+List the files in the current directory
+---
+Compare README.md and greeter.py — does the code match the description?
+---
+What is the first line of archive.txt?

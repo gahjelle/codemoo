@@ -14,6 +14,8 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
+- Only read project context at startup
+- Improve system prompts. Add in a bit of character in bots after Sona (but scaled back from Sona itself)
 - Introduce concept of session folder
 - Read file-tool locked to session folder
 - Read file-tool can read subset of file

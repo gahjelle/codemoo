@@ -1,0 +1,5 @@
+Send a summary email of today's demo to me
+---
+Create a calendar event for a follow-up meeting next week
+---
+Post a message to the demo Teams channel

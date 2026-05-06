@@ -1,0 +1,4 @@
+Read my latest email and write a short summary
+---
+Summarise my inbox and draft a reply to the most recent message. Send it
+only if I approve.

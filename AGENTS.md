@@ -64,6 +64,28 @@ production code. It contains intentional issues that must stay in place:
 
 When modifying `demo/` files for other reasons, preserve these intentional issues.
 
+## Bot Configuration
+
+Bot configuration lives in `src/codemoo/config/codemoo.toml`. Each bot variant entry can define `instructions` (system prompt) and `prompts` (example prompt list) either inline or via file references:
+
+- **`instruction_file = "filename.txt"`** — reads the system prompt from `src/codemoo/config/instructions/filename.txt`
+- **`prompts_file = "filename.txt"`** — reads example prompts from `src/codemoo/config/example_prompts/filename.txt`
+
+File naming convention: `{bot_type_snake}-{variant}.txt` (e.g. `system_bot-default.txt`, `guard_bot-code.txt`).
+
+Prompts in a `.txt` file are separated by `---` on its own line:
+
+```
+First example prompt
+---
+Second example prompt
+---
+Third example prompt, which can span
+multiple lines if needed
+```
+
+Inline values (`instructions = "..."` and `prompts = [...]`) remain fully supported and are used for bots with empty instructions or very short prompt lists. File-based and inline values are resolved to the same `BotVariantConfig` fields before Pydantic validation — nothing downstream changes.
+
 ## Tools Architecture
 
 Tools are split into three locations: generic code tools in `src/codemoo/core/tools/`, M365-specific tools in `src/codemoo/m365/tools/`, and Google Workspace tools in `src/codemoo/workspace/tools/`.

@@ -1,0 +1,23 @@
+Read greeter.py and write a short summary to summary.md
+---
+Run the tests with uv run pytest. If they pass, commit the changes. If they
+don't, then fix the code first.
+---
+Create a new directory named tiemit (typo intentional) and use uv to
+initialize a new project inside the folder. Create a Streamlit app that will
+implement a Human vs AI String Reversal Challenge.
+
+Requirements:
+
+1. Generate a random string of 5-10 characters (letters and space characters
+only).
+2. Display the string to the user.
+3. Allow the user to input their reversed string.
+4. Time how long it takes the user to type and submit their answer (start the
+timer when the user starts typing).
+5. Have an AI attempt to reverse the string (simulate the AI with a 70% chance
+of failure to demonstrate LLM limitations).
+6. Show: User's time, user's answer, AI's answer, Correct answer, Who won (user,
+AI, or tie).
+7. Include a 'Play Again' button to generate a new string. Use session state to
+maintain game state between interactions.

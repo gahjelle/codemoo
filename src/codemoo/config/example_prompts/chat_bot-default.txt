@@ -1,0 +1,5 @@
+How can I reverse a text string in Python?
+---
+How about in C#?
+---
+Suggest three things to see in Oslo

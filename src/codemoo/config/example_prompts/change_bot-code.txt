@@ -1,0 +1,8 @@
+Run greeter.py with uv
+---
+Run the tests: uv run pytest test_greeter.py
+---
+Use cat to list both README.md and greeter.py and compare them — does the
+code match the description?
+---
+How many names are in names.txt?
