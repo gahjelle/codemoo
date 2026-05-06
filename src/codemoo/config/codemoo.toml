@@ -426,7 +426,7 @@ fallbacks = ["mistral", "ollama", "openrouter", "google", "anthropic", "openai"]
 model_name = "mistral-small-latest"
 
 [models.backends.ollama]
-model_name = "llama3.2"
+model_name = "qwen2.5-coder:7b"
 base_url = "http://localhost:11434/v1"
 
 [models.backends.openrouter]

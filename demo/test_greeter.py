@@ -5,11 +5,11 @@ from greeter import greet, load_names
 
 def test_greet() -> None:
     assert greet("Coco 🦜") == "Hello, Coco 🦜!"
-    assert greet("Cato 🔒") == "Hello, Cato 🔒!"
+    assert greet("Lore 📖") == "Hello, Lore 📖!"
 
 
 def test_load_names() -> None:
     names = load_names("names.txt")
-    assert len(names) == 9
+    assert len(names) == 10
     assert "Coco 🦜" in names
-    assert "Cato 🔒" in names
+    assert "Lore 📖" in names

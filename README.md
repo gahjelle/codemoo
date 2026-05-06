@@ -33,13 +33,21 @@ Codemoo can run in several modes:
 
 **LLM Backends**
 
+Codemoo will try all different LLM backends until it finds one that is set up. If you want to explicitly choose one backend, use the following environment variable:
+The priority order of the different backends is: `mistral` → `ollama` → `openrouter` → `google` → `anthropic` → `openai`.
+
 | Variable                   | Default                     | Description                                                                          |
 | -------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
 | `CODEMOO_BACKEND`          | `mistral`                   | Active backend: `mistral`, `ollama`, `openrouter`, `google`, `anthropic`, or `openai` |
+
+To set up an LLM backend, you need to provide an API key in an environment variable. You can optionally override which model is being used. Codemoo will show the active backend and model in the lower right corner of the screen.
+
+| Variable                   | Default                     | Description                                                                          |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
 | `MISTRAL_API_KEY`          | —                           | Mistral API key (required for mistral backend)                                       |
 | `CODEMOO_MISTRAL_MODEL`    | `mistral-small-latest`      | Mistral model override                                                               |
 | `OLLAMA_API_KEY`           | `ollama`                    | Ollama API key (optional; defaults to `ollama` for unauthenticated local servers)    |
-| `CODEMOO_OLLAMA_MODEL`     | `llama3.2`                  | Ollama model override                                                                |
+| `CODEMOO_OLLAMA_MODEL`     | `qwen2.5-coder:7b`                  | Ollama model override                                                                |
 | `OPENROUTER_API_KEY`       | —                           | OpenRouter API key (required for openrouter backend)                                 |
 | `CODEMOO_OPENROUTER_MODEL` | `z-ai/glm-4.5-air:free`     | OpenRouter model override                                                            |
 | `GOOGLE_API_KEY`           | —                           | Google AI API key (required for google backend)                                      |
@@ -49,9 +57,8 @@ Codemoo can run in several modes:
 | `OPENAI_API_KEY`           | —                           | OpenAI API key (required for openai backend)                                         |
 | `CODEMOO_OPENAI_MODEL`     | `gpt-4o-mini`               | OpenAI model override                                                                |
 
-The fallback order when the primary backend is unavailable is: `mistral → ollama → openrouter → google → anthropic → openai`.
 
-For local Ollama usage, install [Ollama](https://ollama.com), pull a model (`ollama pull llama3.2`), and set `CODEMOO_BACKEND=ollama`. No API key is required. The `base_url` for each provider can also be overridden in a local `codemoo.toml` — useful for pointing the `openai` backend at Azure AI Foundry or other compatible endpoints.
+For local Ollama usage, install [Ollama](https://ollama.com), pull a model (`ollama pull qwen2.5-coder:7b`), and set `CODEMOO_BACKEND=ollama`. No API key is required. The `base_url` for each provider can also be overridden in a local `codemoo.toml` — useful for pointing the `openai` backend at Azure AI Foundry or other compatible endpoints.
 
 **Microsoft Graph**
 
@@ -152,6 +159,7 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 🔨 **Axel** | ChangeBot — runs shell commands and writes files |
 | 8   | 🌀 Loom     | Agent — full agentic loop with planning          |
 | 9   | 🔒 Cato     | Guard — human-in-the-loop before risky actions   |
+| 10  | Lore 📖     | Project context - inject information in every call|
 
 **M365 path** (`--script m365`):
 
@@ -166,6 +174,7 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 📤 **Aero** | SendBot — sends Outlook email, creates events, posts to Teams |
 | 8   | 🌀 Loom     | Agent — full agentic loop over M365 data                      |
 | 9   | 🔒 Cato     | Guard — human approval before M365 actions                    |
+| 10  | Lore 📖     | Project context - inject information in every call|
 
 **Workspace path** (`--script workspace`):
 
@@ -180,6 +189,7 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 📤 **Aero** | SendBot — sends Gmail, creates Calendar events, posts to Chat |
 | 8   | 🌀 Loom     | Agent — full agentic loop over Google Workspace data         |
 | 9   | 🔒 Cato     | Guard — human approval before Workspace actions              |
+| 10  | Lore 📖     | Project context - inject information in every call|
 
 See [BOTS.md](BOTS.md) for more information about the bots.
 
