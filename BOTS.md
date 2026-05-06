@@ -77,11 +77,11 @@ Bot types marked with * are unique to `m365` mode.
 | 3   | ChatBot    | Iris | Sees full chat history                              | Now it remembers the whole conversation                                                   |
 | 4   | SystemBot  | Sona | Strong system prompt persona                        | Now we can give it instructions and a role. Same LLM, totally different character         |
 | 5   | ToolBot    | Telo | Calls a single toy tool                             | Now it can *do* things, not just talk. One tool, one call                                 |
-| 6   | * ScanBot  | Roam | Reads Gmail and Google Calendar                     | Now it can look at your Google Workspace data                                             |
-| 7   | * SendBot  | Aero | Sends Gmail, creates Calendar events, posts to Chat | Now it can take actions via Google Workspace                                              |
+| 6   | * ScanBot  | Roam | Reads Gmail, Google Calendar, and Google Drive      | Now it can look at your Google Workspace data                                             |
+| 7   | * SendBot  | Aero | Sends Gmail, creates Calendar events, posts to Chat, reads and writes Drive files | Now it can take actions via Google Workspace                        |
 | 8   | AgentBot   | Loom | Full tool loop, multi-step actions                  | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot   | Cato | Human-in-the-loop before destructive actions        | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | ProjectBot | Lore | Access to Workspace tools for project context       | Now it reads the room. It understands your team before acting on Workspace data           |
+| 10  | ProjectBot | Lore | Reads team context from Google Drive (TEAM.md) before acting | Now it reads the room. It loads your team's context doc before touching anything  |
 
 Bot types marked with * are unique to `workspace` mode.
 

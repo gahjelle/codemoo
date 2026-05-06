@@ -74,6 +74,7 @@ Tools are split into three locations: generic code tools in `src/codemoo/core/to
 - **`files.py`** — File operations (read_file, write_file, list_files)
 - **`strings.py`** — String operations (reverse_string)
 - **`shell.py`** — Shell commands (run_shell)
+- **`system.py`** — System/environment queries (get_datetime)
 
 ### M365 tools — `src/codemoo/m365/tools/`
 
@@ -86,8 +87,8 @@ Graph tools carry an `init` hook (`_init_m365`) that triggers M365 authenticatio
 ### Workspace tools — `src/codemoo/workspace/tools/`
 
 - **`__init__.py`** — `WORKSPACE_TOOL_REGISTRY` dict of all Workspace ToolDefs; each tool carries `init=_init_workspace`
-- **`read.py`** — Google Workspace read operations (list_gmail, read_gmail, list_gcal)
-- **`write.py`** — Google Workspace write operations (send_gmail, create_gcal_event, post_chat_message)
+- **`read.py`** — Google Workspace read operations (list_gmail, read_gmail, list_gcal, list_gdrive, read_gdrive)
+- **`write.py`** — Google Workspace write operations (send_gmail, create_gcal_event, post_chat_message, write_gdrive)
 
 Workspace tools carry an `init` hook (`_init_workspace`) that triggers Google OAuth when called.
 

@@ -1,10 +1,4 @@
-# Spec: drive-tools
-
-## Purpose
-
-TBD — defines the Google Drive tool implementations for listing, reading, and writing files via the Google Drive API.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: List Google Drive files
 The system SHALL provide a `list_gdrive` tool that lists files in a given Google Drive folder and returns each file's name and ID.
@@ -75,6 +69,8 @@ The system SHALL provide a `write_gdrive` tool that creates or updates a plain t
 #### Scenario: Drive API error on write
 - **WHEN** the Drive API returns an error status during create or update
 - **THEN** system returns `Error <status>: <message>`
+
+## ADDED Requirements
 
 ### Requirement: Drive context source reads team context by filename
 The system SHALL provide a private `_read_gdrive_by_name(filename)` function in `workspace/tools/read.py` that searches My Drive root for a file by name and returns its text content.

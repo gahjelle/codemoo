@@ -69,22 +69,12 @@ ignore = [
 # S101: Use of `assert` (OK for tests)
 # SLF001: Private member accessed (OK for tests)
 # UP018: Replace with string/integer/... literal (OK for typed tests)
-"tests/test_*.py" = [
+"tests/**/test_*.py" = [
     "ARG001",
     "ARG002",
     "D100",
     "D103",
-    "PLC0415",
-    "PLR2004",
-    "S101",
-    "SLF001",
-    "UP018",
-]
-"tests/*/test_*.py" = [
-    "ARG001",
-    "ARG002",
-    "D100",
-    "D103",
+    "E501",
     "PLC0415",
     "PLR2004",
     "S101",

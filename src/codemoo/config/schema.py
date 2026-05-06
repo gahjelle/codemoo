@@ -44,7 +44,7 @@ class PathsConfig(StrictModel):
 class ContextSource(StrictModel):
     """Configuration for project context source."""
 
-    type: Literal["file", "sharepoint"]
+    type: Literal["file", "sharepoint", "drive"]
     name: str
 
 

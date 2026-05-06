@@ -52,6 +52,7 @@ class ToolDef:
 from codemoo.core.tools.files import list_files, read_file, write_file  # noqa: E402
 from codemoo.core.tools.shell import run_shell  # noqa: E402
 from codemoo.core.tools.strings import reverse_string  # noqa: E402
+from codemoo.core.tools.system import get_datetime  # noqa: E402
 
 __all__ = [
     "TOOL_REGISTRY",
@@ -66,4 +67,5 @@ TOOL_REGISTRY: dict[str, ToolDef] = {
     "reverse_string": reverse_string,
     "run_shell": run_shell,
     "list_files": list_files,
+    "get_datetime": get_datetime,
 }

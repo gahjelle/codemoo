@@ -12,8 +12,8 @@ class ContextLoadEvent:
     """Emitted when a bot loads project context."""
 
     bot_name: str
-    source: str  # "file" or "sharepoint"
-    path: str  # "AGENTS.md" or "sharepoint:TEAM.md"
+    source: str  # "file", "sharepoint", or "drive"
+    path: str  # "AGENTS.md", "sharepoint:TEAM.md", or "drive:TEAM.md"
     content: str  # Full content of the context file
 
 
@@ -52,6 +52,10 @@ async def read_project_context(
 
             site_path = f"{config.m365.sharepoint_host}:{config.m365.sharepoint_site}"
             content = _read_sharepoint(site_path, source_name)
+        elif source_type == "drive":
+            from codemoo.workspace.tools.read import _read_gdrive_by_name  # noqa: PLC0415,I001
+
+            content = _read_gdrive_by_name(source_name)
         else:  # file
             from pathlib import Path  # noqa: PLC0415
 
@@ -64,7 +68,7 @@ async def read_project_context(
     if content:
         path = (
             f"{source_type}:{source_name}"
-            if source_type == "sharepoint"
+            if source_type in {"sharepoint", "drive"}
             else source_name
         )
         await commentator.comment(

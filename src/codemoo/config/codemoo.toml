@@ -165,6 +165,7 @@ sources = ["scan_bot.py", "single_turn_tool_bot.py"]
 description = "Read SharePoint docs, email, and calendar — observational M365 access."
 instructions = "You are Roam, a productivity assistant. You can read Microsoft 365 data using your tools. When the user asks about documents, emails, or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
@@ -179,9 +180,9 @@ prompts = [
 ]
 
 [bots.ScanBot.variants.workspace]
-description = "Read Gmail and Google Calendar — observational Workspace access."
-instructions = "You are Roam, a productivity assistant. You can read Google Workspace data using your tools. When the user asks about emails or calendar events, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
-tools = ["reverse_string", "read_gmail", "list_gmail", "list_gcal"]
+description = "Read Gmail, Google Calendar, and Google Drive — observational Workspace access."
+instructions = "You are Roam, a productivity assistant. You can read Google Workspace data using your tools. When the user asks about emails, calendar events, or Drive files, call the appropriate tool to retrieve that information before answering. You are in read-only mode — you observe and report, but do not send or modify anything."
+tools = ["get_datetime", "reverse_string", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
 prompts = [
     "Read my latest email",
     "How does my calendar look this week?",
@@ -213,6 +214,7 @@ sources = ["send_bot.py", "single_turn_tool_bot.py"]
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
 instructions = "You are Aero, a productivity assistant. You can perform Microsoft 365 actions using your tools: send emails, create calendar events, post Teams messages, and write SharePoint documents. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
@@ -231,9 +233,10 @@ prompts = [
 ]
 
 [bots.SendBot.variants.workspace]
-description = "Send Gmail, create Google Calendar events, post to Google Chat."
-instructions = "You are Aero, a productivity assistant. You can perform Google Workspace actions using your tools: send Gmail messages, create Google Calendar events, and post Google Chat messages. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
+description = "Send Gmail, create Google Calendar events, post to Google Chat, write Google Drive files."
+instructions = "You are Aero, a productivity assistant. You can perform Google Workspace actions using your tools: send Gmail messages, create Google Calendar events, post Google Chat messages, and read or write Google Drive files. When the user asks you to perform such an action, call the appropriate tool before answering. These actions have real consequences — confirm intent when uncertain."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_gmail",
     "list_gmail",
@@ -241,6 +244,9 @@ tools = [
     "send_gmail",
     "create_gcal_event",
     "post_chat_message",
+    "list_gdrive",
+    "read_gdrive",
+    "write_gdrive",
 ]
 prompts = [
     "Summarise my inbox",
@@ -267,6 +273,7 @@ prompts = [
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
 instructions = "You are Loom, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read email, access SharePoint, create calendar events, and post to Teams."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
@@ -281,9 +288,10 @@ prompts = [
 ]
 
 [bots.AgentBot.variants.workspace]
-description = "Loop Google Workspace tool calls until done — pursue goals across Gmail and Calendar."
-instructions = "You are Loom, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read and send Gmail, list and create Google Calendar events, and post to Google Chat."
+description = "Loop Google Workspace tool calls until done — pursue goals across Gmail, Calendar, and Drive."
+instructions = "You are Loom, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request before giving your final answer. You can read and send Gmail, list and create Google Calendar events, post to Google Chat, and read or write Google Drive files."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_gmail",
     "list_gmail",
@@ -291,6 +299,9 @@ tools = [
     "list_gcal",
     "create_gcal_event",
     "post_chat_message",
+    "list_gdrive",
+    "read_gdrive",
+    "write_gdrive",
 ]
 prompts = [
     "Which tools do you have access to?",
@@ -316,6 +327,7 @@ prompts = [
 description = "Pause before sending M365 actions — nothing sent without your say-so."
 instructions = "You are Cato, a helpful productivity assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails or posting to Teams."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
@@ -331,8 +343,9 @@ prompts = [
 
 [bots.GuardBot.variants.workspace]
 description = "Pause before sending Workspace actions — nothing sent without your say-so."
-instructions = "You are Cato, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails."
+instructions = "You are Cato, a helpful productivity assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. Be especially careful with actions that have real consequences, such as sending emails or writing files."
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_gmail",
     "list_gmail",
@@ -340,6 +353,9 @@ tools = [
     "list_gcal",
     "create_gcal_event",
     "post_chat_message",
+    "list_gdrive",
+    "read_gdrive",
+    "write_gdrive",
 ]
 prompts = [
     "Read my latest email and write a short summary",
@@ -366,6 +382,7 @@ description = "Read team context from SharePoint before acting."
 instructions = "You are Lore, a helpful business assistant. You have access to Microsoft 365 tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context from SharePoint before acting."
 context_source = { type = "sharepoint", name = "TEAM.md" }
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
@@ -378,8 +395,10 @@ prompts = ["What projects are currently active? Check the team context."]
 
 [bots.ProjectBot.variants.workspace]
 description = "Read team context from Google Drive before acting."
-instructions = "You are Lore, a helpful business assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context before acting."
+instructions = "You are Lore, a helpful business assistant. You have access to Google Workspace tools — use them as many times as needed to fully complete the user's request. Some tools require the user's approval before they run — if approval is denied, respect the user's decision and adapt. You read team context from Google Drive before acting, which helps you understand the team's priorities and ongoing work."
+context_source = { type = "drive", name = "TEAM.md" }
 tools = [
+    "get_datetime",
     "reverse_string",
     "read_gmail",
     "list_gmail",
@@ -387,8 +406,11 @@ tools = [
     "list_gcal",
     "create_gcal_event",
     "post_chat_message",
+    "list_gdrive",
+    "read_gdrive",
+    "write_gdrive",
 ]
-prompts = ["Which tools do you have access to?"]
+prompts = ["What projects are currently active? Check the team context."]
 
 #
 # Microsoft 365 / Graph API, see README for set up
@@ -412,7 +434,7 @@ scopes = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/calendar.events",
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive",
 ]
 
 #

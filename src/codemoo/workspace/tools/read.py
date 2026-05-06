@@ -156,3 +156,101 @@ list_gcal = ToolDef(
     fn=_list_gcal,
     init=_init_workspace,
 )
+
+
+def _list_gdrive(folder_id: str = "root") -> str:
+    url = "https://www.googleapis.com/drive/v3/files"
+    params = {
+        "q": f"'{folder_id}' in parents and trashed = false",
+        "fields": "files(id,name)",
+        "orderBy": "name",
+    }
+    resp = httpx.get(url, headers=_get_headers(), params=params)
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    if files := resp.json().get("files", []):
+        return "\n".join(f"{f['name']}  |  {f['id']}" for f in files)
+    return "No files found"
+
+
+list_gdrive = ToolDef(
+    name="list_gdrive",
+    description=(
+        "List files in a Google Drive folder. Returns name and ID for each file."
+        " Use the ID with read_gdrive to fetch content."
+    ),
+    parameters=[
+        ToolParam(
+            name="folder_id",
+            description="Drive folder ID to list (default: root / My Drive).",
+            required=False,
+        )
+    ],
+    fn=_list_gdrive,
+    init=_init_workspace,
+)
+
+
+_GDOC_MIME = "application/vnd.google-apps.document"
+
+
+def _read_gdrive_content(file_id: str, mime_type: str) -> str:
+    if mime_type == _GDOC_MIME:
+        url = f"https://www.googleapis.com/drive/v3/files/{file_id}/export"
+        resp = httpx.get(url, headers=_get_headers(), params={"mimeType": "text/plain"})
+    elif mime_type.startswith("text/"):
+        url = f"https://www.googleapis.com/drive/v3/files/{file_id}"
+        resp = httpx.get(url, headers=_get_headers(), params={"alt": "media"})
+    else:
+        return (
+            f"Unsupported file type: {mime_type}."
+            " Only Google Docs and text files are supported."
+        )
+    return f"Error {resp.status_code}: {resp.text}" if resp.is_error else resp.text
+
+
+def _read_gdrive(file_id: str) -> str:
+    meta_url = f"https://www.googleapis.com/drive/v3/files/{file_id}"
+    meta = httpx.get(
+        meta_url, headers=_get_headers(), params={"fields": "id,name,mimeType"}
+    )
+    if meta.is_error:
+        return f"Error {meta.status_code}: {meta.text}"
+    mime_type = meta.json().get("mimeType", "")
+    return _read_gdrive_content(file_id, mime_type)
+
+
+def _read_gdrive_by_name(filename: str) -> str | None:
+    url = "https://www.googleapis.com/drive/v3/files"
+    params = {
+        "q": f"name = '{filename}' and 'root' in parents and trashed = false",
+        "fields": "files(id,mimeType)",
+        "orderBy": "modifiedTime desc",
+        "pageSize": "1",
+    }
+    resp = httpx.get(url, headers=_get_headers(), params=params)
+    if resp.is_error:
+        return None
+    files = resp.json().get("files", [])
+    if not files:
+        return None
+    f = files[0]
+    content = _read_gdrive_content(f["id"], f["mimeType"])
+    return (
+        content
+        if not content.startswith("Error ") and not content.startswith("Unsupported")
+        else None
+    )
+
+
+read_gdrive = ToolDef(
+    name="read_gdrive",
+    description=(
+        "Read the text content of a Google Drive file by its ID."
+        " Supports Google Docs (exported as plain text) and text/Markdown uploads."
+        " Use list_gdrive to find file IDs."
+    ),
+    parameters=[ToolParam(name="file_id", description="The Google Drive file ID.")],
+    fn=_read_gdrive,
+    init=_init_workspace,
+)

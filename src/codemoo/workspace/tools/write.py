@@ -107,3 +107,89 @@ post_chat_message = ToolDef(
     requires_approval=True,
     init=_init_workspace,
 )
+
+
+def _write_gdrive(filename: str, content: str, folder_id: str = "root") -> str:
+    headers = _get_headers()
+    search_url = "https://www.googleapis.com/drive/v3/files"
+    search_params = {
+        "q": f"name = '{filename}' and '{folder_id}' in parents and trashed = false",
+        "fields": "files(id)",
+        "pageSize": "1",
+    }
+    search_resp = httpx.get(search_url, headers=headers, params=search_params)
+    if search_resp.is_error:
+        return f"Error {search_resp.status_code}: {search_resp.text}"
+
+    existing = search_resp.json().get("files", [])
+    boundary = "codemoo_boundary_1234567890"
+    metadata = f'{{"name": "{filename}"}}'
+    body = (
+        f"--{boundary}\r\n"
+        f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
+        f"{metadata}\r\n"
+        f"--{boundary}\r\n"
+        f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+        f"{content}\r\n"
+        f"--{boundary}--"
+    )
+    upload_headers = {
+        **headers,
+        "Content-Type": f"multipart/related; boundary={boundary}",
+    }
+
+    if existing:
+        file_id = existing[0]["id"]
+        upload_url = f"https://www.googleapis.com/upload/drive/v3/files/{file_id}"
+        resp = httpx.patch(
+            upload_url,
+            headers=upload_headers,
+            params={"uploadType": "multipart"},
+            content=body.encode(),
+        )
+        if resp.is_error:
+            return f"Error {resp.status_code}: {resp.text}"
+        return f"Updated {filename} ({file_id})"
+    upload_url = "https://www.googleapis.com/upload/drive/v3/files"
+    meta_with_parent = f'{{"name": "{filename}", "parents": ["{folder_id}"]}}'
+    body = (
+        f"--{boundary}\r\n"
+        f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
+        f"{meta_with_parent}\r\n"
+        f"--{boundary}\r\n"
+        f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+        f"{content}\r\n"
+        f"--{boundary}--"
+    )
+    resp = httpx.post(
+        upload_url,
+        headers=upload_headers,
+        params={"uploadType": "multipart"},
+        content=body.encode(),
+    )
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    file_id = resp.json().get("id", "?")
+    return f"Created {filename} ({file_id})"
+
+
+write_gdrive = ToolDef(
+    name="write_gdrive",
+    description=(
+        "Create or update a plain text file in Google Drive."
+        " If a file with the given name already exists in the folder,"
+        " its content is replaced. Otherwise a new file is created."
+    ),
+    parameters=[
+        ToolParam(name="filename", description="Name of the file to create or update."),
+        ToolParam(name="content", description="Plain text content to write."),
+        ToolParam(
+            name="folder_id",
+            description="Drive folder ID (default: root / My Drive).",
+            required=False,
+        ),
+    ],
+    fn=_write_gdrive,
+    requires_approval=True,
+    init=_init_workspace,
+)
