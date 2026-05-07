@@ -1,5 +1,6 @@
 """Tests for OpenAI, Google, and Ollama backend factories."""
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -7,11 +8,30 @@ import pytest
 
 from codemoo.config.schema import BackendConfig
 from codemoo.llm.exceptions import BackendUnavailableError
-from codemoo.llm.factory import _create
+from codemoo.llm.factory import BackendInfo, _create, resolve_backend
 from codemoo.llm.google import _GoogleBackend, create_google_backend
 from codemoo.llm.ollama import _OllamaBackend, create_ollama_backend
 from codemoo.llm.openai import _OpenAIBackend, create_openai_backend
 from codemoo.llm.openai_like import OpenAILikeBackend
+
+
+def _make_resolve_config(
+    backend: str | None,
+    fallbacks: list[str],
+    backends: dict[str, str],
+) -> SimpleNamespace:
+    """Minimal config-like object for resolve_backend tests."""
+    backend_cfgs = {
+        name: BackendConfig(model_name=model) for name, model in backends.items()
+    }
+    return SimpleNamespace(
+        models=SimpleNamespace(
+            backend=backend,
+            fallbacks=fallbacks,
+            backends=backend_cfgs,
+        )
+    )
+
 
 # ---------------------------------------------------------------------------
 # BackendConfig.base_url
@@ -223,3 +243,55 @@ def test_create_dispatches_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
     with patch("codemoo.llm.ollama.httpx.Client", return_value=_mock_httpx_success()):
         backend = _create("ollama", "llama3.2", "http://localhost:11434/v1")
     assert isinstance(backend, _OllamaBackend)
+
+
+# ---------------------------------------------------------------------------
+# resolve_backend — strict vs fallback mode
+# ---------------------------------------------------------------------------
+
+_BACKENDS = {"mistral": "mistral-small-latest", "openai": "gpt-4o-mini"}
+
+
+def test_resolve_backend_strict_mode_returns_explicit_backend() -> None:
+    config = _make_resolve_config("mistral", ["openai"], _BACKENDS)
+    mock_backend = MagicMock()
+    with patch("codemoo.llm.factory._create", return_value=mock_backend) as mock_create:
+        _, info = resolve_backend(config)  # type: ignore[arg-type]
+    assert info == BackendInfo(name="mistral", model="mistral-small-latest")
+    mock_create.assert_called_once()
+
+
+def test_resolve_backend_strict_mode_raises_without_trying_fallback() -> None:
+    config = _make_resolve_config("mistral", ["openai"], _BACKENDS)
+    err = BackendUnavailableError("no key")
+    with (
+        patch("codemoo.llm.factory._create", side_effect=err) as mock_create,
+        pytest.raises(ValueError, match="No LLM backend available"),
+    ):
+        resolve_backend(config)  # type: ignore[arg-type]
+    mock_create.assert_called_once()
+
+
+def test_resolve_backend_fallback_mode_returns_first_available() -> None:
+    config = _make_resolve_config(None, ["mistral", "openai"], _BACKENDS)
+    mock_backend = MagicMock()
+    with patch("codemoo.llm.factory._create", return_value=mock_backend) as mock_create:
+        _, info = resolve_backend(config)  # type: ignore[arg-type]
+    assert info.name == "mistral"
+    mock_create.assert_called_once()
+
+
+def test_resolve_backend_fallback_mode_skips_unavailable_backend() -> None:
+    config = _make_resolve_config(None, ["mistral", "openai"], _BACKENDS)
+    mock_backend = MagicMock()
+
+    unavailable = BackendUnavailableError("no key")
+
+    def _fail_mistral(name: str, *args: object, **kwargs: object) -> MagicMock:
+        if name == "mistral":
+            raise unavailable
+        return mock_backend
+
+    with patch("codemoo.llm.factory._create", side_effect=_fail_mistral):
+        _, info = resolve_backend(config)  # type: ignore[arg-type]
+    assert info.name == "openai"

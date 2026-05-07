@@ -315,8 +315,9 @@ scopes = [
 # Model backends
 #
 [models]
-backend = "mistral"
-fallbacks = ["mistral", "ollama", "openrouter", "google", "anthropic", "openai"]
+# Empty string = use fallback list. Set CODEMOO_BACKEND to force a specific backend (no fallback).
+backend = ""
+fallbacks = ["mistral", "openrouter", "google", "anthropic", "openai", "ollama"]
 
 [models.backends.mistral]
 model_name = "mistral-small-latest"

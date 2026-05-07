@@ -34,11 +34,11 @@ Codemoo can run in several modes:
 **LLM Backends**
 
 Codemoo will try all different LLM backends until it finds one that is set up. If you want to explicitly choose one backend, use the following environment variable:
-The priority order of the different backends is: `mistral` → `ollama` → `openrouter` → `google` → `anthropic` → `openai`.
+The priority order of the different backends is: `mistral` → `openrouter` → `google` → `anthropic` → `openai` → `ollama`.
 
-| Variable          | Default   | Description                                                                           |
-| ----------------- | --------- | ------------------------------------------------------------------------------------- |
-| `CODEMOO_BACKEND` | `mistral` | Active backend: `mistral`, `ollama`, `openrouter`, `google`, `anthropic`, or `openai` |
+| Variable          | Default | Description                                                                                                                      |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `CODEMOO_BACKEND` | —       | Force a specific backend (`mistral`, `ollama`, `openrouter`, `google`, `anthropic`, `openai`). Raises an error if unavailable. |
 
 To set up an LLM backend, you need to provide an API key in an environment variable. You can optionally override which model is being used. Codemoo will show the active backend and model in the lower right corner of the screen.
 

@@ -1,14 +1,11 @@
 """Backend factory: resolve the active backend from config with ordered fallback."""
 
 import dataclasses
-import logging
 
 from codemoo.config.schema import CodemooConfig
 from codemoo.core.backend import LLMBackend
 from codemoo.core.tracer import Tracer
 from codemoo.llm.exceptions import BackendUnavailableError
-
-logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -28,7 +25,11 @@ def resolve_backend(
     Catches BackendUnavailableError (missing API key) and moves to the next
     candidate. All other exceptions propagate unchanged.
     """
-    candidates = [config.models.backend, *config.models.fallbacks]
+    candidates = (
+        [config.models.backend]
+        if config.models.backend is not None
+        else config.models.fallbacks
+    )
     errors: list[str] = []
 
     for name in candidates:
@@ -41,7 +42,6 @@ def resolve_backend(
         try:
             backend = _create(name, model, base_url, tracer)
         except BackendUnavailableError as exc:
-            logger.warning("Backend %r unavailable: %s", name, exc)
             errors.append(f"{name}: {exc}")
             continue
         return backend, BackendInfo(name=name, model=model)

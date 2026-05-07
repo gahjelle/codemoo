@@ -152,9 +152,15 @@ class BackendConfig(StrictModel):
 class ModelsConfig(StrictModel):
     """Configure all LLM backends."""
 
-    backend: ModelBackend
+    backend: ModelBackend | None = None
     fallbacks: list[ModelBackend]
     backends: dict[ModelBackend, BackendConfig]
+
+    @field_validator("backend", mode="before")
+    @classmethod
+    def empty_string_to_none(cls, v: object) -> object:
+        """Normalise the TOML empty-string sentinel to None."""
+        return None if v == "" else v
 
 
 class ScriptConfig(StrictModel):

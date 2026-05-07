@@ -6,16 +6,20 @@ TBD — Defines the `resolve_backend` factory, the `BackendInfo` value type, bac
 
 ## Requirements
 
-### Requirement: resolve_backend selects the configured primary backend at startup
-The system SHALL provide a `resolve_backend(config, tracer=None)` factory function in `llm/factory.py` that reads `config.models.backend` and attempts to create that backend. It SHALL accept an optional `tracer: Tracer | None = None` parameter and thread it through `_create()` to each backend factory. On success it SHALL return a `tuple[LLMBackend, BackendInfo]`. It SHALL NOT catch network errors — only `BackendUnavailableError`.
+### Requirement: resolve_backend uses strict mode when an explicit backend is configured
+The system SHALL provide a `resolve_backend(config, tracer=None)` factory function in `llm/factory.py`. When `config.models.backend` is not `None`, it SHALL attempt only that backend and SHALL NOT catch `BackendUnavailableError` — the error propagates directly to the caller. It SHALL accept an optional `tracer: Tracer | None = None` parameter and thread it through `_create()`.
 
-#### Scenario: Primary backend is available, tracer threaded through
-- **WHEN** `resolve_backend(config, tracer=my_tracer)` is called and the primary backend is available
-- **THEN** it SHALL return a backend constructed with `tracer=my_tracer`
+#### Scenario: Explicit backend available — returned directly
+- **WHEN** `config.models.backend = "openai"` and the OpenAI backend is available
+- **THEN** `resolve_backend()` SHALL return the OpenAI backend and `BackendInfo(name="openai", ...)`
 
-#### Scenario: resolve_backend called without tracer (existing behavior unchanged)
-- **WHEN** `resolve_backend(config)` is called with no tracer argument
-- **THEN** the backend SHALL be constructed with `tracer=None` and behavior SHALL be identical to before this change
+#### Scenario: Explicit backend unavailable — error propagates
+- **WHEN** `config.models.backend = "openai"` and `OPENAI_API_KEY` is not set
+- **THEN** `resolve_backend()` SHALL raise `BackendUnavailableError` without attempting any fallback
+
+#### Scenario: Tracer threaded through in strict mode
+- **WHEN** `resolve_backend(config, tracer=my_tracer)` is called with an explicit backend
+- **THEN** the returned backend SHALL be constructed with `tracer=my_tracer`
 
 ### Requirement: _create() threads Tracer to each backend factory
 The internal `_create(name, model, base_url, tracer=None)` function SHALL pass `tracer` to every `create_*_backend()` call. Each factory function SHALL accept `tracer: Tracer | None = None` and pass it to the backend constructor.
@@ -24,16 +28,24 @@ The internal `_create(name, model, base_url, tracer=None)` function SHALL pass `
 - **WHEN** `resolve_backend(config, tracer=t)` dispatches to `create_anthropic_backend(model, tracer=t)`
 - **THEN** the returned `_AnthropicBackend` SHALL have `self._tracer is t`
 
-### Requirement: resolve_backend falls back through config.models.fallbacks on unavailability
-If the primary backend raises `BackendUnavailableError`, `resolve_backend` SHALL try each entry in `config.models.fallbacks` in order, stopping at the first that succeeds.
+### Requirement: resolve_backend falls back through config.models.fallbacks when no explicit backend is set
+When `config.models.backend` is `None`, `resolve_backend` SHALL try each entry in `config.models.fallbacks` in order, catching `BackendUnavailableError` per step and moving to the next candidate. It SHALL return the first backend that succeeds.
 
-#### Scenario: Primary unavailable, first fallback used
-- **WHEN** the primary backend raises `BackendUnavailableError` and the first fallback backend is available
-- **THEN** `resolve_backend` SHALL return the first fallback backend and its `BackendInfo`
+#### Scenario: First fallback available — returned
+- **WHEN** `config.models.backend` is `None` and the first entry in `config.models.fallbacks` is available
+- **THEN** `resolve_backend` SHALL return that backend
 
-#### Scenario: All candidates unavailable
-- **WHEN** the primary and all fallback backends raise `BackendUnavailableError`
+#### Scenario: First fallback unavailable, second available — second returned
+- **WHEN** `config.models.backend` is `None`, the first fallback raises `BackendUnavailableError`, and the second is available
+- **THEN** `resolve_backend` SHALL return the second fallback backend
+
+#### Scenario: All fallbacks unavailable — error raised
+- **WHEN** `config.models.backend` is `None` and all fallback backends raise `BackendUnavailableError`
 - **THEN** `resolve_backend` SHALL raise an exception describing all attempted backends
+
+#### Scenario: resolve_backend called without tracer in fallback mode
+- **WHEN** `resolve_backend(config)` is called with `config.models.backend = None`
+- **THEN** the backend SHALL be constructed with `tracer=None`
 
 ### Requirement: BackendUnavailableError signals a missing API key
 Each `create_*_backend()` factory SHALL raise `BackendUnavailableError` when its required API key environment variable is not set. This error SHALL be distinct from runtime errors so the fallback loop catches only the expected failure mode.

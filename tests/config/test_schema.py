@@ -4,12 +4,41 @@ import pytest
 from pydantic import ValidationError
 
 from codemoo.config.schema import (
+    BackendConfig,
     BotConfig,
     BotRef,
     BotVariantConfig,
+    ModelsConfig,
     ResolvedBotConfig,
     resolve,
 )
+
+# ---------------------------------------------------------------------------
+# ModelsConfig.backend — empty-string sentinel normalised to None
+# ---------------------------------------------------------------------------
+
+
+def _models_config(**kwargs: object) -> ModelsConfig:
+    defaults: dict[str, object] = {
+        "fallbacks": ["mistral"],
+        "backends": {"mistral": BackendConfig(model_name="mistral-small-latest")},
+    }
+    return ModelsConfig(**defaults | kwargs)
+
+
+def test_models_config_backend_defaults_to_none() -> None:
+    cfg = _models_config()
+    assert cfg.backend is None
+
+
+def test_models_config_backend_empty_string_becomes_none() -> None:
+    cfg = _models_config(backend="")
+    assert cfg.backend is None
+
+
+def test_models_config_backend_accepts_valid_backend_name() -> None:
+    cfg = _models_config(backend="mistral")
+    assert cfg.backend == "mistral"
 
 
 def _variant(**kwargs: object) -> BotVariantConfig:
