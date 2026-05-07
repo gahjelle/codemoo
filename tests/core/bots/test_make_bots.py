@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from codemoo.config import config
@@ -17,6 +19,7 @@ async def _bots() -> list:
         _MockBackend(),
         cfg=config.bots,
         bot_refs=config.scripts["default"].bots,
+        session_folder=Path.cwd(),
     )
     return bots
 
@@ -56,5 +59,6 @@ async def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
         _MockBackend(),
         cfg=mock_bots,
         bot_refs=[BotRef(type="EchoBot", variant="default")],
+        session_folder=Path.cwd(),
     )
     assert resolved[0].prompts == ["Prompt A", "Prompt B"]

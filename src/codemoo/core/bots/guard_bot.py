@@ -18,7 +18,7 @@ from codemoo.core.bots.approval import (
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
-from codemoo.core.tools import ToolDef
+from codemoo.core.tools import ToolDef, dispatch_tool
 
 
 @dataclasses.dataclass(eq=False)
@@ -84,9 +84,13 @@ class GuardBot:
                 if isinstance(decision, Denied):
                     tool_output = _denial_message(decision)
                 else:
-                    tool_output = tool.fn(**response.arguments)
+                    tool_output = await dispatch_tool(
+                        tool, response.arguments, self.name, self.commentator
+                    )
             else:
-                tool_output = tool.fn(**response.arguments)
+                tool_output = await dispatch_tool(
+                    tool, response.arguments, self.name, self.commentator
+                )
             messages = [
                 *messages,
                 response.assistant_message,

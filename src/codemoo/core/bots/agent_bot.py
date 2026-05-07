@@ -10,7 +10,7 @@ from codemoo.core.backend import (
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.message import ChatMessage
-from codemoo.core.tools import ToolDef
+from codemoo.core.tools import ToolDef, dispatch_tool
 
 
 @dataclasses.dataclass(eq=False)
@@ -59,7 +59,9 @@ class AgentBot:
                         arguments=response.arguments,
                     )
                 )
-            tool_output = tool_map[response.name].fn(**response.arguments)
+            tool_output = await dispatch_tool(
+                tool_map[response.name], response.arguments, self.name, self.commentator
+            )
             messages = [
                 *messages,
                 response.assistant_message,

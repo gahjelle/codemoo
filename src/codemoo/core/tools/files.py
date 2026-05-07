@@ -1,8 +1,26 @@
 """File operation tools."""
 
+from collections.abc import Callable
 from pathlib import Path
 
 from codemoo.core.tools import ToolDef, ToolParam
+
+
+def make_file_validator(session_folder: Path) -> Callable[..., str | None]:
+    """Return a validator that blocks any path outside session_folder."""
+    resolved_root = session_folder.resolve()
+
+    def _validate(path: str, **_: object) -> str | None:
+        resolved = (resolved_root / path).resolve()
+        if not resolved.is_relative_to(resolved_root):
+            return (
+                f"Blocked: '{path}' resolves to '{resolved}', which is outside the"
+                f" session folder '{resolved_root}'."
+                " Only paths within the session folder are permitted."
+            )
+        return None
+
+    return _validate
 
 
 def _read_file(path: str) -> str:

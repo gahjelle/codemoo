@@ -1,6 +1,8 @@
 """Bot participants for the Codemoo chat loop."""
 
+import dataclasses
 from collections.abc import Iterable
+from pathlib import Path
 
 from codemoo.config.schema import BotConfig, BotRef, BotType, ResolvedBotConfig, resolve
 from codemoo.core.backend import LLMBackend
@@ -20,6 +22,8 @@ from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import TOOL_REGISTRY, ToolDef
+from codemoo.core.tools.files import make_file_validator
+from codemoo.core.tools.shell import make_shell_validator
 from codemoo.m365.tools import M365_TOOL_REGISTRY
 from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
 
@@ -64,9 +68,22 @@ def _make_bot(  # noqa: C901, PLR0911
     bot: ResolvedBotConfig,
     llm: LLMBackend,
     commentator: CommentatorBot | None,
+    session_folder: Path,
 ) -> ChatParticipant:
     """Construct a single bot by type, resolving tools from the combined registry."""
-    tools = [_ALL_TOOLS[name] for name in bot.tools]
+    _file_validator = make_file_validator(session_folder)
+    _shell_validator = make_shell_validator(session_folder)
+    _file_tool_names = {"read_file", "write_file", "list_files"}
+    _shell_tool_names = {"run_shell"}
+
+    def _sandbox(tool: ToolDef) -> ToolDef:
+        if tool.name in _file_tool_names:
+            return dataclasses.replace(tool, validate=_file_validator)
+        if tool.name in _shell_tool_names:
+            return dataclasses.replace(tool, validate=_shell_validator)
+        return tool
+
+    tools = [_sandbox(_ALL_TOOLS[name]) for name in bot.tools]
     match bot.bot_type:
         case "EchoBot":
             return EchoBot(name=bot.name, emoji=bot.emoji)
@@ -156,6 +173,7 @@ def _make_bot(  # noqa: C901, PLR0911
                 tools=tools,
                 instructions=bot.instructions,
                 context_source=bot.context_source,
+                session_folder=session_folder,
                 commentator=commentator,
             )
 
@@ -166,10 +184,11 @@ async def make_bots(
     cfg: dict[BotType, BotConfig],
     bot_refs: list[BotRef],
     commentator: CommentatorBot | None = None,
+    session_folder: Path,
 ) -> tuple[list[ChatParticipant], list[ResolvedBotConfig]]:
     """Return bots and their resolved configs, in the order given by bot_refs."""
     resolved_list = [resolve(cfg, ref) for ref in bot_refs]
-    bots = [_make_bot(bot, llm, commentator) for bot in resolved_list]
+    bots = [_make_bot(bot, llm, commentator, session_folder) for bot in resolved_list]
     return bots, resolved_list
 
 

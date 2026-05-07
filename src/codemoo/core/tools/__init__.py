@@ -2,6 +2,10 @@
 
 import dataclasses
 from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from codemoo.core.bots.commentator_bot import CommentatorBot
 
 
 def format_tool_call(
@@ -47,6 +51,7 @@ class ToolDef:
     fn: Callable[..., str]
     requires_approval: bool = False
     init: Callable[[], None] | None = None
+    validate: Callable[..., str | None] | None = None
 
 
 from codemoo.core.tools.files import list_files, read_file, write_file  # noqa: E402
@@ -58,8 +63,35 @@ __all__ = [
     "TOOL_REGISTRY",
     "ToolDef",
     "ToolParam",
+    "dispatch_tool",
     "format_tool_call",
 ]
+
+
+async def dispatch_tool(
+    tool: ToolDef,
+    arguments: dict[str, object],
+    bot_name: str,
+    commentator: "CommentatorBot | None",
+) -> str:
+    """Run validate (if present), then fn. Emits ValidationBlockEvent on block."""
+    if tool.validate is not None:
+        error = tool.validate(**arguments)
+        if error is not None:
+            if commentator is not None:
+                from codemoo.core.bots.commentator_bot import ValidationBlockEvent  # noqa: PLC0415, I001
+
+                await commentator.comment(
+                    ValidationBlockEvent(
+                        bot_name=bot_name,
+                        tool_name=tool.name,
+                        arguments=arguments,
+                        reason=error,
+                    )
+                )
+            return error
+    return tool.fn(**arguments)
+
 
 TOOL_REGISTRY: dict[str, ToolDef] = {
     "read_file": read_file,

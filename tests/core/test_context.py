@@ -1,5 +1,6 @@
 """Tests for the read_project_context function."""
 
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -25,6 +26,7 @@ async def test_drive_context_source_returns_content() -> None:
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
             commentator=commentator,
+            session_folder=Path.cwd(),
         )
     assert result == "team content"
 
@@ -39,6 +41,7 @@ async def test_drive_context_source_emits_event() -> None:
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
             commentator=commentator,
+            session_folder=Path.cwd(),
         )
     assert len(commentator.events) == 1
     event = commentator.events[0]
@@ -57,6 +60,7 @@ async def test_drive_context_source_file_not_found_returns_none() -> None:
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
             commentator=commentator,
+            session_folder=Path.cwd(),
         )
     assert result is None
     assert commentator.events == []
@@ -73,5 +77,6 @@ async def test_drive_context_source_exception_returns_none() -> None:
             context_source={"type": "drive", "name": "TEAM.md"},
             bot_name="Lore",
             commentator=commentator,
+            session_folder=Path.cwd(),
         )
     assert result is None

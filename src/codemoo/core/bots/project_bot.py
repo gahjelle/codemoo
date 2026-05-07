@@ -2,6 +2,7 @@
 
 import dataclasses
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from typing import ClassVar
 
 from codemoo.core.backend import (
@@ -19,7 +20,7 @@ from codemoo.core.bots.approval import (
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.context import read_project_context
 from codemoo.core.message import ChatMessage
-from codemoo.core.tools import ToolDef
+from codemoo.core.tools import ToolDef, dispatch_tool
 
 
 @dataclasses.dataclass(eq=False)
@@ -38,6 +39,7 @@ class ProjectBot:
     tools: list[ToolDef]
     instructions: str
     context_source: dict[str, str] | None
+    session_folder: Path
     commentator: CommentatorBot | None = None
     context: str | None = None
     is_human: ClassVar[bool] = False
@@ -58,6 +60,7 @@ class ProjectBot:
                 context_source=self.context_source,
                 bot_name=self.name,
                 commentator=self.commentator,
+                session_folder=self.session_folder,
             )
 
     async def on_message(
@@ -103,9 +106,13 @@ class ProjectBot:
                 if isinstance(decision, Denied):
                     tool_output = _denial_message(decision)
                 else:
-                    tool_output = tool.fn(**response.arguments)
+                    tool_output = await dispatch_tool(
+                        tool, response.arguments, self.name, self.commentator
+                    )
             else:
-                tool_output = tool.fn(**response.arguments)
+                tool_output = await dispatch_tool(
+                    tool, response.arguments, self.name, self.commentator
+                )
             messages = [
                 *messages,
                 response.assistant_message,

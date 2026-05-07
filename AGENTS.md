@@ -108,11 +108,22 @@ Tools are split into three locations: generic code tools in `src/codemoo/core/to
 
 ### Code tools — `src/codemoo/core/tools/`
 
-- **`__init__.py`** — Core infrastructure (ToolDef, ToolParam, format_tool_call, TOOL_REGISTRY)
-- **`files.py`** — File operations (read_file, write_file, list_files)
+- **`__init__.py`** — Core infrastructure (ToolDef, ToolParam, format_tool_call, TOOL_REGISTRY, dispatch_tool)
+- **`files.py`** — File operations (read_file, write_file, list_files); exports `make_file_validator`
 - **`strings.py`** — String operations (reverse_string)
-- **`shell.py`** — Shell commands (run_shell)
+- **`shell.py`** — Shell commands (run_shell); exports `make_shell_validator`
 - **`system.py`** — System/environment queries (get_datetime)
+
+### Session folder and sandboxing
+
+`ToolDef` has an optional `validate: Callable[..., str | None] | None = None` field. When set, it is called with the tool's arguments before `fn` runs; a non-`None` return hard-blocks the call and returns an error to the LLM.
+
+`dispatch_tool(tool, arguments, bot_name, commentator)` is the async dispatch helper used by all bots instead of `tool.fn(**arguments)` directly. It runs `validate`, emits a `ValidationBlockEvent` to the commentator if blocked, then calls `fn`.
+
+At startup, `Path.cwd()` is captured as the **session folder** and passed through `make_bots()` → `_make_bot()`. During bot construction, `read_file`, `write_file`, `list_files`, and `run_shell` are automatically wrapped with session-folder validators via `dataclasses.replace`. The underlying tool definitions in `files.py` and `shell.py` stay pure.
+
+- **File validator** (`make_file_validator`): resolves the `path` argument against the session folder using `Path.resolve()` + `is_relative_to()`; blocks any path that escapes.
+- **Shell validator** (`make_shell_validator`): tokenises the command with `shlex.split` and blocks tokens starting with `/` (excluding `./`) or `..`. Fails closed on parse errors.
 
 ### M365 tools — `src/codemoo/m365/tools/`
 

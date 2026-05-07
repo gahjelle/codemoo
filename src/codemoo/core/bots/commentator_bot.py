@@ -20,6 +20,16 @@ class ToolCallEvent:
 
 
 @dataclasses.dataclass(frozen=True)
+class ValidationBlockEvent:
+    """Emitted by dispatch_tool when a validator hard-blocks a tool call."""
+
+    bot_name: str
+    tool_name: str
+    arguments: dict[str, object]
+    reason: str
+
+
+@dataclasses.dataclass(frozen=True)
 class Persona:
     """Name, emoji, and system prompt for a CommentatorBot personality."""
 
@@ -107,12 +117,16 @@ class CommentatorBot:
         info[_STREIK_NAME] = (_STREIK_EMOJI, False, "bubble--commentator")
         return info
 
-    async def comment(self, event: ToolCallEvent | ContextLoadEvent) -> None:
+    async def comment(
+        self, event: ToolCallEvent | ContextLoadEvent | ValidationBlockEvent
+    ) -> None:
         """Generate and post a persona-driven aside for the given event."""
         if isinstance(event, ToolCallEvent):
             await self._comment_on_tool_call(event)
         elif isinstance(event, ContextLoadEvent):
             await self._comment_on_context(event)
+        elif isinstance(event, ValidationBlockEvent):
+            await self._comment_on_validation_block(event)
 
     async def _comment_on_tool_call(self, event: ToolCallEvent) -> None:
         """Generate commentary about a tool call."""
@@ -129,6 +143,20 @@ class CommentatorBot:
             prompt=prompt,
             fallback=f"{event.bot_name} calls {full_sig}",
             dim_prefix=display_sig,
+        )
+
+    async def _comment_on_validation_block(self, event: ValidationBlockEvent) -> None:
+        """Generate commentary about a blocked tool call."""
+        full_sig = format_tool_call(event.tool_name, event.arguments)
+        prompt = (
+            f"{event.bot_name} tried to call '{event.tool_name}' with arguments:"
+            f" {full_sig}, but was blocked: {event.reason}."
+            " Give a brief, in-character reaction to this security enforcement."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"Blocked: {event.reason}",
+            dim_prefix=f"Blocked: {event.reason}",
         )
 
     async def _comment_on_context(self, event: ContextLoadEvent) -> None:

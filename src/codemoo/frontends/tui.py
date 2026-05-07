@@ -2,6 +2,7 @@
 
 import asyncio
 from dataclasses import dataclass
+from pathlib import Path
 from typing import NoReturn
 
 import configaroo
@@ -51,6 +52,7 @@ business_app = cyclopts.App(help="Collebra - demo enterprise agents step by step
 
 
 async def _setup(script: ScriptName = "default") -> SetupResult:
+    session_folder = Path.cwd()
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
@@ -62,6 +64,7 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
         commentator=commentator_bot,
+        session_folder=session_folder,
     )
     return SetupResult(
         llm=llm_backend,
@@ -96,6 +99,7 @@ async def business_chat(
 
 async def _chat(*, bot: BotType, variant: str) -> None:
     """Instantiate a single bot and launch the chat."""
+    session_folder = Path.cwd()
     bot_ref = BotRef(type=bot, variant=variant)
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
@@ -108,6 +112,7 @@ async def _chat(*, bot: BotType, variant: str) -> None:
         cfg=config.bots,
         bot_refs=[bot_ref],
         commentator=commentator_bot,
+        session_folder=session_folder,
     )
     _run_init_hooks_for_resolved(resolved_bots)
     await ChatApp(
@@ -184,6 +189,7 @@ async def select() -> None:
         cfg=config.bots,
         bot_refs=bot_refs,
         commentator=commentator_bot,
+        session_folder=Path.cwd(),
     )
     participants: list[ChatParticipant] = [human, *available]
     await ChatApp(

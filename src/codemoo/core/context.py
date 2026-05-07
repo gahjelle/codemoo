@@ -1,6 +1,7 @@
 """Shared utility for reading project context from file or SharePoint."""
 
 import dataclasses
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -21,6 +22,7 @@ async def read_project_context(
     context_source: dict[str, str] | None,
     bot_name: str,
     commentator: "CommentatorBot",
+    session_folder: Path,
 ) -> str | None:
     """Read project context from file or SharePoint.
 
@@ -29,6 +31,7 @@ async def read_project_context(
             (e.g., {"type": "file", "name": "AGENTS.md"})
         bot_name: Name of the bot loading context
         commentator: CommentatorBot instance for emitting events
+        session_folder: Root directory for file-based context lookup
 
     Returns:
         Context content if successful, None if not found or on error.
@@ -57,11 +60,9 @@ async def read_project_context(
 
             content = _read_gdrive_by_name(source_name)
         else:  # file
-            from pathlib import Path  # noqa: PLC0415
-
-            context_file = Path(source_name)
-            if context_file.exists():  # noqa: ASYNC240
-                content = context_file.read_text(encoding="utf-8")  # noqa: ASYNC240
+            context_file = session_folder / source_name
+            if context_file.exists():
+                content = context_file.read_text(encoding="utf-8")
     except Exception:  # noqa: BLE001
         return None
 
