@@ -21,6 +21,41 @@ Each bot has a memorable name, playing on the feature it introduces.
 | GuardBot   | code, m365, workspace | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
 | ProjectBot | code, m365, workspace | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`       | Reads project context             |
 
+### Bot Character Reference
+
+Each bot from Telo onwards has a credo — a short phrase baked into its system prompt that expresses its operating principle. The credo is the same across all variants of a bot; only domain vocabulary (email vs Gmail, SharePoint vs Drive) adapts per variant.
+
+**Implemented (final):**
+
+| Bot | Name | Credo |
+|-----|------|-------|
+| ToolBot | Telo | A tool call now beats an assumption later. |
+| ReadBot | Rune | The code tells its own story. |
+| ScanBot | Roam | Observe everything, report accurately, change nothing. |
+| ChangeBot | Axel | Changes leave marks — make them count. |
+| SendBot | Aero | Once sent, it can't be recalled. |
+| AgentBot | Loom | Follow the thread — one call at a time — until the task is done. |
+| GuardBot | Cato | Caution isn't hesitation — it's precision. |
+| ProjectBot | Lore | Context first — conventions are rarely arbitrary. |
+
+**Provisional** *(revisit and confirm when each bot is implemented)*:
+
+| Bot | Name | Credo |
+|-----|------|-------|
+| MemoryBot | Aura | Past turns are future context. |
+| RetryBot | Undo | A stumble is just data. |
+| PlanBot | Draw | Sketch before you cut. |
+| CommandBot | Exec | One name, one action, every time. |
+| SkillBot | Coda | The playbook comes before the task. |
+| MultiToolBot | Omni | One turn, many moves. |
+| CriticBot | Dual | The first answer is always a draft. |
+| OrchestratorBot | Enum | Divide the goal, multiply the effort. |
+| StructuredBot | Cast | Structure is the contract between thinking and action. |
+| SearchBot | Scout | The answer is out there — go find it. |
+| McpBot | Mesh | Every tool deserves a seat at the table. |
+| CompactBot | Pith | Keep only what still matters. |
+| CodemooBot | Codemoo | Everything, working together. |
+
 ### Full Progression (not all implemented yet)
 
 **Coding assistant: `code`**

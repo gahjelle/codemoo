@@ -90,7 +90,7 @@ The `[tool_lists]` section defines named tool lists that any variant can referen
 
 ```toml
 [tool_lists]
-code_write = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
+code_write = ["read_file", "list_files", "run_shell", "write_file"]
 
 [bots.AgentBot.variants.code]
 tools = ["@code_write"]
@@ -101,6 +101,47 @@ tools = ["@code_write", "extra_tool"]
 ```
 
 References are expanded before Pydantic validation; the `[tool_lists]` section is consumed and never appears on `CodemooConfig`. An unknown `@name` raises a `KeyError` at config load time with a message listing available list names.
+
+### Bot System Prompt Style
+
+Each bot's system prompt follows a consistent four-part structure:
+
+1. **Identity** — `You are [Name], a [role].`
+   - Code variants: `coding assistant`
+   - M365 and Workspace variants: `productivity assistant`
+   - No adjective prefix — Sona (`ruthlessly practical`) is the explicit exception
+     that demonstrates what a strong persona looks like.
+
+2. **Capability** — One sentence on what this bot does. Emphasise the *new*
+   capability that distinguishes it from the previous bot; don't list every tool.
+   The tool config in `codemoo.toml` is the capability declaration.
+
+3. **Behavior trigger** — When and how to call tools; any important constraints
+   (read-only, approval required, project context, etc.).
+
+4. **Credo** — A short phrase expressing the bot's operating principle. The same
+   wording appears across all variants of a bot; only domain vocabulary adapts
+   (e.g. "email, calendar, SharePoint" vs "Gmail, Calendar, Drive").
+
+Code variants run to ~3 sentences. Platform variants (M365/Workspace) run to ~4
+because listing available API tools adds context the user may not know.
+
+**Credo reference:**
+
+| Bot | Credo |
+|-----|-------|
+| Telo (ToolBot) | A tool call now beats an assumption later. |
+| Rune (ReadBot) | The code tells its own story. |
+| Roam (ScanBot) | Observe everything, report accurately, change nothing. |
+| Axel (ChangeBot) | Changes leave marks — make them count. |
+| Aero (SendBot) | Once sent, it can't be recalled. |
+| Loom (AgentBot) | Follow the thread — one call at a time — until the task is done. |
+| Cato (GuardBot) | Caution isn't hesitation — it's precision. |
+| Lore (ProjectBot) | Context first — conventions are rarely arbitrary. |
+
+`reverse_string` is assigned directly to Telo's variant (not via any named list)
+and is absent from all named tool lists by design — it is an introductory teaching
+tool for Telo only.
 
 ## Tools Architecture
 

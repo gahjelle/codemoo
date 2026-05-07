@@ -71,11 +71,10 @@ bots = [
 # Named tool lists — reference with @name inside a variant's tools array
 #
 [tool_lists]
-code_read  = ["reverse_string", "read_file", "list_files"]
-code_write = ["reverse_string", "read_file", "list_files", "run_shell", "write_file"]
+code_read  = ["read_file", "list_files"]
+code_write = ["read_file", "list_files", "run_shell", "write_file"]
 m365_read  = [
     "get_datetime",
-    "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
     "read_outlook_email",
@@ -84,7 +83,6 @@ m365_read  = [
 ]
 m365_write = [
     "get_datetime",
-    "reverse_string",
     "read_sharepoint",
     "list_sharepoint",
     "read_outlook_email",
@@ -92,10 +90,9 @@ m365_write = [
     "create_outlook_calendar_event",
     "post_teams_message",
 ]
-workspace_read  = ["get_datetime", "reverse_string", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
+workspace_read  = ["get_datetime", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
 workspace_write = [
     "get_datetime",
-    "reverse_string",
     "read_gmail",
     "list_gmail",
     "send_gmail",

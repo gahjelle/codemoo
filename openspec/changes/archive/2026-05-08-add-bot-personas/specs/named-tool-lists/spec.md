@@ -1,8 +1,4 @@
-## Purpose
-
-Named tool lists allow `codemoo.toml` to define reusable groups of tool names under a `[tool_lists]` section. Bot variant `tools` arrays can reference these groups with `@name` syntax, expanding them in-place at config load time.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: tool_lists section defines named tool lists in codemoo.toml
 `codemoo.toml` SHALL support a `[tool_lists]` top-level section. Each key SHALL map to a list of tool name strings. The section SHALL be consumed during config loading and SHALL NOT appear in the parsed `CodemooConfig` model. The named lists SHALL NOT include `reverse_string` — that tool is assigned directly to ToolBot's variant only.
@@ -28,29 +24,3 @@ Within a bot variant's `tools` array, any string beginning with `@` SHALL be tre
 - **WHEN** a variant declares `tools = ["@code_write", "extra_tool"]`
 - **AND** `code_write` expands to four items
 - **THEN** the resolved `tools` SHALL have the four expanded items followed by `"extra_tool"`
-
-#### Scenario: Multiple @-references expand in order
-- **WHEN** a variant declares `tools = ["@code_read", "@extra_group"]`
-- **THEN** the resolved `tools` SHALL be the items of `code_read` followed by the items of `extra_group`
-
-#### Scenario: Duplicate tools from expansion are kept
-- **WHEN** two referenced lists share a tool name
-- **THEN** the resolved `tools` list SHALL contain the duplicate entry (no deduplication)
-
-#### Scenario: Variant with no @-references is unaffected
-- **WHEN** a variant declares `tools = ["reverse_string", "read_file"]` (no @-prefix)
-- **THEN** the resolved `tools` SHALL equal `["reverse_string", "read_file"]` unchanged
-
-### Requirement: Unknown @-reference raises a clear error at config load time
-If a `tools` array references `@name` and `name` is not a key in `[tool_lists]`, the loader SHALL raise an error immediately. The error message SHALL name the unresolved reference and list all available tool list names.
-
-#### Scenario: Unknown @-reference raises KeyError with helpful message
-- **WHEN** a variant declares `tools = ["@nonexistent"]`
-- **AND** `[tool_lists]` does not contain `nonexistent`
-- **THEN** config loading SHALL raise a `KeyError`
-- **AND** the error message SHALL include `"nonexistent"` and the names of all defined tool lists
-
-#### Scenario: Empty tool_lists section with a @-reference raises an error
-- **WHEN** `[tool_lists]` is present but empty
-- **AND** a variant declares `tools = ["@anything"]`
-- **THEN** config loading SHALL raise a `KeyError`
