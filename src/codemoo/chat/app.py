@@ -55,9 +55,9 @@ class ChatApp(App[str | None]):
             p.name: (p.emoji, p.is_human, _bubble_class(p)) for p in participants
         }
         self._sender_info[error_bot.name] = (error_bot.emoji, False, "bubble--error")
+        self._commentator_bot = commentator_bot
         if commentator_bot is not None:
             self._sender_info |= commentator_bot.sender_info()
-            commentator_bot.register(self._append_to_log)
         for participant in participants:
             if hasattr(participant, "register_guard"):
                 participant.register_guard(self._make_guard_ask_fn())  # ty: ignore[call-non-callable]
@@ -79,11 +79,19 @@ class ChatApp(App[str | None]):
         if self._backend_info is not None:
             yield BackendStatus(self._backend_info, self._resolved_bots)
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         """Push the slide overlay when entering demo mode and focus the input."""
+        if self._commentator_bot is not None:
+            self._commentator_bot.register(self._append_to_log)
+        self.run_worker(self._run_startup())
         if self._demo_context is not None:
             self.push_screen(SlideScreen(self._demo_context))
         self.query_one(Input).focus()
+
+    async def _run_startup(self) -> None:
+        for participant in self._participants:
+            if hasattr(participant, "startup"):
+                await participant.startup()  # ty: ignore[call-non-callable]
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle Enter in the input box: create a message and dispatch it."""

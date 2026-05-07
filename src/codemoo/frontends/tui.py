@@ -50,14 +50,14 @@ code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 business_app = cyclopts.App(help="Collebra - demo enterprise agents step by step.")
 
 
-def _setup(script: ScriptName = "default") -> SetupResult:
+async def _setup(script: ScriptName = "default") -> SetupResult:
     llm_backend, backend_info = resolve_backend(config)
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
 
-    available, resolved_bots = make_bots(
+    available, resolved_bots = await make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=config.scripts[script].bots,
@@ -75,24 +75,26 @@ def _setup(script: ScriptName = "default") -> SetupResult:
 
 
 @code_app.default
-def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> None:
+async def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
-        return _chat(bot=bot, variant=variant)
+        return await _chat(bot=bot, variant=variant)
     except ValueError as err:
         _raise_error(str(err))
 
 
 @business_app.default
-def business_chat(*, bot: BotType = "ProjectBot", variant: str = "workspace") -> None:
+async def business_chat(
+    *, bot: BotType = "ProjectBot", variant: str = "workspace"
+) -> None:
     """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
     try:
-        return _chat(bot=bot, variant=variant)
+        return await _chat(bot=bot, variant=variant)
     except ValueError as err:
         _raise_error(str(err))
 
 
-def _chat(*, bot: BotType, variant: str) -> None:
+async def _chat(*, bot: BotType, variant: str) -> None:
     """Instantiate a single bot and launch the chat."""
     bot_ref = BotRef(type=bot, variant=variant)
     llm_backend, backend_info = resolve_backend(config)
@@ -101,20 +103,20 @@ def _chat(*, bot: BotType, variant: str) -> None:
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
     commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
 
-    available, resolved_bots = make_bots(
+    available, resolved_bots = await make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=[bot_ref],
         commentator=commentator_bot,
     )
     _run_init_hooks_for_resolved(resolved_bots)
-    ChatApp(
+    await ChatApp(
         participants=[human, *available],
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
         resolved_bots=resolved_bots,
-    ).run()
+    ).run_async()
 
 
 @code_app.command
@@ -126,9 +128,9 @@ def show_config(section: str | None = None) -> None:
 
 @code_app.command
 @business_app.command
-def list_bots(*, script: ScriptName = "default") -> None:
+async def list_bots(*, script: ScriptName = "default") -> None:
     """List all available bots with their index, type, and name."""
-    setup = _setup(script)
+    setup = await _setup(script)
     table = Table(show_header=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Type")
@@ -154,7 +156,7 @@ def list_scripts() -> None:
 
 @code_app.command(name="select")
 @business_app.command(name="select")
-def select() -> None:
+async def select() -> None:
     """Show the full bot catalog and start chat with the chosen bot(s)."""
     all_resolved = [
         resolve(config.bots, BotRef(type=bot_type, variant=variant_name))
@@ -162,7 +164,9 @@ def select() -> None:
         for variant_name in bot_cfg.variants
     ]
 
-    selected: list[ResolvedBotConfig] | None = SelectionApp(all_resolved).run()
+    selected: list[ResolvedBotConfig] | None = await SelectionApp(
+        all_resolved
+    ).run_async()
     if not selected:
         return
 
@@ -175,20 +179,20 @@ def select() -> None:
     _run_init_hooks_for_resolved(selected)
 
     bot_refs = [BotRef(type=r.bot_type, variant=r.variant) for r in selected]
-    available, resolved_bots = make_bots(
+    available, resolved_bots = await make_bots(
         llm_backend,
         cfg=config.bots,
         bot_refs=bot_refs,
         commentator=commentator_bot,
     )
     participants: list[ChatParticipant] = [human, *available]
-    ChatApp(
+    await ChatApp(
         participants=participants,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
         resolved_bots=resolved_bots,
-    ).run()
+    ).run_async()
 
 
 @code_app.command(name="demo")
@@ -218,7 +222,7 @@ def business_demo(
 
 async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> None:
     """Run the demo loop in a single event loop so shared async resources stay valid."""
-    setup = _setup(script)
+    setup = await _setup(script)
     start_index = (
         setup.available.index(resolve_bot(start, setup.available))
         if start is not None

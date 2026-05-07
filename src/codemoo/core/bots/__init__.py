@@ -160,7 +160,7 @@ def _make_bot(  # noqa: C901, PLR0911
             )
 
 
-def make_bots(
+async def make_bots(
     llm: LLMBackend,
     *,
     cfg: dict[BotType, BotConfig],

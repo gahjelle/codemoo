@@ -24,12 +24,10 @@ from codemoo.core.tools import ToolDef
 
 @dataclasses.dataclass(eq=False)
 class ProjectBot:
-    """Chat participant that loads project context and loops tool calls.
+    """Chat participant that loads project context once at startup and loops tool calls.
 
-    Identical to GuardBot except that:
-    1. Reads AGENTS.md (or SharePoint doc) on each message
-    2. Injects context into system prompt
-    3. Proceeds with standard tool loop + approval gates
+    Context is loaded in startup() before the first message and injected into
+    every system prompt. Proceeds with standard tool loop + approval gates.
 
     If context file is not found, proceeds without context (graceful degradation).
     """
@@ -41,6 +39,7 @@ class ProjectBot:
     instructions: str
     context_source: dict[str, str] | None
     commentator: CommentatorBot | None = None
+    context: str | None = None
     is_human: ClassVar[bool] = False
 
     def __post_init__(self) -> None:  # noqa: D105
@@ -52,21 +51,24 @@ class ProjectBot:
         """Register the callback used to request approval for dangerous tool calls."""
         self._ask_fn = ask_fn
 
-    async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
-        """Respond, loading context and invoking tools with approval gates."""
-        context = None
+    async def startup(self) -> None:
+        """Load project context once before the first message."""
         if self.commentator is not None:
-            context = await read_project_context(
+            self.context = await read_project_context(
                 context_source=self.context_source,
                 bot_name=self.name,
                 commentator=self.commentator,
             )
 
+    async def on_message(
+        self, message: ChatMessage, history: list[ChatMessage]
+    ) -> ChatMessage | None:
+        """Respond using pre-loaded context and invoking tools with approval gates."""
         system_content = self.instructions
-        if context:
-            system_content = f"{self.instructions}\n\n# Project Context\n\n{context}"
+        if self.context:
+            system_content = (
+                f"{self.instructions}\n\n# Project Context\n\n{self.context}"
+            )
 
         messages: list[Message] = [
             Message(role="system", content=system_content),

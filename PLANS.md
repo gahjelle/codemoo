@@ -16,7 +16,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Only read project context at startup
-- ~~Remove default backend and rely on priority order. If backend is specified, then don't use fallback list~~ ✓ done
+- Review all prompts and instructions
 - Improve system prompts. Add in a bit of character in bots after Sona (but scaled back from Sona itself)
 - Introduce concept of session folder
 - Read file-tool locked to session folder

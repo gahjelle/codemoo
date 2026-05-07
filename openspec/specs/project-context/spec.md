@@ -6,20 +6,33 @@ TBD: Describe the purpose of the project context capability.
 
 ## Requirements
 
-### Requirement: Bots can load project context from file
-The system SHALL allow bots to read project context from a local file specified in their configuration.
+### Requirement: Bots load project context once at startup
+The system SHALL load project context exactly once per session, during bot startup, before the first user message is processed. `ProjectBot` SHALL NOT read from any external source during `on_message`.
 
-#### Scenario: Load context from AGENTS.md
-- **WHEN** a bot has `context_source = "AGENTS.md"` configured
-- **AND** AGENTS.md exists in the current working directory
-- **THEN** the bot reads the file contents
-- **AND** the contents are injected into the system prompt under a "Project Context" header
+#### Scenario: Context loaded before first message
+- **WHEN** a ProjectBot is included in a `ChatApp` with a `context_source` configured
+- **AND** the app mounts
+- **THEN** `ProjectBot.startup()` is called in a background worker
+- **AND** the context is read from the configured source exactly once
+- **AND** the context is stored on the bot instance for use in all subsequent messages
 
-#### Scenario: File not found
-- **WHEN** a bot has `context_source = "AGENTS.md"` configured
-- **AND** AGENTS.md does not exist
-- **THEN** the bot proceeds without context
-- **AND** no error is raised
+#### Scenario: File not found at startup
+- **WHEN** a ProjectBot has `context_source = { type = "file", name = "AGENTS.md" }` configured
+- **AND** AGENTS.md does not exist at startup time
+- **THEN** `ProjectBot.startup()` completes without error
+- **AND** `self.context` is set to `None`
+- **AND** the bot operates without context for the session
+
+#### Scenario: Remote source unavailable at startup
+- **WHEN** a ProjectBot has a SharePoint or Drive `context_source` configured
+- **AND** the remote API call fails during startup
+- **THEN** `ProjectBot.startup()` completes without error
+- **AND** `self.context` is set to `None`
+
+#### Scenario: Context injected consistently across all messages
+- **WHEN** a ProjectBot has loaded context at startup
+- **THEN** the same context string is injected into the system prompt for every `on_message` call during the session
+- **AND** no I/O occurs during `on_message`
 
 ### Requirement: Bots can load project context from SharePoint
 The system SHALL allow bots to read project context from a SharePoint document specified in their configuration.
@@ -37,17 +50,16 @@ The system SHALL allow bots to read project context from a SharePoint document s
 - **AND** no error is raised
 
 ### Requirement: Context loading emits commentator events
-The system SHALL emit a ContextLoadEvent when a bot successfully loads project context.
+The system SHALL emit a `ContextLoadEvent` when a bot successfully loads project context.
 
-#### Scenario: ContextLoadEvent for file source
-- **WHEN** a bot reads context from a file
-- **THEN** a ContextLoadEvent is emitted
-- **AND** the event includes the bot name, source type "file", path, and content
+#### Scenario: ContextLoadEvent emitted at startup
+- **WHEN** `ProjectBot.startup()` successfully reads context from any source
+- **THEN** a `ContextLoadEvent` is emitted to the commentator
+- **AND** the event includes the bot name, source type, path, and content
 
-#### Scenario: ContextLoadEvent for SharePoint source
-- **WHEN** a bot reads context from SharePoint
-- **THEN** a ContextLoadEvent is emitted
-- **AND** the event includes the bot name, source type "sharepoint", path, and content
+#### Scenario: No ContextLoadEvent when context is absent
+- **WHEN** `ProjectBot.startup()` finds no context (source not configured, file missing, or remote failure)
+- **THEN** no `ContextLoadEvent` is emitted
 
 ### Requirement: Context is injected into system prompt
 The system SHALL format the loaded context and inject it into the bot's system prompt.

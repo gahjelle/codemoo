@@ -1,3 +1,5 @@
+import pytest
+
 from codemoo.config import config
 from codemoo.config.schema import BotConfig, BotRef, BotVariantConfig
 from codemoo.core.bots import make_bots
@@ -10,8 +12,8 @@ class _MockBackend:
         return ""
 
 
-def _bots() -> list:
-    bots, _ = make_bots(
+async def _bots() -> list:
+    bots, _ = await make_bots(
         _MockBackend(),
         cfg=config.bots,
         bot_refs=config.scripts["default"].bots,
@@ -19,19 +21,23 @@ def _bots() -> list:
     return bots
 
 
-def test_make_bots_returns_ten_bots() -> None:
-    assert len(_bots()) == 10
+@pytest.mark.asyncio
+async def test_make_bots_returns_ten_bots() -> None:
+    assert len(await _bots()) == 10
 
 
-def test_make_bots_first_is_echo_bot() -> None:
-    assert isinstance(_bots()[0], EchoBot)
+@pytest.mark.asyncio
+async def test_make_bots_first_is_echo_bot() -> None:
+    assert isinstance((await _bots())[0], EchoBot)
 
 
-def test_make_bots_last_is_project_bot() -> None:
-    assert isinstance(_bots()[-1], ProjectBot)
+@pytest.mark.asyncio
+async def test_make_bots_last_is_project_bot() -> None:
+    assert isinstance((await _bots())[-1], ProjectBot)
 
 
-def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
+@pytest.mark.asyncio
+async def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
     """Resolved configs must surface prompts from the active BotVariantConfig."""
     mock_bots: dict = {
         "EchoBot": BotConfig(
@@ -46,7 +52,7 @@ def test_make_bots_resolved_configs_carry_variant_prompts() -> None:
             },
         )
     }
-    _, resolved = make_bots(
+    _, resolved = await make_bots(
         _MockBackend(),
         cfg=mock_bots,
         bot_refs=[BotRef(type="EchoBot", variant="default")],
