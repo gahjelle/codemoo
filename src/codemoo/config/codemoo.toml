@@ -20,6 +20,7 @@ bots = [
     { type = "AgentBot", variant = "code" },
     { type = "GuardBot", variant = "code" },
     { type = "ProjectBot", variant = "code" },
+    { type = "MemoryBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -42,6 +43,7 @@ bots = [
     { type = "AgentBot", variant = "m365" },
     { type = "GuardBot", variant = "m365" },
     { type = "ProjectBot", variant = "m365" },
+    { type = "MemoryBot", variant = "m365" },
 ]
 
 [scripts.workspace]
@@ -56,6 +58,7 @@ bots = [
     { type = "AgentBot", variant = "workspace" },
     { type = "GuardBot", variant = "workspace" },
     { type = "ProjectBot", variant = "workspace" },
+    { type = "MemoryBot", variant = "workspace" },
 ]
 
 [scripts.vs]
@@ -282,6 +285,35 @@ instruction_file = "project_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 tools = ["@workspace_write"]
 prompts_file = "project_bot-workspace.txt"
+
+[bots.MemoryBot]
+name = "Aura"
+emoji = "SMILING FACE WITH HALO"
+sources = ["memory_bot.py"]
+
+[bots.MemoryBot.variants.code]
+description = "Persist facts and preferences across sessions via a local memory file."
+instruction_file = "memory_bot-code.txt"
+context_source = { type = "file", name = "AGENTS.md" }
+memory_file = "{project_settings_path}/memory.md"
+tools = ["@code_write"]
+prompts_file = "memory_bot-code.txt"
+
+[bots.MemoryBot.variants.m365]
+description = "Persist user preferences across sessions via a local memory file."
+instruction_file = "memory_bot-m365.txt"
+context_source = { type = "sharepoint", name = "TEAM.md" }
+memory_file = "{project_settings_path}/memory.md"
+tools = ["@m365_write"]
+prompts_file = "memory_bot-m365.txt"
+
+[bots.MemoryBot.variants.workspace]
+description = "Persist user preferences across sessions via a local memory file."
+instruction_file = "memory_bot-workspace.txt"
+context_source = { type = "drive", name = "TEAM.md" }
+memory_file = "{project_settings_path}/memory.md"
+tools = ["@workspace_write"]
+prompts_file = "memory_bot-workspace.txt"
 
 #
 # Microsoft 365 / Graph API, see README for set up

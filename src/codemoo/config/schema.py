@@ -20,6 +20,7 @@ type BotType = Literal[
     "ScanBot",
     "SendBot",
     "ProjectBot",
+    "MemoryBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
 type ModelBackend = Literal[
@@ -56,6 +57,7 @@ class BotVariantConfig(StrictModel):
     prompts: list[str] = []
     instructions: str = ""
     context_source: ContextSource | None = None
+    memory_file: str | None = None
 
 
 class BotConfig(StrictModel):
@@ -109,6 +111,7 @@ class ResolvedBotConfig:
     prompts: list[str]
     instructions: str
     context_source: dict[str, str] | None
+    memory_file: str | None = None
 
 
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
@@ -139,6 +142,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         prompts=variant.prompts,
         instructions=variant.instructions,
         context_source=context_source_dict,
+        memory_file=variant.memory_file,
     )
 
 

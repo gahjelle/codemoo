@@ -18,6 +18,16 @@ class ContextLoadEvent:
     content: str  # Full content of the context file
 
 
+@dataclasses.dataclass(frozen=True)
+class MemoryLoadEvent:
+    """Emitted when a bot loads its memory file."""
+
+    bot_name: str
+    source: str  # always "file"
+    path: str  # path to the memory file
+    content: str  # Full content of the memory file
+
+
 async def read_project_context(
     context_source: dict[str, str] | None,
     bot_name: str,
@@ -82,3 +92,32 @@ async def read_project_context(
         )
 
     return content
+
+
+async def read_memory_file(
+    memory_file_path: Path,
+    bot_name: str,
+    commentator: "CommentatorBot",
+) -> str | None:
+    """Read the bot's memory file if it exists and emit a MemoryLoadEvent.
+
+    Returns the file contents on success, None if absent or on any error.
+    """
+    try:
+        if not memory_file_path.exists():  # noqa: ASYNC240
+            return None
+        content = memory_file_path.read_text(encoding="utf-8")  # noqa: ASYNC240
+    except Exception:  # noqa: BLE001
+        return None
+
+    if content:
+        await commentator.comment(
+            MemoryLoadEvent(
+                bot_name=bot_name,
+                source="file",
+                path=str(memory_file_path),
+                content=content,
+            )
+        )
+
+    return content or None

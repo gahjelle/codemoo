@@ -10,6 +10,6 @@ def test_greet() -> None:
 
 def test_load_names() -> None:
     names = load_names("names.txt")
-    assert len(names) == 10
+    assert len(names) == 11
     assert "Coco 🦜" in names
     assert "Lore 📖" in names

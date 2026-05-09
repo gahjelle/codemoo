@@ -9,7 +9,7 @@ from codemoo.core.tools import ToolDef, ToolParam
 
 
 def make_shell_validator(session_folder: Path) -> Callable[..., str | None]:
-    """Return a validator that blocks shell commands with paths outside session_folder."""  # noqa: E501
+    """Return a validator blocking shell commands with paths outside session_folder."""
     resolved_root = session_folder.resolve()
 
     def _validate(command: str, **_: object) -> str | None:

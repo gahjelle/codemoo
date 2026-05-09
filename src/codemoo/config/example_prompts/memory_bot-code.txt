@@ -1,0 +1,5 @@
+Describe the current project in three sentences
+---
+What have you learned about me so far?
+---
+Remember that I prefer keeping test files next to their source files

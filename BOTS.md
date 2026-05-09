@@ -20,6 +20,7 @@ Each bot has a memorable name, playing on the feature it introduces.
 | AgentBot   | code, m365, workspace | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                  |
 | GuardBot   | code, m365, workspace | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`            | Guards dangerous actions          |
 | ProjectBot | code, m365, workspace | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`       | Reads project context             |
+| MemoryBot  | code, m365, workspace | Aura | An aura surrounds and travels with you — it accumulates over time       | 😇     | `SMILING FACE WITH HALO` | A halo is the aura around you — it follows you everywhere |
 
 ### Bot Character Reference
 
@@ -37,12 +38,12 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | AgentBot | Loom | Follow the thread — one call at a time — until the task is done. |
 | GuardBot | Cato | Caution isn't hesitation — it's precision. |
 | ProjectBot | Lore | Context first — conventions are rarely arbitrary. |
+| MemoryBot | Aura | Past turns are future context. |
 
 **Provisional** *(revisit and confirm when each bot is implemented)*:
 
 | Bot | Name | Credo |
 |-----|------|-------|
-| MemoryBot | Aura | Past turns are future context. |
 | RetryBot | Undo | A stumble is just data. |
 | PlanBot | Draw | Sketch before you cut. |
 | CommandBot | Exec | One name, one action, every time. |
@@ -100,6 +101,7 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 8   | AgentBot   | Loom | Full tool loop, multi-step actions                  | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot   | Cato | Human-in-the-loop before destructive actions        | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 10  | ProjectBot | Lore | Reads team context from SharePoint                  | Now it reads the room. It understands your team before acting on M365 data                |
+| 11  | MemoryBot  | Aura | Persists user preferences across sessions           | Now it remembers you across sessions. It builds a model of who you are                    |
 
 Bot types marked with * are unique to `m365` mode.
 
@@ -117,6 +119,7 @@ Bot types marked with * are unique to `m365` mode.
 | 8   | AgentBot   | Loom | Full tool loop, multi-step actions                  | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot   | Cato | Human-in-the-loop before destructive actions        | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 10  | ProjectBot | Lore | Reads team context from Google Drive (TEAM.md) before acting | Now it reads the room. It loads your team's context doc before touching anything  |
+| 11  | MemoryBot  | Aura | Persists user preferences across sessions            | Now it remembers you across sessions. It builds a model of who you are                   |
 
 Bot types marked with * are unique to `workspace` mode.
 
@@ -127,9 +130,9 @@ Bot types marked with * are unique to `workspace` mode.
 - **Act 2 — Control** (Sona → Telo): "Instructions and tools — the two levers."
 - **Act 3 — Access** (Rune → Axel **or** Roam → Aero): "Reading and changing — and where each becomes consequential."
 - **Act 4 — Agency** (Loom → Cato): "Goals, not commands. And guardrails, not blind trust."
+- **Act 5 — Context** (Lore → Aura): "It knows your project. It knows you."
 
 *Planned:*
-- **Act 5 — Context** (Lore → Aura): "It knows your project. It knows you."
 - **Act 6 — Resilience** (Undo → Draw): "It bounces back. It thinks before it acts."
 - **Act 7 — Workflow** (Exec → Coda): "Repeatable commands. Reusable playbooks."
 - **Act 8 — Scale** (Omni → Dual → Enum): "Parallel, self-critical, and orchestrated."

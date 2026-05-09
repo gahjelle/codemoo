@@ -73,6 +73,12 @@ config = (
         },
         prefix="CODEMOO_",
     )
-    .parse_dynamic({"cache_path": platformdirs.user_cache_dir("codemoo")})
+    .parse_dynamic(
+        {
+            "cache_path": platformdirs.user_cache_dir("codemoo"),
+            "user_settings_path": platformdirs.user_data_dir("codemoo"),
+            "project_settings_path": str(Path.cwd() / ".codemoo"),
+        }
+    )
     .convert_model(CodemooConfig)
 )

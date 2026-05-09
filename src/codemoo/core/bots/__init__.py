@@ -14,6 +14,7 @@ from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.bots.llm_bot import LlmBot
+from codemoo.core.bots.memory_bot import MemoryBot
 from codemoo.core.bots.project_bot import ProjectBot
 from codemoo.core.bots.read_bot import ReadBot
 from codemoo.core.bots.scan_bot import ScanBot
@@ -23,6 +24,7 @@ from codemoo.core.bots.tool_bot import ToolBot
 from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import TOOL_REGISTRY, ToolDef
 from codemoo.core.tools.files import make_file_validator
+from codemoo.core.tools.memory import make_memory_tool
 from codemoo.core.tools.shell import make_shell_validator
 from codemoo.m365.tools import M365_TOOL_REGISTRY
 from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
@@ -43,6 +45,7 @@ __all__ = [
     "ErrorBot",
     "GuardBot",
     "LlmBot",
+    "MemoryBot",
     "ProjectBot",
     "ReadBot",
     "ScanBot",
@@ -64,7 +67,7 @@ def run_init_hooks(tools: Iterable[ToolDef]) -> None:
             tool.init()
 
 
-def _make_bot(  # noqa: C901, PLR0911
+def _make_bot(  # noqa: C901, PLR0911, PLR0912
     bot: ResolvedBotConfig,
     llm: LLMBackend,
     commentator: CommentatorBot | None,
@@ -173,6 +176,21 @@ def _make_bot(  # noqa: C901, PLR0911
                 tools=tools,
                 instructions=bot.instructions,
                 context_source=bot.context_source,
+                session_folder=session_folder,
+                commentator=commentator,
+            )
+        case "MemoryBot":
+            memory_path = Path(bot.memory_file) if bot.memory_file else None
+            effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
+            memory_tool = make_memory_tool(effective_path)
+            return MemoryBot(
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                tools=[*tools, memory_tool],
+                instructions=bot.instructions,
+                context_source=bot.context_source,
+                memory_file=memory_path,
                 session_folder=session_folder,
                 commentator=commentator,
             )

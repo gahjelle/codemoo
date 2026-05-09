@@ -5,7 +5,7 @@ import random
 from collections.abc import Callable
 
 from codemoo.core.backend import LLMBackend, Message
-from codemoo.core.context import ContextLoadEvent
+from codemoo.core.context import ContextLoadEvent, MemoryLoadEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import format_tool_call
 
@@ -118,13 +118,18 @@ class CommentatorBot:
         return info
 
     async def comment(
-        self, event: ToolCallEvent | ContextLoadEvent | ValidationBlockEvent
+        self,
+        event: (
+            ToolCallEvent | ContextLoadEvent | MemoryLoadEvent | ValidationBlockEvent
+        ),
     ) -> None:
         """Generate and post a persona-driven aside for the given event."""
         if isinstance(event, ToolCallEvent):
             await self._comment_on_tool_call(event)
         elif isinstance(event, ContextLoadEvent):
             await self._comment_on_context(event)
+        elif isinstance(event, MemoryLoadEvent):
+            await self._comment_on_memory(event)
         elif isinstance(event, ValidationBlockEvent):
             await self._comment_on_validation_block(event)
 
@@ -157,6 +162,27 @@ class CommentatorBot:
             prompt=prompt,
             fallback=f"Blocked: {event.reason}",
             dim_prefix=f"Blocked: {event.reason}",
+        )
+
+    async def _comment_on_memory(self, event: MemoryLoadEvent) -> None:
+        """Generate commentary about memory loading."""
+        preview_len = 200
+        content_preview = (
+            event.content[:preview_len]
+            if len(event.content) > preview_len
+            else event.content
+        )
+        prompt = (
+            f"{event.bot_name} just loaded its memory from {event.path}."
+            f" The memory is {len(event.content)} characters long"
+            f" and starts with:\n\n{content_preview}\n\n"
+            f"Give a brief, in-character reaction to what {event.bot_name} now"
+            f" remembers about the user."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"{event.bot_name} loaded memory from {event.path}",
+            dim_prefix=f"Loaded memory ({len(event.content)} chars)",
         )
 
     async def _comment_on_context(self, event: ContextLoadEvent) -> None:

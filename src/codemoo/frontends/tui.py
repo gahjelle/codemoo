@@ -78,7 +78,7 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
 
 
 @code_app.default
-async def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> None:
+async def code_chat(*, bot: BotType = "MemoryBot", variant: str = "code") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
         return await _chat(bot=bot, variant=variant)
@@ -88,9 +88,9 @@ async def code_chat(*, bot: BotType = "ProjectBot", variant: str = "code") -> No
 
 @business_app.default
 async def business_chat(
-    *, bot: BotType = "ProjectBot", variant: str = "workspace"
+    *, bot: BotType = "MemoryBot", variant: str = "workspace"
 ) -> None:
-    """Launch the business chat with the main bot, or a specific one via --bot/--variant."""  # noqa: E501
+    """Launch the business chat with the main bot; use --bot/--variant to override."""
     try:
         return await _chat(bot=bot, variant=variant)
     except ValueError as err:

@@ -138,6 +138,7 @@ because listing available API tools adds context the user may not know.
 | Loom (AgentBot) | Follow the thread — one call at a time — until the task is done. |
 | Cato (GuardBot) | Caution isn't hesitation — it's precision. |
 | Lore (ProjectBot) | Context first — conventions are rarely arbitrary. |
+| Aura (MemoryBot) | Past turns are future context. |
 
 `reverse_string` is assigned directly to Telo's variant (not via any named list)
 and is absent from all named tool lists by design — it is an introductory teaching
