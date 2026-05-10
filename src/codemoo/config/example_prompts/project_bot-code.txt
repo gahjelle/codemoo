@@ -1,3 +1,11 @@
 Describe the current project in three sentences
 ---
-Which coding conventions do you follow?
+Read the code inside the tiemit/ directory. Then, create a tiemit/AGENTS.md file for the project.
+---
+Upgrade the tiemit project: replace the random AI simulation with a real LLM.
+Use the openai package with the Mistral API:
+- base_url: https://api.mistral.ai/v1
+- model: mistral-small-latest
+- API key from the MISTRAL_API_KEY environment variable
+
+Add openai as a dependency and make sure the game still works end-to-end.

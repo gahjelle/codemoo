@@ -16,6 +16,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Redo planning of future bots
+- Make chat input field multiline
 - Improve save_memory: write in english, don't lose lde memories
 - Review all prompts and ~~instructions~~
 - Read file-tool can read subset of file

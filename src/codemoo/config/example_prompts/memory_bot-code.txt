@@ -1,5 +1,5 @@
-Describe the current project in three sentences
+What do you know about me?
 ---
-What have you learned about me so far?
+I like pastel colors for UI frontends — remember that
 ---
-Remember that I prefer keeping test files next to their source files
+Read the current tiemit source and add a Streamlit frontend. Use my color preference for the UI theme.

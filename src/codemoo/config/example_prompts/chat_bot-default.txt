@@ -2,4 +2,4 @@ How can I reverse a text string in Python?
 ---
 How about in C#?
 ---
-Suggest three things to see in Oslo
+How do I spell 'Guido van Rossum created Python' backwards?

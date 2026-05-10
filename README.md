@@ -116,6 +116,14 @@ Run through the bot progression to see how coding agents evolve step by step —
 > ```console
 > cd demo
 > ```
+>
+> Before each demo run, clear the memory file so MemoryBot starts fresh:
+>
+> ```console
+> > .codemoo/memory.md
+> ```
+>
+> The later bots (ProjectBot and beyond) use the Mistral API — make sure `MISTRAL_API_KEY` is set.
 
 Start the interactive demo by running Codemoo with the `demo` command:
 

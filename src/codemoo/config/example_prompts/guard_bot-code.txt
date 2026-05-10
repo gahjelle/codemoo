@@ -1,23 +1,16 @@
 Read greeter.py and write a short summary to summary.md
 ---
-Run the tests with uv run pytest. If they pass, commit the changes. If they
-don't, then fix the code first.
+Run `uv run pytest`. If the tests pass, commit the changes. If they don't, fix the code first.
 ---
-Create a new directory named tiemit (typo intentional) and use uv to
-initialize a new project inside the folder. Create a Streamlit app that will
-implement a Human vs AI String Reversal Challenge.
+Create a new directory tiemit/ and initialize it as a uv project with `uv init`.
+Then create a CLI string reversal challenge game with these requirements:
 
-Requirements:
+1. Generate a random string of 5-10 lowercase letters.
+2. Display the string and start a timer.
+3. Ask the user to type the reversed string.
+4. Stop the timer when the user submits.
+5. Simulate an AI opponent: 30% chance of correct reversal, 70% chance of failure.
+6. Show: user's time, user's answer, AI's answer, correct answer, and who won (user, AI, or tie).
+7. Ask if the user wants to play again.
 
-1. Generate a random string of 5-10 characters (letters and space characters
-only).
-2. Display the string to the user.
-3. Allow the user to input their reversed string.
-4. Time how long it takes the user to type and submit their answer (start the
-timer when the user starts typing).
-5. Have an AI attempt to reverse the string (simulate the AI with a 70% chance
-of failure to demonstrate LLM limitations).
-6. Show: User's time, user's answer, AI's answer, Correct answer, Who won (user,
-AI, or tie).
-7. Include a 'Play Again' button to generate a new string. Use session state to
-maintain game state between interactions.
+Use only print() and input() — no external libraries.

@@ -1,4 +1,3 @@
 Which tools do you have access to?
 ---
-greeter.py is crashing when run (uv run greeter.py). Fix the bug and verify
-with the tests (uv run pytest).
+greeter.py is crashing when run with `uv run greeter.py`. Fix the bug and verify with `uv run pytest`.

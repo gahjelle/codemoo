@@ -1,8 +1,5 @@
-Run greeter.py with uv
+Run `uv run greeter.py`
 ---
-Run the tests: uv run pytest test_greeter.py
+Run `uv run pytest test_greeter.py`
 ---
-Use cat to list both README.md and greeter.py and compare them — does the
-code match the description?
----
-How many names are in names.txt?
+Show the contents of README.md and greeter.py in a single command
