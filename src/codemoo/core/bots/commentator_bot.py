@@ -30,6 +30,13 @@ class ValidationBlockEvent:
 
 
 @dataclasses.dataclass(frozen=True)
+class BotRestartEvent:
+    """Emitted by ChatApp when the user restarts the current bot in demo mode."""
+
+    bot_name: str
+
+
+@dataclasses.dataclass(frozen=True)
 class Persona:
     """Name, emoji, and system prompt for a CommentatorBot personality."""
 
@@ -120,7 +127,11 @@ class CommentatorBot:
     async def comment(
         self,
         event: (
-            ToolCallEvent | ContextLoadEvent | MemoryLoadEvent | ValidationBlockEvent
+            ToolCallEvent
+            | ContextLoadEvent
+            | MemoryLoadEvent
+            | ValidationBlockEvent
+            | BotRestartEvent
         ),
     ) -> None:
         """Generate and post a persona-driven aside for the given event."""
@@ -132,6 +143,8 @@ class CommentatorBot:
             await self._comment_on_memory(event)
         elif isinstance(event, ValidationBlockEvent):
             await self._comment_on_validation_block(event)
+        elif isinstance(event, BotRestartEvent):
+            await self._comment_on_restart(event)
 
     async def _comment_on_tool_call(self, event: ToolCallEvent) -> None:
         """Generate commentary about a tool call."""
@@ -162,6 +175,19 @@ class CommentatorBot:
             prompt=prompt,
             fallback=f"Blocked: {event.reason}",
             dim_prefix=f"Blocked: {event.reason}",
+        )
+
+    async def _comment_on_restart(self, event: BotRestartEvent) -> None:
+        """Generate commentary about a bot restart."""
+        prompt = (
+            f"{event.bot_name}'s memory has been wiped and is starting fresh."
+            " Give a brief, in-character one-sentence aside to the viewer about"
+            " this clean slate."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"{event.bot_name} restarted — memory cleared",
+            dim_prefix="\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Restarted",
         )
 
     async def _comment_on_memory(self, event: MemoryLoadEvent) -> None:

@@ -216,3 +216,12 @@ SlideContent {
 .hidden {
     display: none;
 }
+
+/* Restart divider: full-width separator mounted in the log when Ctrl-R is pressed */
+.restart-divider {
+    width: 1fr;
+    margin: 1 0;
+    color: $text-muted;
+    text-style: dim;
+    text-align: center;
+}

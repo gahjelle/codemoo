@@ -31,15 +31,13 @@ class DemoHeader(Label):
         parts = [
             f"{self._bot.emoji} {self._bot.name}",
             f"{current} of {total}",
-            "Ctrl-N: next bot",
-            "Ctrl-S: slide",
+            "^N: next bot",
+            "^S: slide",
+            "^R: restart",
         ]
-        if self._total > 0:
-            if self._remaining == 0:
-                parts.append("(no more examples)")
-            else:
-                parts.append(f"Ctrl-E: example ({self._remaining} left)")
-        return Text("  \N{BULLET}  ".join(parts))
+        if self._total > 0 and self._remaining > 0:
+            parts.append(f"^E: example ({self._remaining} left)")
+        return Text(" \N{BULLET} ".join(parts))
 
     def render(self) -> Text:
         """Build header text from current state."""

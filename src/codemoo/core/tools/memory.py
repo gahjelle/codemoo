@@ -18,9 +18,10 @@ def make_memory_tool(path: Path) -> ToolDef:
     return ToolDef(
         name="save_memory",
         description=(
-            "Save your memory about this user and project, replacing any previous"
-            " memory. Call this when you observe facts, preferences, or patterns"
-            " worth keeping across sessions. Write the memory file in English."
+            "Save your memory about this user, replacing any previous memory."
+            " Call this when you observe facts, preferences, or patterns"
+            " worth keeping across sessions. Focus on user preferences, not"
+            " project context. Write the memory file in English."
         ),
         parameters=[
             ToolParam(

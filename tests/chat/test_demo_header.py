@@ -24,7 +24,7 @@ def test_header_contains_position() -> None:
 
 def test_header_contains_ctrl_n_hint() -> None:
     header = _make_header(1, 8)
-    assert "Ctrl-N" in str(header.render())
+    assert "^N" in str(header.render())
 
 
 def test_header_contains_emoji() -> None:
@@ -37,12 +37,12 @@ def test_header_contains_emoji() -> None:
 
 def test_no_prompt_hint_when_no_prompts_configured() -> None:
     header = _make_header(1, 8, prompt_count=0)
-    assert "Ctrl-E" not in str(header.render())
+    assert "^E" not in str(header.render())
 
 
 def test_ctrl_space_hint_shown_when_prompts_available() -> None:
     header = _make_header(1, 8, prompt_count=3)
-    assert "Ctrl-E" in str(header.render())
+    assert "^E" in str(header.render())
 
 
 def test_header_shows_remaining_count() -> None:
@@ -60,5 +60,4 @@ def test_update_prompt_state_zero_shows_exhaustion() -> None:
     header = _make_header(1, 8, prompt_count=3)
     header.update_prompt_state(0)
     rendered = str(header.render())
-    assert "no more examples" in rendered
-    assert "Ctrl-E" not in rendered
+    assert "^E" not in rendered

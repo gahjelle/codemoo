@@ -115,6 +115,13 @@ When constructed with a non-zero total prompt count, `DemoHeader` SHALL include 
 - **WHEN** `DemoHeader` is constructed with a bot that has 0 prompts
 - **THEN** `str(header.render())` SHALL NOT contain "Ctrl-E"
 
+### Requirement: Ctrl-R keyboard shortcut is documented in DemoHeader
+The `DemoHeader` hint line SHALL include "Ctrl-R: restart" as a permanently visible hint, regardless of prompt count.
+
+#### Scenario: Ctrl-R hint always present in demo header
+- **WHEN** `DemoHeader` is constructed with zero or more prompts
+- **THEN** `str(header.render())` SHALL contain "Ctrl-R"
+
 ### Requirement: Ctrl-S reopens the current bot's slide in demo mode
 While in a demo-mode `ChatApp` session, pressing Ctrl-S SHALL reopen the current bot's `SlideScreen` as a modal overlay. The chat log and input state SHALL be preserved while the modal is visible and restored when it is dismissed.
 

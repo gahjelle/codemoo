@@ -8,7 +8,7 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.events import Key
-from textual.widgets import Input
+from textual.widgets import Input, Label
 
 from codemoo.chat.approval import ApprovalModal
 from codemoo.chat.backend_status import BackendStatus
@@ -18,7 +18,7 @@ from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
-from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.bots.commentator_bot import BotRestartEvent, CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
@@ -192,7 +192,7 @@ class ChatApp(App[str | None]):
         return ask_fn
 
     def on_key(self, event: Key) -> None:
-        """Handle demo-mode keyboard shortcuts (Ctrl-N, Ctrl-E, Ctrl-S)."""
+        """Handle demo-mode keyboard shortcuts (Ctrl-N, Ctrl-E, Ctrl-S, Ctrl-R)."""
         if self._demo_context is None:
             return
         if event.key == "ctrl+n":
@@ -201,6 +201,8 @@ class ChatApp(App[str | None]):
             self._insert_next_prompt()
         elif event.key == "ctrl+s":
             self._reopen_slide()
+        elif event.key == "ctrl+r":
+            self._restart_bot()
 
     def _reopen_slide(self) -> None:
         if self._demo_context is None:
@@ -208,6 +210,28 @@ class ChatApp(App[str | None]):
         if any(isinstance(s, SlideScreen) for s in self.screen_stack):
             return
         self.push_screen(SlideScreen(self._demo_context))
+
+    def _restart_bot(self) -> None:
+        if self._demo_context is None:
+            return
+        log = self.query_one("#log", VerticalScroll)
+        log.mount(
+            Label(
+                "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Restarted",
+                classes="restart-divider",
+            )
+        )
+        log.scroll_end(animate=False)
+        if self._commentator_bot is not None:
+            bot = next(p for p in self._participants if not p.is_human)
+            self.run_worker(
+                self._commentator_bot.comment(BotRestartEvent(bot_name=bot.name))
+            )
+        self._history = []
+        self._prompt_index = 0
+        prompts = self._demo_context.prompts
+        self.query_one(DemoHeader).update_prompt_state(len(prompts))
+        self.run_worker(self._run_startup())
 
     def _insert_next_prompt(self) -> None:
         if self._demo_context is None:

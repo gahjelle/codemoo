@@ -50,6 +50,17 @@ uv run ty check .
 - Comments explain why, not what
 - Type checker is `ty` (not mypy) — use `# ty: ignore[<code>]` if suppression is ever needed; never `# type: ignore[mypy-code]`. Tests have a blanket override in `pyproject.toml` for Textual mock patterns, so no per-line ignores are needed there.
 
+## Demo Mode Keyboard Shortcuts
+
+When running `uv run codemoo demo`, the following shortcuts are active:
+
+| Key    | Action                                                                                   |
+| ------ | ---------------------------------------------------------------------------------------- |
+| Ctrl-N | Advance to the next bot in the progression                                               |
+| Ctrl-S | Reopen the current bot's slide overlay                                                   |
+| Ctrl-E | Insert the next preset example prompt                                                    |
+| Ctrl-R | Restart the current bot (clears history, reloads context/memory, resets example prompts) |
+
 ## Demo Environment
 
 The `demo/` folder is a purpose-built environment for live demonstrations — not
@@ -128,17 +139,17 @@ because listing available API tools adds context the user may not know.
 
 **Credo reference:**
 
-| Bot | Credo |
-|-----|-------|
-| Telo (ToolBot) | A tool call now beats an assumption later. |
-| Rune (ReadBot) | The code tells its own story. |
-| Roam (ScanBot) | Observe everything, report accurately, change nothing. |
-| Axel (ChangeBot) | Changes leave marks — make them count. |
-| Aero (SendBot) | Once sent, it can't be recalled. |
-| Loom (AgentBot) | Follow the thread — one call at a time — until the task is done. |
-| Cato (GuardBot) | Caution isn't hesitation — it's precision. |
-| Lore (ProjectBot) | Context first — conventions are rarely arbitrary. |
-| Aura (MemoryBot) | Past turns are future context. |
+| Bot               | Credo                                                            |
+| ----------------- | ---------------------------------------------------------------- |
+| Telo (ToolBot)    | A tool call now beats an assumption later.                       |
+| Rune (ReadBot)    | The code tells its own story.                                    |
+| Roam (ScanBot)    | Observe everything, report accurately, change nothing.           |
+| Axel (ChangeBot)  | Changes leave marks — make them count.                           |
+| Aero (SendBot)    | Once sent, it can't be recalled.                                 |
+| Loom (AgentBot)   | Follow the thread — one call at a time — until the task is done. |
+| Cato (GuardBot)   | Caution isn't hesitation — it's precision.                       |
+| Lore (ProjectBot) | Context first — conventions are rarely arbitrary.                |
+| Aura (MemoryBot)  | Past turns are future context.                                   |
 
 `reverse_string` is assigned directly to Telo's variant (not via any named list)
 and is absent from all named tool lists by design — it is an introductory teaching
