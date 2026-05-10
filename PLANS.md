@@ -7,19 +7,17 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Questions
 
+- Is there a real difference with ReadBot and ScanBot / ChangeBot and SendBot? Should we merge them?
 - Should tool output be added to conversation history?
-- Can we control shell scripts to only touch session folder
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?
 - Can we use raw LLM response to calculate token usage?
 
 ## Tasks
 
-- Only read project context at startup
-- Review all prompts and instructions
-- Improve system prompts. Add in a bit of character in bots after Sona (but scaled back from Sona itself)
-- Introduce concept of session folder
-- Read file-tool locked to session folder
+- Redo planning of future bots
+- Improve save_memory: write in english, don't lose lde memories
+- Review all prompts and ~~instructions~~
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files
