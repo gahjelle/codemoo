@@ -181,16 +181,16 @@ At startup, `Path.cwd()` is captured as the **session folder** and passed throug
 ### M365 tools — `src/codemoo/m365/tools/`
 
 - **`__init__.py`** — `M365_TOOL_REGISTRY` dict of all Graph ToolDefs; each tool carries `init=_init_m365`
-- **`read.py`** — Microsoft Graph read operations (list_outlook_email, read_outlook_email, list_outlook_calendar, list_sharepoint, read_sharepoint)
-- **`write.py`** — Microsoft Graph write operations (send_outlook_email, create_outlook_calendar_event, post_teams_message, write_sharepoint)
+- **`read.py`** — Microsoft Graph read operations (list_outlook_email, read_outlook_email, list_outlook_calendar, list_sharepoint, read_sharepoint, list_outlook_drafts)
+- **`write.py`** — Microsoft Graph write operations (draft_outlook_email, send_outlook_email, create_outlook_calendar_event, post_teams_message, write_sharepoint)
 
 Graph tools carry an `init` hook (`_init_m365`) that triggers M365 authentication when called.
 
 ### Workspace tools — `src/codemoo/workspace/tools/`
 
 - **`__init__.py`** — `WORKSPACE_TOOL_REGISTRY` dict of all Workspace ToolDefs; each tool carries `init=_init_workspace`
-- **`read.py`** — Google Workspace read operations (list_gmail, read_gmail, list_gcal, list_gdrive, read_gdrive)
-- **`write.py`** — Google Workspace write operations (send_gmail, create_gcal_event, post_chat_message, write_gdrive)
+- **`read.py`** — Google Workspace read operations (list_gmail, read_gmail, list_gcal, list_gdrive, read_gdrive, list_gmail_drafts)
+- **`write.py`** — Google Workspace write operations (draft_gmail, send_gmail, create_gcal_event, post_chat_message, write_gdrive)
 
 Workspace tools carry an `init` hook (`_init_workspace`) that triggers Google OAuth when called.
 

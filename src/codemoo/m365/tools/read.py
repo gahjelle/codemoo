@@ -172,3 +172,36 @@ list_outlook_calendar = ToolDef(
     fn=_list_outlook_calendar,
     init=_init_m365,
 )
+
+
+def _list_outlook_drafts() -> str:
+    url = f"{config.m365.graph_base_url}/me/mailFolders/Drafts/messages"
+    params = {"$select": "id,subject,toRecipients,createdDateTime", "$top": "10"}
+    resp = httpx.get(url, headers=_get_headers(), params=params)
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    drafts = resp.json().get("value", [])
+    if not drafts:
+        return "No drafts found."
+    lines = []
+    for draft in drafts:
+        created = draft.get("createdDateTime", "")[:10]
+        subject = draft.get("subject", "(no subject)")
+        recipients = draft.get("toRecipients", [])
+        to = (
+            recipients[0].get("emailAddress", {}).get("address", "?")
+            if recipients
+            else "?"
+        )
+        draft_id = draft.get("id", "?")
+        lines.append(f"[{created}] To: {to} | Subject: {subject} | id={draft_id}")
+    return "\n".join(lines)
+
+
+list_outlook_drafts = ToolDef(
+    name="list_outlook_drafts",
+    description="List pending email drafts in the Outlook Drafts folder.",
+    parameters=[],
+    fn=_list_outlook_drafts,
+    init=_init_m365,
+)

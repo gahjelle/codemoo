@@ -13,28 +13,51 @@ def _get_headers() -> dict[str, str]:
     }
 
 
-def _send_outlook_email(to: str, subject: str, body: str) -> str:
-    url = f"{config.m365.graph_base_url}/me/sendMail"
+def _draft_outlook_email(to: str, subject: str, body: str) -> str:
+    url = f"{config.m365.graph_base_url}/me/messages"
     payload = {
-        "message": {
-            "subject": subject,
-            "body": {"contentType": "Text", "content": body},
-            "toRecipients": [{"emailAddress": {"address": to}}],
-        }
+        "subject": subject,
+        "body": {"contentType": "Text", "content": body},
+        "toRecipients": [{"emailAddress": {"address": to}}],
     }
     resp = httpx.post(url, headers=_get_headers(), json=payload)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
-    return f"Email sent to {to}"
+    draft_id = resp.json().get("id", "?")
+    return f"Draft saved (id={draft_id}). Review it in your Outlook Drafts folder."
 
 
-send_outlook_email = ToolDef(
-    name="send_outlook_email",
-    description="Send an email via Microsoft Outlook / Graph.",
+draft_outlook_email = ToolDef(
+    name="draft_outlook_email",
+    description=(
+        "Save an email as a draft in Outlook."
+        " Returns a draft ID for use with send_outlook_email."
+    ),
     parameters=[
         ToolParam(name="to", description="Recipient email address."),
         ToolParam(name="subject", description="Email subject line."),
         ToolParam(name="body", description="Plain-text email body."),
+    ],
+    fn=_draft_outlook_email,
+    init=_init_m365,
+)
+
+
+def _send_outlook_email(draft_id: str) -> str:
+    url = f"{config.m365.graph_base_url}/me/messages/{draft_id}/send"
+    resp = httpx.post(url, headers=_get_headers())
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    return "Email sent."
+
+
+send_outlook_email = ToolDef(
+    name="send_outlook_email",
+    description="Send a previously drafted Outlook email by its draft ID.",
+    parameters=[
+        ToolParam(
+            name="draft_id", description="Draft ID returned by draft_outlook_email."
+        ),
     ],
     fn=_send_outlook_email,
     requires_approval=True,

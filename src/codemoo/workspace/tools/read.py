@@ -254,3 +254,43 @@ read_gdrive = ToolDef(
     fn=_read_gdrive,
     init=_init_workspace,
 )
+
+
+def _list_gmail_drafts() -> str:
+    url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
+    resp = httpx.get(url, headers=_get_headers(), params={"maxResults": "10"})
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    drafts = resp.json().get("drafts", [])
+    if not drafts:
+        return "No drafts found."
+    lines = []
+    for draft in drafts:
+        draft_id = draft.get("id", "?")
+        msg_resp = httpx.get(
+            f"https://gmail.googleapis.com/gmail/v1/users/me/drafts/{draft_id}",
+            headers=_get_headers(),
+            params={"format": "metadata", "metadataHeaders": ["To", "Subject", "Date"]},
+        )
+        if msg_resp.is_error:
+            lines.append(f"id={draft_id} (metadata unavailable)")
+            continue
+        msg_data = msg_resp.json()
+        headers = {
+            h["name"]: h["value"]
+            for h in msg_data.get("message", {}).get("payload", {}).get("headers", [])
+        }
+        to = headers.get("To", "?")
+        subject = headers.get("Subject", "(no subject)")
+        date = headers.get("Date", "")[:16]
+        lines.append(f"[{date}] To: {to} | Subject: {subject} | id={draft_id}")
+    return "\n".join(lines)
+
+
+list_gmail_drafts = ToolDef(
+    name="list_gmail_drafts",
+    description="List pending email drafts in Gmail.",
+    parameters=[],
+    fn=_list_gmail_drafts,
+    init=_init_workspace,
+)

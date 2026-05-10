@@ -221,16 +221,18 @@ The redirect URI and public client flag enable the device code flow Codemoo uses
 
 Go to **API permissions** → **Add a permission** → **Microsoft Graph** → **Delegated permissions** and add:
 
-| Permission            | Consent required | Used by                         |
-| --------------------- | ---------------- | ------------------------------- |
-| `Mail.Read`           | User             | Read email                      |
-| `Mail.Send`           | User             | Send email                      |
-| `Calendars.ReadWrite` | User             | Read and create calendar events |
-| `Sites.Read.All`      | **Admin**        | Read SharePoint documents       |
-| `Files.ReadWrite.All` | **Admin**        | Write SharePoint documents      |
-| `ChannelMessage.Send` | **Admin**        | Post Teams messages             |
+| Permission            | Consent required | Used by                                              |
+| --------------------- | ---------------- | ---------------------------------------------------- |
+| `Mail.ReadWrite`      | User             | Read email; create and manage drafts                 |
+| `Mail.Send`           | User             | Send email (including sending a draft by ID)         |
+| `Calendars.ReadWrite` | User             | Read and create calendar events                      |
+| `Sites.Read.All`      | **Admin**        | Read SharePoint documents                            |
+| `Files.ReadWrite.All` | **Admin**        | Write SharePoint documents                           |
+| `ChannelMessage.Send` | **Admin**        | Post Teams messages                                  |
 
-For the `m365_lite` script only `Mail.Read`, `Mail.Send`, and `Calendars.ReadWrite` are needed — no admin consent required.
+`Mail.ReadWrite` (not just `Mail.Read`) is required because drafts are created via `POST /me/messages`, which is a write operation. `Mail.Read` alone is insufficient.
+
+For the `m365_lite` script only `Mail.ReadWrite`, `Mail.Send`, and `Calendars.ReadWrite` are needed — no admin consent required.
 
 After adding permissions, click **Grant admin consent for \<tenant\>** if you have admin rights, or ask your tenant admin to do so for the admin-only permissions.
 
@@ -266,6 +268,20 @@ If you run in `workspace` mode, you need OAuth2 credentials from a Google Cloud 
 2. Enable the APIs you need: **Gmail API**, **Google Calendar API**, **Google Chat API**, **Google Drive API**
 3. Go to **APIs & Services** → **Credentials** → **Create credentials** → **OAuth client ID**
 4. Choose **Desktop app**, download the JSON, and note the `client_id` and `client_secret`
+5. Go to **APIs & Services** → **OAuth consent screen** → **Add or remove scopes** and add the following sensitive scopes:
+
+| Scope                                             | Used by                                      |
+| ------------------------------------------------- | -------------------------------------------- |
+| `gmail.readonly`                                  | Read and list email                          |
+| `gmail.compose`                                   | Create drafts and send drafts by ID          |
+| `gmail.send`                                      | Send email directly                          |
+| `calendar.readonly`                               | Read calendar events                         |
+| `calendar.events`                                 | Create calendar events                       |
+| `drive`                                           | Read and write Drive files; post to Chat     |
+
+`gmail.compose` is required for the draft workflow — `gmail.send` alone only covers `POST .../messages/send` and does not authorize `POST .../drafts` or `POST .../drafts/{id}/send`.
+
+If your project is in **Testing** mode, add any Google accounts that will use the app as test users under **OAuth consent screen** → **Test users**.
 
 ### Configure Codemoo
 

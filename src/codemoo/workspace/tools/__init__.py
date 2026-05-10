@@ -5,11 +5,13 @@ from codemoo.workspace.tools.read import (
     list_gcal,
     list_gdrive,
     list_gmail,
+    list_gmail_drafts,
     read_gdrive,
     read_gmail,
 )
 from codemoo.workspace.tools.write import (
     create_gcal_event,
+    draft_gmail,
     post_chat_message,
     send_gmail,
     write_gdrive,
@@ -20,6 +22,8 @@ WORKSPACE_TOOL_REGISTRY: dict[str, ToolDef] = {
     for t in [
         list_gmail,
         read_gmail,
+        draft_gmail,
+        list_gmail_drafts,
         send_gmail,
         list_gcal,
         create_gcal_event,

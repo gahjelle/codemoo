@@ -1,34 +1,4 @@
-# Spec: gmail-tools
-
-## Purpose
-
-TBD — defines the Gmail tool implementations for listing, reading, and sending email via the Gmail API.
-
-## Requirements
-
-### Requirement: List Gmail messages
-The system SHALL provide a tool to list recent Gmail messages with sender, subject, and date.
-
-#### Scenario: List inbox messages
-- **WHEN** list_gmail tool is called
-- **THEN** system returns up to 10 most recent messages from inbox
-- **AND** each message shows date, sender email, and subject line
-
-#### Scenario: Limit message count
-- **WHEN** list_gmail tool is called with top parameter
-- **THEN** system returns at most the specified number of messages
-
-### Requirement: Read Gmail message content
-The system SHALL provide a tool to read the body content of a Gmail message identified by subject keyword.
-
-#### Scenario: Read message by subject keyword
-- **WHEN** read_gmail tool is called with subject_keyword
-- **THEN** system returns the first matching message's full body content
-- **AND** response includes sender and subject headers
-
-#### Scenario: No matching message
-- **WHEN** read_gmail tool is called with non-matching keyword
-- **THEN** system returns error message indicating no match found
+## ADDED Requirements
 
 ### Requirement: Draft Gmail message
 The system SHALL provide a `draft_gmail` tool that creates a draft email in the authenticated user's Gmail Drafts folder. It SHALL accept `to: str`, `subject: str`, and `body: str` parameters and return a confirmation string that includes the draft ID. It SHALL NOT require approval.
@@ -54,6 +24,8 @@ The system SHALL provide a `list_gmail_drafts` tool that retrieves pending draft
 - **WHEN** `list_gmail_drafts.fn()` is called and no drafts exist
 - **THEN** it SHALL return a string indicating no drafts found
 
+## MODIFIED Requirements
+
 ### Requirement: Send Gmail message
 The system SHALL provide a `send_gmail` tool that sends a previously created Gmail draft identified by its draft ID. It SHALL accept only `draft_id: str` and return a confirmation string. It SHALL require approval. It SHALL NOT accept `to`, `subject`, or `body` parameters.
 
@@ -70,14 +42,3 @@ The system SHALL provide a `send_gmail` tool that sends a previously created Gma
 - **WHEN** `send_gmail` is inspected for its ToolParam list
 - **THEN** it SHALL have exactly one parameter named `draft_id`
 - **AND** SHALL NOT have parameters named `to`, `subject`, or `body`
-
-### Requirement: Gmail body extraction handles multipart
-The system SHALL correctly extract text content from Gmail's multipart MIME messages.
-
-#### Scenario: Plain text message
-- **WHEN** message contains only text/plain part
-- **THEN** system returns decoded plain text body
-
-#### Scenario: Multipart message
-- **WHEN** message contains both text/plain and text/html parts
-- **THEN** system returns text/plain content preferentially

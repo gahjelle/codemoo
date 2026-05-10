@@ -85,25 +85,20 @@ m365_read  = [
     "list_outlook_calendar",
 ]
 m365_write = [
-    "get_datetime",
-    "read_sharepoint",
-    "list_sharepoint",
-    "read_outlook_email",
+    "draft_outlook_email",
+    "list_outlook_drafts",
     "send_outlook_email",
     "create_outlook_calendar_event",
     "post_teams_message",
+    "write_sharepoint",
 ]
 workspace_read  = ["get_datetime", "read_gmail", "list_gmail", "list_gcal", "list_gdrive", "read_gdrive"]
 workspace_write = [
-    "get_datetime",
-    "read_gmail",
-    "list_gmail",
+    "draft_gmail",
+    "list_gmail_drafts",
     "send_gmail",
-    "list_gcal",
     "create_gcal_event",
     "post_chat_message",
-    "list_gdrive",
-    "read_gdrive",
     "write_gdrive",
 ]
 
@@ -205,13 +200,13 @@ sources = ["send_bot.py", "single_turn_tool_bot.py"]
 [bots.SendBot.variants.m365]
 description = "Send email, create calendar events, post to Teams, write SharePoint docs."
 instruction_file = "send_bot-m365.txt"
-tools = ["@m365_read", "send_outlook_email", "create_outlook_calendar_event", "post_teams_message", "write_sharepoint"]
+tools = ["@m365_read", "@m365_write"]
 prompts_file = "send_bot-m365.txt"
 
 [bots.SendBot.variants.workspace]
 description = "Send Gmail, create Google Calendar events, post to Google Chat, write Google Drive files."
 instruction_file = "send_bot-workspace.txt"
-tools = ["@workspace_write"]
+tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "send_bot-workspace.txt"
 
 [bots.AgentBot]
@@ -228,13 +223,13 @@ prompts_file = "agent_bot-code.txt"
 [bots.AgentBot.variants.m365]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
 instruction_file = "agent_bot-m365.txt"
-tools = ["@m365_write"]
+tools = ["@m365_read", "@m365_write"]
 prompts_file = "agent_bot-m365.txt"
 
 [bots.AgentBot.variants.workspace]
 description = "Loop Google Workspace tool calls until done — pursue goals across Gmail, Calendar, and Drive."
 instruction_file = "agent_bot-workspace.txt"
-tools = ["@workspace_write"]
+tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "agent_bot-workspace.txt"
 
 [bots.GuardBot]
@@ -251,13 +246,13 @@ prompts_file = "guard_bot-code.txt"
 [bots.GuardBot.variants.m365]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
 instruction_file = "guard_bot-m365.txt"
-tools = ["@m365_write"]
+tools = ["@m365_read", "@m365_write"]
 prompts_file = "guard_bot-m365.txt"
 
 [bots.GuardBot.variants.workspace]
 description = "Pause before sending Workspace actions — nothing sent without your say-so."
 instruction_file = "guard_bot-workspace.txt"
-tools = ["@workspace_write"]
+tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "guard_bot-workspace.txt"
 
 [bots.ProjectBot]
@@ -276,14 +271,14 @@ prompts_file = "project_bot-code.txt"
 description = "Read team context from SharePoint before acting."
 instruction_file = "project_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
-tools = ["@m365_write"]
+tools = ["@m365_read", "@m365_write"]
 prompts_file = "project_bot-m365.txt"
 
 [bots.ProjectBot.variants.workspace]
 description = "Read team context from Google Drive before acting."
 instruction_file = "project_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
-tools = ["@workspace_write"]
+tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "project_bot-workspace.txt"
 
 [bots.MemoryBot]
@@ -304,7 +299,7 @@ description = "Persist user preferences across sessions via a local memory file.
 instruction_file = "memory_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{project_settings_path}/memory.md"
-tools = ["@m365_write"]
+tools = ["@m365_read", "@m365_write"]
 prompts_file = "memory_bot-m365.txt"
 
 [bots.MemoryBot.variants.workspace]
@@ -312,7 +307,7 @@ description = "Persist user preferences across sessions via a local memory file.
 instruction_file = "memory_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{project_settings_path}/memory.md"
-tools = ["@workspace_write"]
+tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "memory_bot-workspace.txt"
 
 #
@@ -334,6 +329,7 @@ client_id = "000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleuserconten
 client_secret = "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"
 scopes = [
     "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/calendar.events",

@@ -15,25 +15,48 @@ def _get_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {creds.token}"}
 
 
-def _send_gmail(to: str, subject: str, body: str) -> str:
+def _draft_gmail(to: str, subject: str, body: str) -> str:
     message = MIMEText(body)
     message["to"] = to
     message["subject"] = subject
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
-    url = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
-    resp = httpx.post(url, headers=_get_headers(), json={"raw": raw})
+    url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
+    resp = httpx.post(url, headers=_get_headers(), json={"message": {"raw": raw}})
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
-    return f"Email sent to {to}"
+    draft_id = resp.json().get("id", "?")
+    return f"Draft saved (id={draft_id}). Review it in your Gmail Drafts folder."
 
 
-send_gmail = ToolDef(
-    name="send_gmail",
-    description="Send an email via Gmail.",
+draft_gmail = ToolDef(
+    name="draft_gmail",
+    description=(
+        "Save an email as a draft in Gmail."
+        " Returns a draft ID for use with send_gmail."
+    ),
     parameters=[
         ToolParam(name="to", description="Recipient email address."),
         ToolParam(name="subject", description="Email subject line."),
         ToolParam(name="body", description="Plain-text email body."),
+    ],
+    fn=_draft_gmail,
+    init=_init_workspace,
+)
+
+
+def _send_gmail(draft_id: str) -> str:
+    url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts/send"
+    resp = httpx.post(url, headers=_get_headers(), json={"id": draft_id})
+    if resp.is_error:
+        return f"Error {resp.status_code}: {resp.text}"
+    return "Email sent."
+
+
+send_gmail = ToolDef(
+    name="send_gmail",
+    description="Send a previously drafted Gmail email by its draft ID.",
+    parameters=[
+        ToolParam(name="draft_id", description="Draft ID returned by draft_gmail."),
     ],
     fn=_send_gmail,
     requires_approval=True,
