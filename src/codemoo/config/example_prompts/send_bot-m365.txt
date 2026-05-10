@@ -1,5 +1,5 @@
-Send a summary email of today's demo to me
+Post a message to the #moo Teams channel: I'm back from vacation and catching up on everything.
 ---
-Create a calendar event for a follow-up meeting next week
+Draft a reply to the status request email and create a calendar block for Thursday afternoon to write the report.
 ---
-Post a message to the demo Teams channel
+Just draft a reply to the status request email. Don't send it yet.

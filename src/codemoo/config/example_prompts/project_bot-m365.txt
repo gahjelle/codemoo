@@ -1,1 +1,5 @@
-What projects are currently active? Check the team context.
+Read TEAM.md from the root of the demo SharePoint site. What projects are currently active?
+---
+Using the team context from TEAM.md, draft a stakeholder update email. Use the appropriate tone for external communication.
+---
+Schedule a team sync meeting. Read TEAM.md for the right attendees, and schedule it at a time that respects a preference for no meetings before 10am.

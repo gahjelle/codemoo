@@ -125,6 +125,8 @@ Run through the bot progression to see how coding agents evolve step by step —
 >
 > The later bots (ProjectBot and beyond) use the Mistral API — make sure `MISTRAL_API_KEY` is set.
 
+For the **M365 and Workspace demo paths**, some setup is required before running (creating a `moo` channel, seeding emails, etc.). See [`demo/DEMO_SETUP.md`](demo/DEMO_SETUP.md) for the full checklist.
+
 Start the interactive demo by running Codemoo with the `demo` command:
 
 ```console

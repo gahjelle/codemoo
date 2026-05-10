@@ -1,7 +1,5 @@
-Summarise my inbox
+Post a message to the moo Chat space: I'm back from vacation and catching up on everything.
 ---
-What is the latest email from Geir Arne?
+Draft a reply to the status request email and create a calendar block for Thursday afternoon to write the report.
 ---
-Send a response to him where you confirm that the task is done
----
-Create a calendar event for a follow-up meeting next week
+Just draft a reply to the status request email. Don't send it yet.

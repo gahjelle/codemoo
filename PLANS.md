@@ -18,8 +18,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Redo planning of future bots
 - Make chat input field multiline
 - Add draft_email tool to m365 and workspace variants
-- Improve save_memory: write in english, don't lose lde memories
-- Review all prompts and ~~instructions~~
+- Improve save_memory: write in english, don't lose old memories
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files
