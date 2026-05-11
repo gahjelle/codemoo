@@ -24,7 +24,10 @@ def make_file_validator(session_folder: Path) -> Callable[..., str | None]:
 
 
 def _read_file(path: str) -> str:
-    return Path(path).read_text(encoding="utf-8")
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except OSError as err:
+        return f"Error: {err}"
 
 
 read_file = ToolDef(
@@ -38,8 +41,12 @@ read_file = ToolDef(
 
 
 def _write_file(path: str, content: str) -> str:
-    num_bytes = Path(path).write_text(content, encoding="utf-8")
-    return f"{num_bytes} bytes written"
+    try:
+        num_bytes = Path(path).write_text(content, encoding="utf-8")
+    except OSError as err:
+        return f"Error: {err}"
+    else:
+        return f"{num_bytes} bytes written"
 
 
 write_file = ToolDef(
