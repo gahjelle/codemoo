@@ -16,7 +16,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Use separate memory files for each script path
-- Redo planning of future bots
 - Make chat input field multiline
 - Improve save_memory: write in english, don't lose old memories
 - Read file-tool can read subset of file
@@ -25,6 +24,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Update prompts to "trust the tool"
 - Add sessions and store them to disk, include --resume functionality
 - Include some information about current context on status bar
+- Add num tokens in context visibly on screen
 - Stream answers
 
 ## Proposed by agent
