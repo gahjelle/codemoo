@@ -61,7 +61,9 @@ class ChatApp(App[str | None]):
             self._sender_info |= commentator_bot.sender_info()
         for participant in participants:
             if hasattr(participant, "register_guard"):
-                participant.register_guard(self._make_guard_ask_fn())  # ty: ignore[call-non-callable]
+                participant.register_guard(
+                    self._make_guard_ask_fn()
+                )  # ty: ignore[call-non-callable]
         # Keep a reference to the human participant for outgoing message construction
         self._human = next(p for p in participants if p.is_human)
         # Authoritative ordered history of all messages posted in this session
@@ -77,7 +79,7 @@ class ChatApp(App[str | None]):
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
         yield ChatInput(
-            placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
+            placeholder="Type a message... (Enter to send, Alt-N for newline)"
         )
         if self._backend_info is not None:
             yield BackendStatus(self._backend_info, self._resolved_bots)

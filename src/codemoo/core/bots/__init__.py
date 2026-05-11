@@ -17,6 +17,7 @@ from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.bots.memory_bot import MemoryBot
 from codemoo.core.bots.project_bot import ProjectBot
 from codemoo.core.bots.read_bot import ReadBot
+from codemoo.core.bots.retry_bot import RetryBot
 from codemoo.core.bots.scan_bot import ScanBot
 from codemoo.core.bots.send_bot import SendBot
 from codemoo.core.bots.system_bot import SystemBot
@@ -48,6 +49,7 @@ __all__ = [
     "MemoryBot",
     "ProjectBot",
     "ReadBot",
+    "RetryBot",
     "ScanBot",
     "SendBot",
     "SystemBot",
@@ -184,6 +186,21 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
             effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
             memory_tool = make_memory_tool(effective_path)
             return MemoryBot(
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                tools=[*tools, memory_tool],
+                instructions=bot.instructions,
+                context_source=bot.context_source,
+                memory_file=memory_path,
+                session_folder=session_folder,
+                commentator=commentator,
+            )
+        case "RetryBot":
+            memory_path = Path(bot.memory_file) if bot.memory_file else None
+            effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
+            memory_tool = make_memory_tool(effective_path)
+            return RetryBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,

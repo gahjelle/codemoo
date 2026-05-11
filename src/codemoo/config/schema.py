@@ -21,6 +21,7 @@ type BotType = Literal[
     "SendBot",
     "ProjectBot",
     "MemoryBot",
+    "RetryBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
 type ModelBackend = Literal[

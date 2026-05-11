@@ -74,7 +74,7 @@ async def dispatch_tool(
     bot_name: str,
     commentator: "CommentatorBot | None",
 ) -> str:
-    """Run validate (if present), then fn. Emits ValidationBlockEvent on block."""
+    """Run validate then fn; emit commentator events on block or error."""
     if tool.validate is not None:
         error = tool.validate(**arguments)
         if error is not None:
@@ -90,7 +90,19 @@ async def dispatch_tool(
                     )
                 )
             return error
-    return tool.fn(**arguments)
+    result = tool.fn(**arguments)
+    if commentator is not None and result.startswith("Error "):
+        from codemoo.core.bots.commentator_bot import ToolErrorEvent  # noqa: PLC0415, I001
+
+        await commentator.comment(
+            ToolErrorEvent(
+                bot_name=bot_name,
+                tool_name=tool.name,
+                arguments=arguments,
+                result=result,
+            )
+        )
+    return result
 
 
 TOOL_REGISTRY: dict[str, ToolDef] = {

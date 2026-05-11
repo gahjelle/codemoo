@@ -1,0 +1,3 @@
+Find and read the email with subject containing "Q3 Board Report".
+---
+Read the file Strategy2030.docx from the root of the SharePoint site.

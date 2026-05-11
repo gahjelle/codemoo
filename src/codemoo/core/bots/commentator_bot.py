@@ -30,6 +30,16 @@ class ValidationBlockEvent:
 
 
 @dataclasses.dataclass(frozen=True)
+class ToolErrorEvent:
+    """Emitted by dispatch_tool when a tool returns a result starting with 'Error '."""
+
+    bot_name: str
+    tool_name: str
+    arguments: dict[str, object]
+    result: str
+
+
+@dataclasses.dataclass(frozen=True)
 class BotRestartEvent:
     """Emitted by ChatApp when the user restarts the current bot in demo mode."""
 
@@ -47,6 +57,7 @@ class Persona:
 
 _STREIK_NAME = "Streik"
 _STREIK_EMOJI = "\N{PUBLIC ADDRESS LOUDSPEAKER}"
+_ERROR_TRUNCATE_LEN = 60
 
 _PERSONAS: list[Persona] = [
     Persona(
@@ -131,6 +142,7 @@ class CommentatorBot:
             | ContextLoadEvent
             | MemoryLoadEvent
             | ValidationBlockEvent
+            | ToolErrorEvent
             | BotRestartEvent
         ),
     ) -> None:
@@ -143,6 +155,8 @@ class CommentatorBot:
             await self._comment_on_memory(event)
         elif isinstance(event, ValidationBlockEvent):
             await self._comment_on_validation_block(event)
+        elif isinstance(event, ToolErrorEvent):
+            await self._comment_on_tool_error(event)
         elif isinstance(event, BotRestartEvent):
             await self._comment_on_restart(event)
 
@@ -161,6 +175,28 @@ class CommentatorBot:
             prompt=prompt,
             fallback=f"{event.bot_name} calls {full_sig}",
             dim_prefix=display_sig,
+        )
+
+    async def _comment_on_tool_error(self, event: ToolErrorEvent) -> None:
+        """Generate commentary about a tool call that returned an error."""
+        full_sig = format_tool_call(event.tool_name, event.arguments)
+        display_sig = format_tool_call(
+            event.tool_name, event.arguments, max_value_len=40
+        )
+        truncated_error = (
+            event.result[:_ERROR_TRUNCATE_LEN] + "…"
+            if len(event.result) > _ERROR_TRUNCATE_LEN
+            else event.result
+        )
+        prompt = (
+            f"{event.bot_name} called '{event.tool_name}' with arguments: {full_sig},"
+            f" but the tool returned an error: {event.result}."
+            " Give a brief, in-character one-sentence aside reacting to this failure."
+        )
+        await self._generate_comment(
+            prompt=prompt,
+            fallback=f"{display_sig} → {truncated_error}",
+            dim_prefix=f"{display_sig} → {truncated_error}",
         )
 
     async def _comment_on_validation_block(self, event: ValidationBlockEvent) -> None:

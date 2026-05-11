@@ -72,6 +72,11 @@ production code. It contains intentional issues that must stay in place:
 - **`demo/README.md`** claims the script "sorts names alphabetically." The code does
   not sort. This discrepancy is intentional — it makes the ReadBot comparison prompt
   reveal a real difference between the README and the code.
+- **`demo/whoami.py`** reads its API key from `os.environ["MISTAKE_API_KEY"]` instead
+  of `MISTRAL_API_KEY`. This causes a `KeyError` at runtime and is the deliberate
+  failure that RetryBot (Undo) surfaces after three retries. Do not fix this typo.
+  The game picks a daily-seeded random famous person and runs a single non-interactive
+  LLM call per invocation.
 
 When modifying `demo/` files for other reasons, preserve these intentional issues.
 
@@ -113,6 +118,20 @@ tools = ["@code_write", "extra_tool"]
 
 References are expanded before Pydantic validation; the `[tool_lists]` section is consumed and never appears on `CodemooConfig`. An unknown `@name` raises a `KeyError` at config load time with a message listing available list names.
 
+### Adding a New Bot
+
+When adding a bot to the progression, follow these conventions before writing any code:
+
+1. **Agree on an emoji.** The emoji is stored as a Unicode name (e.g. `"GAME DIE"`) in `codemoo.toml` and rendered at runtime. It must be a standard terminal-width character — avoid wide/double-width CJK characters, flag sequences, or anything that renders as two columns. Confirm the emoji and its Unicode name before opening the change.
+
+2. **Additive only.** Each bot adds exactly one capability on top of the previous bot. Features are never removed between steps; the progression is strictly cumulative.
+
+3. **No inheritance.** Every bot is a self-contained dataclass that reimplements all the behaviour of its predecessor. Do not use class inheritance or mixin composition to reuse bot logic. This is intentional: the demo shows the code diff between consecutive bots in slides, and a clean diff requires each file to be standalone.
+
+4. **Update the default bot.** After wiring the new bot into the scripts, change the `bot` default argument in `code_chat` and `business_chat` in `src/codemoo/frontends/tui.py` to point to the new bot type.
+
+5. **Write example prompts that exercise the new capability.** At least one prompt must demonstrably trigger the new feature. For bots that handle failure scenarios, the failure must be consistent and reproducible in the demo environment — not flaky. Prompts should build on the established demo narrative (tiemit/whoami for `code`; SharePoint/Drive stakeholder workflow for `m365`/`workspace`) where possible. Include at least one standalone prompt that works without prior demo state.
+
 ### Bot System Prompt Style
 
 Each bot's system prompt follows a consistent four-part structure:
@@ -150,6 +169,7 @@ because listing available API tools adds context the user may not know.
 | Cato (GuardBot)   | Caution isn't hesitation — it's precision.                       |
 | Lore (ProjectBot) | Context first — conventions are rarely arbitrary.                |
 | Aura (MemoryBot)  | Past turns are future context.                                   |
+| Undo (RetryBot)   | Failure is data — use it.                                        |
 
 `reverse_string` is assigned directly to Telo's variant (not via any named list)
 and is absent from all named tool lists by design — it is an introductory teaching

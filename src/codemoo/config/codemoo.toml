@@ -21,6 +21,7 @@ bots = [
     { type = "GuardBot", variant = "code" },
     { type = "ProjectBot", variant = "code" },
     { type = "MemoryBot", variant = "code" },
+    { type = "RetryBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -44,6 +45,7 @@ bots = [
     { type = "GuardBot", variant = "m365" },
     { type = "ProjectBot", variant = "m365" },
     { type = "MemoryBot", variant = "m365" },
+    { type = "RetryBot", variant = "m365" },
 ]
 
 [scripts.workspace]
@@ -59,6 +61,7 @@ bots = [
     { type = "GuardBot", variant = "workspace" },
     { type = "ProjectBot", variant = "workspace" },
     { type = "MemoryBot", variant = "workspace" },
+    { type = "RetryBot", variant = "workspace" },
 ]
 
 [scripts.vs]
@@ -309,6 +312,35 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "memory_bot-workspace.txt"
+
+[bots.RetryBot]
+name = "Undo"
+emoji = "GAME DIE"
+sources = ["retry_bot.py"]
+
+[bots.RetryBot.variants.code]
+description = "Retry failing tool calls up to 3 times, then escalate with a clear summary."
+instruction_file = "retry_bot-code.txt"
+context_source = { type = "file", name = "AGENTS.md" }
+memory_file = "{project_settings_path}/memory-code.md"
+tools = ["@code_write"]
+prompts_file = "retry_bot-code.txt"
+
+[bots.RetryBot.variants.m365]
+description = "Retry failing M365 tool calls up to 3 times, then escalate with a clear summary."
+instruction_file = "retry_bot-m365.txt"
+context_source = { type = "sharepoint", name = "TEAM.md" }
+memory_file = "{user_settings_path}/memory-m365.md"
+tools = ["@m365_read", "@m365_write"]
+prompts_file = "retry_bot-m365.txt"
+
+[bots.RetryBot.variants.workspace]
+description = "Retry failing Workspace tool calls up to 3 times, then escalate with a clear summary."
+instruction_file = "retry_bot-workspace.txt"
+context_source = { type = "drive", name = "TEAM.md" }
+memory_file = "{user_settings_path}/memory-workspace.md"
+tools = ["@workspace_read", "@workspace_write"]
+prompts_file = "retry_bot-workspace.txt"
 
 #
 # Microsoft 365 / Graph API, see README for set up

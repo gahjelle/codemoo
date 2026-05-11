@@ -8,6 +8,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Questions
 
 - Is there a real difference with ReadBot and ScanBot / ChangeBot and SendBot? Should we merge them?
+- Should errors like FileNotFound in read_file be caught instead of escalated to ErrorBot and break the agentic loop?
 - Should tool output be added to conversation history?
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?
@@ -15,6 +16,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
+- Add Ascii splash screen
 - Improve save_memory: write in english, don't lose old memories
 - Read file-tool can read subset of file
 - Write file-tool can only write new files

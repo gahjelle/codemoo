@@ -80,6 +80,17 @@ A `BotRestartEvent` SHALL be a frozen dataclass with one field: `bot_name: str` 
 - **THEN** a fallback message SHALL be posted using the Streik persona
 - **AND** the fallback SHALL reference the bot name and restart action
 
+### Requirement: ToolErrorEvent is included in CommentatorBot's comment() union type
+`CommentatorBot.comment()` SHALL accept `ToolErrorEvent` alongside the existing event types (`ToolCallEvent`, `ContextLoadEvent`, `MemoryLoadEvent`, `ValidationBlockEvent`, `BotRestartEvent`). The updated union type SHALL be used in both the method signature and the `isinstance` dispatch chain.
+
+#### Scenario: comment() accepts ToolErrorEvent without raising
+- **WHEN** `await commentator.comment(ToolErrorEvent(...))` is called
+- **THEN** the method SHALL dispatch to `_comment_on_tool_error` without raising `TypeError`
+
+#### Scenario: comment() still handles all existing event types
+- **WHEN** any of the existing event types is passed to `comment()`
+- **THEN** the existing behaviour SHALL be unchanged
+
 ### Requirement: CommentatorBot uses format_tool_call for all tool call formatting
 `CommentatorBot` SHALL use `format_tool_call()` from `core/tools/formatting.py` in place of the private `_format_args` function and inline `short_sig` slicing. The display signature shown in the `[dim]` header SHALL use `max_value_len=40`. The LLM prompt describing the tool call SHALL use no truncation, so the model receives full argument values.
 

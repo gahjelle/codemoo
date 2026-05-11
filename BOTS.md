@@ -21,12 +21,12 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 9   | GuardBot   | code, m365, workspace | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`                   | Guards dangerous actions                                  |
 | 10  | ProjectBot | code, m365, workspace | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`              | Reads project context                                     |
 | 11  | MemoryBot  | code, m365, workspace | Aura | An aura surrounds and travels with you — it accumulates over time       | 😇     | `SMILING FACE WITH HALO` | A halo is the aura around you — it follows you everywhere |
+| 12  | RetryBot   | code, m365, workspace | Undo | Undo the failure — retry from a known good state                        | 🎲     | `GAME DIE`               | Roll again — each retry is another chance                 |
 
 **Provisional** *(add emojis when each bot is implemented)*
 
 | #   | Bot         | Mode                  | Name | Name rationale                                            |
 | --- | ----------- | --------------------- | ---- | --------------------------------------------------------- |
-| 12  | RetryBot    | code, m365, workspace | Undo | Undo the failure — retry from a known good state          |
 | 13  | CompactBot  | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread           |
 | 14  | CommandBot  | code, m365, workspace | Exec | Exec a command — the slash prefix runs the script         |
 | 15  | SkillBot    | code, m365, workspace | Cord | A cord connects the steps of a workflow in sequence       |
@@ -63,12 +63,12 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 9   | GuardBot   | Cato | Caution isn't hesitation — it's precision.                       |
 | 10  | ProjectBot | Lore | Context first — conventions are rarely arbitrary.                |
 | 11  | MemoryBot  | Aura | Past turns are future context.                                   |
+| 12  | RetryBot   | Undo | Failure is data — use it.                                        |
 
 **Provisional** *(revisit and confirm when each bot is implemented)*:
 
 | #   | Bot         | Name | Credo                                                        |
 | --- | ----------- | ---- | ------------------------------------------------------------ |
-| 12  | RetryBot    | Undo | Failure is data — use it.                                    |
 | 13  | CompactBot  | Drop | Let go of the detail, hold the thread.                       |
 | 14  | CommandBot  | Exec | Name the action, own the intention.                          |
 | 15  | SkillBot    | Cord | A skill is a promise — keep it consistent.                   |
@@ -205,13 +205,6 @@ Bot types marked with * are unique to `workspace` mode.
 - **Act 11 — Ecosystem** (Open → Glen → Apex): "The ecosystem plugs in. The sandbox makes it safe. Now it can see."
 
 ## Future bot notes
-
-### RetryBot (Undo)
-
-- Max retry budget prevents infinite loops on the same failing tool call
-- Detect repeated identical failures and surface them rather than looping
-- Two escalation paths: report partial progress (if any) or ask the user for guidance
-- Composes with GuardBot: a dangerous action that fails must not be silently retried — re-approval required
 
 ### CompactBot (Drop)
 
