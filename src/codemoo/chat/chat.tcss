@@ -217,6 +217,17 @@ SlideContent {
     display: none;
 }
 
+/* ChatInput: multiline input, height managed dynamically by the widget */
+ChatInput {
+    border: tall $surface;
+    background: $surface;
+    padding: 0 1;
+}
+
+ChatInput:focus {
+    border: tall $accent;
+}
+
 /* Restart divider: full-width separator mounted in the log when Ctrl-R is pressed */
 .restart-divider {
     width: 1fr;

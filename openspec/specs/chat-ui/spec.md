@@ -25,15 +25,19 @@ The chat UI layout SHALL include a status bar widget positioned between the mess
 - **THEN** the layout SHALL contain, in order from top to bottom: the scrollable message log, the status bar, and the text input field
 
 ### Requirement: Accept human text input
-The chat UI SHALL provide a text input field where the human user can type and submit messages.
+The chat UI SHALL provide a multiline text input field (`ChatInput`) where the human user can type and submit messages.
 
-#### Scenario: Submit message with Enter key
+#### Scenario: Submit message with Enter
 - **WHEN** the user types text into the input field and presses Enter
 - **THEN** the message SHALL be posted to the chat and the input field SHALL be cleared
 
+#### Scenario: Alt+N inserts a newline
+- **WHEN** the user presses Alt+N in the input field
+- **THEN** a newline SHALL be inserted at the cursor position and no message SHALL be posted
+
 #### Scenario: Empty input is ignored
-- **WHEN** the user presses Enter with an empty input field
-- **THEN** no message SHALL be posted and the input field SHALL remain empty
+- **WHEN** the user presses Enter with an empty or whitespace-only input field
+- **THEN** no message SHALL be posted and the input field SHALL remain unchanged
 
 ### Requirement: Dispatch logic is separable from UI side effects
 The chat application SHALL implement message dispatch as a pure async generator that yields reply messages, consumed by a separate imperative method that mounts bubbles. The generator SHALL have no dependency on the UI framework.

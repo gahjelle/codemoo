@@ -96,8 +96,12 @@ def test_ctrl_n_exits_with_next_in_demo_mode() -> None:
 # --- Ctrl-E key handler ---
 
 
-class _MockInput:
-    value: str = ""
+class _MockChatInput:
+    def __init__(self) -> None:
+        self.value: str = ""
+
+    def load_text(self, text: str) -> None:
+        self.value = text
 
 
 class _MockHeader:
@@ -107,15 +111,15 @@ class _MockHeader:
         self.last_remaining = remaining
 
 
-def _patch_query_one(app: ChatApp) -> tuple[_MockInput, _MockHeader]:
+def _patch_query_one(app: ChatApp) -> tuple[_MockChatInput, _MockHeader]:
     """Replace query_one on the app instance with a fake that returns mock widgets."""
-    from textual.widgets import Input as _Input
+    from codemoo.chat.input import ChatInput as _ChatInput
 
-    mock_input = _MockInput()
+    mock_input = _MockChatInput()
     mock_header = _MockHeader()
 
     def _query_one(widget_type: object) -> object:
-        if widget_type is _Input:
+        if widget_type is _ChatInput:
             return mock_input
         return mock_header
 

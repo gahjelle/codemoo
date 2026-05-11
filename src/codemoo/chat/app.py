@@ -8,12 +8,13 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.events import Key
-from textual.widgets import Input, Label
+from textual.widgets import Label
 
 from codemoo.chat.approval import ApprovalModal
 from codemoo.chat.backend_status import BackendStatus
 from codemoo.chat.bubble import ChatBubble
 from codemoo.chat.demo_header import DemoHeader
+from codemoo.chat.input import ChatInput
 from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.config.schema import ResolvedBotConfig
@@ -75,7 +76,9 @@ class ChatApp(App[str | None]):
             yield DemoHeader(bot, self._demo_context.position, prompt_count)
         yield VerticalScroll(id="log")
         yield ThinkingStatus()
-        yield Input(placeholder="Type a message and press Enter...")
+        yield ChatInput(
+            placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
+        )
         if self._backend_info is not None:
             yield BackendStatus(self._backend_info, self._resolved_bots)
 
@@ -86,20 +89,16 @@ class ChatApp(App[str | None]):
         self.run_worker(self._run_startup())
         if self._demo_context is not None:
             self.push_screen(SlideScreen(self._demo_context))
-        self.query_one(Input).focus()
+        self.query_one(ChatInput).focus()
 
     async def _run_startup(self) -> None:
         for participant in self._participants:
             if hasattr(participant, "startup"):
                 await participant.startup()  # ty: ignore[call-non-callable]
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        """Handle Enter in the input box: create a message and dispatch it."""
-        text = event.value.strip()
-        # Empty input produces no message per spec
-        if not text:
-            return
-        self.query_one(Input).clear()
+    def on_chat_input_submitted(self, event: ChatInput.Submitted) -> None:
+        """Handle Ctrl+Enter in the input box: create a message and dispatch it."""
+        text = event.value
         message = ChatMessage(sender=self._human.name, text=text)
         self._append_to_log(message)
         # Snapshot before appending: history excludes the current message
@@ -239,7 +238,7 @@ class ChatApp(App[str | None]):
         prompts = self._demo_context.prompts
         if self._prompt_index >= len(prompts):
             return
-        self.query_one(Input).value = prompts[self._prompt_index]
+        self.query_one(ChatInput).load_text(prompts[self._prompt_index])
         self._prompt_index += 1
         remaining = len(prompts) - self._prompt_index
         self.query_one(DemoHeader).update_prompt_state(remaining)

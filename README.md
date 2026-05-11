@@ -133,7 +133,7 @@ Start the interactive demo by running Codemoo with the `demo` command:
 uv run codemoo demo
 ```
 
-Each bot is introduced with slides explaining what it can do and how it works. Press **Ctrl-N** to advance to the next bot, or **Ctrl-Q** to quit. Press **Ctrl-S** at any point to reopen the current bot's slide. Each bot also comes with a few example prompts. Press **Ctrl-E** to insert the next example prompt. You can then edit it or just press enter to submit it directly.
+Each bot is introduced with slides explaining what it can do and how it works. Press **Ctrl-N** to advance to the next bot, or **Ctrl-Q** to quit. Press **Ctrl-S** at any point to reopen the current bot's slide. Each bot also comes with a few example prompts. Press **Ctrl-E** to insert the next example prompt. You can then edit it or press **Enter** to submit it. The input field supports multiple lines — press **Alt+N** to insert a line break.
 
 You can also start or end the demo with specific bots:
 
