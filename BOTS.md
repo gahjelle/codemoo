@@ -1,6 +1,6 @@
 # Codemoo - Script for progressing through the agents
 
-The demo walks through a sequence of bots, each adding one capability. There are two modes, `code` and `business` with similar progressions. Many bots are shared between the two paths, but some are unique to a given path.
+The demo walks through a sequence of bots, each adding one capability. There are three modes, `code`, `m365`, and `workspace` with similar progressions. Many bots are shared between the paths, but some are unique to a given path.
 
 ## Bot Names and emojis
 
