@@ -15,7 +15,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Tasks
 
-- Use separate memory files for each script path
 - Make chat input field multiline
 - Improve save_memory: write in english, don't lose old memories
 - Read file-tool can read subset of file
@@ -26,5 +25,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Include some information about current context on status bar
 - Add num tokens in context visibly on screen
 - Stream answers
+- Show full content of first parameter in GuardBot approval box
 
 ## Proposed by agent

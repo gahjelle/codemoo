@@ -31,8 +31,7 @@ def _draft_gmail(to: str, subject: str, body: str) -> str:
 draft_gmail = ToolDef(
     name="draft_gmail",
     description=(
-        "Save an email as a draft in Gmail."
-        " Returns a draft ID for use with send_gmail."
+        "Save an email as a draft in Gmail. Returns a draft ID for use with send_gmail."
     ),
     parameters=[
         ToolParam(name="to", description="Recipient email address."),

@@ -197,4 +197,4 @@ pyrightconfig.json
 
 # Microsoft Graph token cache — stored outside the repo at ~/.codemoo/token_cache.bin
 
-.codemoo/memory.md
+.codemoo/memory-code.md

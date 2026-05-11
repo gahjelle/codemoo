@@ -290,7 +290,7 @@ sources = ["memory_bot.py"]
 description = "Persist facts and preferences across sessions via a local memory file."
 instruction_file = "memory_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
-memory_file = "{project_settings_path}/memory.md"
+memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_write"]
 prompts_file = "memory_bot-code.txt"
 
@@ -298,7 +298,7 @@ prompts_file = "memory_bot-code.txt"
 description = "Persist user preferences across sessions via a local memory file."
 instruction_file = "memory_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
-memory_file = "{project_settings_path}/memory.md"
+memory_file = "{user_settings_path}/memory-m365.md"
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "memory_bot-m365.txt"
 
@@ -306,7 +306,7 @@ prompts_file = "memory_bot-m365.txt"
 description = "Persist user preferences across sessions via a local memory file."
 instruction_file = "memory_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
-memory_file = "{project_settings_path}/memory.md"
+memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "memory_bot-workspace.txt"
 
