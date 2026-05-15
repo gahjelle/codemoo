@@ -7,27 +7,48 @@ TBD — defines the CLI entry point and startup modes for the `codemoo` command,
 ## Requirements
 
 ### Requirement: Default invocation launches chat with hardcoded default bot and variant
-When `codemoo` is run with no arguments, the application SHALL launch `ChatApp` with `GuardBot` using variant `"code"`. When `enterproose` is run with no arguments, it SHALL use `GuardBot` with variant `"business"`. These defaults SHALL be expressed as Python default parameter values in `code_chat` and `business_chat` respectively. There SHALL be no `main_bot` config section.
+When `codemoo` is run with no arguments, the application SHALL launch `ChatApp`
+with `RetryBot` using variant `"code"`. When `collebra` is run with no arguments,
+it SHALL use `RetryBot` with variant `"workspace"`. These defaults SHALL be
+expressed as Python default parameter values in `code_chat` and `business_chat`
+respectively. There SHALL be no `main_bot` config section.
 
-#### Scenario: Bare code invocation uses GuardBot with code variant
+The entry points `codemoo` and `moo` SHALL be wired to `launcher:main`; the
+launcher SHALL show `SplashApp` before delegating to the existing `tui.py`
+setup logic. The CLI argument interface (`--bot`, `--variant`) SHALL be
+preserved unchanged.
+
+#### Scenario: Bare code invocation uses RetryBot with code variant
 - **WHEN** the user runs `codemoo` with no arguments
-- **THEN** `ChatApp` SHALL open with the human participant and a `GuardBot` instance resolved with variant `"code"`
+- **THEN** `ChatApp` SHALL open with the human participant and a `RetryBot`
+  instance resolved with variant `"code"`
 
-#### Scenario: Bare business invocation uses GuardBot with business variant
-- **WHEN** the user runs `enterproose` with no arguments
-- **THEN** `ChatApp` SHALL open with the human participant and a `GuardBot` instance resolved with variant `"business"`
+#### Scenario: Bare business invocation uses RetryBot with workspace variant
+- **WHEN** the user runs `collebra` with no arguments
+- **THEN** `ChatApp` SHALL open with the human participant and a `RetryBot`
+  instance resolved with variant `"workspace"`
 
 #### Scenario: --bot overrides the default bot type
 - **WHEN** the user runs `codemoo --bot EchoBot`
-- **THEN** `ChatApp` SHALL open with `EchoBot` resolved with the default variant `"code"`
+- **THEN** `ChatApp` SHALL open with `EchoBot` resolved with the default
+  variant `"code"`
 
 #### Scenario: --variant overrides the default variant
 - **WHEN** the user runs `codemoo --variant business`
-- **THEN** `ChatApp` SHALL open with `GuardBot` resolved with variant `"business"`
+- **THEN** `ChatApp` SHALL open with `RetryBot` resolved with variant `"business"`
 
 #### Scenario: --bot and --variant together specify a complete BotRef
 - **WHEN** the user runs `codemoo --bot AgentBot --variant code`
-- **THEN** `ChatApp` SHALL open with an `AgentBot` instance resolved with variant `"code"`
+- **THEN** `ChatApp` SHALL open with an `AgentBot` instance resolved with
+  variant `"code"`
+
+#### Scenario: Splash screen is shown before ChatApp
+- **WHEN** the user runs `codemoo` (or `moo`, `collebra`, `ebra`)
+- **THEN** `SplashApp` SHALL be visible before `ChatApp` appears
+
+#### Scenario: demoo entry point is unaffected
+- **WHEN** the user runs `demoo`
+- **THEN** no splash screen SHALL appear; the CLI SHALL behave as before
 
 ### Requirement: _chat instantiates the specified BotRef directly without loading a script
 `_chat()` SHALL construct exactly one bot from the given `bot: BotType` and `variant: str` arguments by creating a `BotRef` and calling `make_bots` with that single ref. It SHALL NOT load a script or use `_default_script_for_mode`. After instantiation, `_chat` SHALL run init hooks for the bot's tools before opening `ChatApp`.

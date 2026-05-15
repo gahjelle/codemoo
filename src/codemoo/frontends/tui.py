@@ -97,8 +97,8 @@ async def business_chat(
         _raise_error(str(err))
 
 
-async def _chat(*, bot: BotType, variant: str) -> None:
-    """Instantiate a single bot and launch the chat."""
+async def _setup_for_launcher(*, bot: str, variant: str) -> SetupResult:
+    """Build the full setup for a single-bot chat session without launching ChatApp."""
     session_folder = Path.cwd()
     bot_ref = BotRef(type=bot, variant=variant)
     llm_backend, backend_info = resolve_backend(config)
@@ -115,12 +115,26 @@ async def _chat(*, bot: BotType, variant: str) -> None:
         session_folder=session_folder,
     )
     _run_init_hooks_for_resolved(resolved_bots)
-    await ChatApp(
-        participants=[human, *available],
+    return SetupResult(
+        llm=llm_backend,
+        backend_info=backend_info,
+        human=human,
+        available=available,
+        resolved_bots=resolved_bots,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
-        backend_info=backend_info,
-        resolved_bots=resolved_bots,
+    )
+
+
+async def _chat(*, bot: BotType, variant: str) -> None:
+    """Instantiate a single bot and launch the chat."""
+    setup = await _setup_for_launcher(bot=bot, variant=variant)
+    await ChatApp(
+        participants=[setup.human, *setup.available],
+        error_bot=setup.error_bot,
+        commentator_bot=setup.commentator_bot,
+        backend_info=setup.backend_info,
+        resolved_bots=setup.resolved_bots,
     ).run_async()
 
 
