@@ -28,17 +28,19 @@ class SystemBot:
     is_human: ClassVar[bool] = False
 
     async def on_message(
-        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        context: list[ContextItem],
+    ) -> list[ContextItem]:
         """Respond using conversation context prefixed by the system prompt."""
-        llm_messages = [
+        messages = [
             Message(role="system", content=self.instructions),
             *build_context(context),
         ]
-        response = await self.llm.complete(llm_messages)
-        reply = ChatMessage(sender=self.name, text=response)
-        new_item = ContextItem(
-            content=AssistantMessageContent(reply.text),
-            turn_id=next_turn_id(context),
-        )
-        return reply, [new_item]
+        response = await self.llm.complete(messages)
+        return [
+            ContextItem(
+                content=AssistantMessageContent(response),
+                turn_id=next_turn_id(context),
+            )
+        ]

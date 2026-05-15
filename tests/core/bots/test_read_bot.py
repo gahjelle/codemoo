@@ -94,11 +94,12 @@ def test_read_bot_is_not_human(bot_text: ReadBot) -> None:
 
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ReadBot) -> None:
-    reply, _ = await bot_text.on_message(_msg("You", "hi"), [])
+    from codemoo.core.context_items import AssistantMessageContent
 
-    assert reply is not None
-    assert reply.sender == "R"
-    assert reply.text == "plain reply"
+    [item] = await bot_text.on_message(_msg("You", "hi"), [])
+
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "plain reply"
 
 
 @pytest.mark.asyncio
@@ -115,13 +116,14 @@ async def test_text_response_path_no_complete_call(
 async def test_tool_use_path_reads_file_and_replies(
     bot_tool: ReadBot, tool_backend: _MockBackend
 ) -> None:
-    reply, _ = await bot_tool.on_message(_msg("You", "read the file"), [])
+    from codemoo.core.context_items import AssistantMessageContent
+
+    new_items = await bot_tool.on_message(_msg("You", "read the file"), [])
 
     assert len(tool_backend.step_calls) == 1
     assert len(tool_backend.complete_calls) == 1
-    assert reply is not None
-    assert reply.sender == "R"
-    assert reply.text == "Here are the file contents."
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "Here are the file contents."
 
 
 @pytest.mark.asyncio

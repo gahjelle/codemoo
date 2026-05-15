@@ -64,27 +64,29 @@ def test_agent_bot_is_not_human() -> None:
 
 @pytest.mark.asyncio
 async def test_immediate_text_response_no_tool_call() -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     backend = _SequentialBackend(["plain reply"])
     bot = _make_bot(backend)
 
-    reply, _ = await bot.on_message(_msg("You", "hello"), [])
+    [item] = await bot.on_message(_msg("You", "hello"), [])
 
-    assert reply is not None
-    assert reply.sender == "Loom"
-    assert reply.text == "plain reply"
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "plain reply"
     assert len(backend.step_calls) == 1
 
 
 @pytest.mark.asyncio
 async def test_single_tool_call_then_text_response() -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
-    reply, _ = await bot.on_message(_msg("You", "run echo hi"), [])
+    new_items = await bot.on_message(_msg("You", "run echo hi"), [])
 
-    assert reply is not None
-    assert reply.sender == "Loom"
-    assert reply.text == "done"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "done"
     assert len(backend.step_calls) == 2
 
 
@@ -103,13 +105,15 @@ async def test_single_tool_call_context_fed_back() -> None:
 
 @pytest.mark.asyncio
 async def test_two_sequential_tool_calls_then_text() -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
-    reply, _ = await bot.on_message(_msg("You", "do two things"), [])
+    new_items = await bot.on_message(_msg("You", "do two things"), [])
 
-    assert reply is not None
-    assert reply.text == "all done"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "all done"
     assert len(backend.step_calls) == 3
 
 

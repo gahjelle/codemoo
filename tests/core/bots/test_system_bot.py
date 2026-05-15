@@ -95,10 +95,12 @@ async def test_includes_context_items_in_correct_roles(
 
 
 @pytest.mark.asyncio
-async def test_reply_sender_is_bot_name(
+async def test_reply_is_assistant_content(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
-    reply, _ = await system_bot.on_message(_msg("You", "hello"), [])
+    from codemoo.core.context_items import AssistantMessageContent
 
-    assert reply is not None
-    assert reply.sender == "Sigma"
+    [item] = await system_bot.on_message(_msg("You", "hello"), [])
+
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "system response"

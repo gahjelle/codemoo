@@ -24,7 +24,12 @@ from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
 from codemoo.core.bots.commentator_bot import BotRestartEvent, CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.context_items import ContextItem, UserMessageContent, next_turn_id
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    UserMessageContent,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 from codemoo.llm.factory import BackendInfo
@@ -145,6 +150,13 @@ class ChatApp(App[str | None]):
         log.mount(bubble)
         log.scroll_end(animate=False)
 
+    def _reply_from_items(
+        self, participant: ChatParticipant, items: list[ContextItem]
+    ) -> ChatMessage | None:
+        if items and isinstance(items[-1].content, AssistantMessageContent):
+            return ChatMessage(sender=participant.name, text=items[-1].content.text)
+        return None
+
     async def _collect_replies(
         self,
         initial_message: ChatMessage,
@@ -167,10 +179,11 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
-                    reply, new_items = await participant.on_message(
+                    new_items = await participant.on_message(
                         message, self._chat_context
                     )
                     self._chat_context = [*self._chat_context, *new_items]
+                    reply = self._reply_from_items(participant, new_items)
                     # Capture thinking time for successful replies
                     thinking_time = status.clear() if status else None
                     if thinking_time is not None and reply is not None:

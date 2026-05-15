@@ -17,8 +17,8 @@ class ChatParticipant(Protocol):
 
     async def on_message(
         self, message: ChatMessage, context: list[ContextItem]
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        """Receive a message and return a reply plus any new context items."""
+    ) -> list[ContextItem]:
+        """Receive a message and return any new context items produced this turn."""
         ...
 
 
@@ -39,6 +39,6 @@ class HumanParticipant:
         self,
         message: ChatMessage,  # noqa: ARG002
         context: list[ContextItem],  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        """Return (None, []) — the human replies via keyboard, not programmatically."""
-        return None, []
+    ) -> list[ContextItem]:
+        """Return [] — the human replies via keyboard, not programmatically."""
+        return []

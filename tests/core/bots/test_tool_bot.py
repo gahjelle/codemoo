@@ -119,24 +119,26 @@ async def test_text_response_path_calls_complete_with_tools(
 
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ToolBot) -> None:
-    reply, _ = await bot_text.on_message(_msg("You", "hi"), [])
+    from codemoo.core.context_items import AssistantMessageContent
 
-    assert reply is not None
-    assert reply.sender == "Telo"
-    assert reply.text == "plain reply"
+    [item] = await bot_text.on_message(_msg("You", "hi"), [])
+
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "plain reply"
 
 
 @pytest.mark.asyncio
 async def test_tool_use_path_invokes_tool_and_calls_complete(
     bot_tool: ToolBot, tool_backend: _MockBackend
 ) -> None:
-    reply, _ = await bot_tool.on_message(_msg("You", "reverse hello"), [])
+    from codemoo.core.context_items import AssistantMessageContent
+
+    new_items = await bot_tool.on_message(_msg("You", "reverse hello"), [])
 
     assert len(tool_backend.step_calls) == 1
     assert len(tool_backend.complete_calls) == 1
-    assert reply is not None
-    assert reply.sender == "Telo"
-    assert reply.text == "The reversed string is: olleh"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "The reversed string is: olleh"
 
 
 @pytest.mark.asyncio
@@ -166,6 +168,8 @@ async def test_complete_receives_tool_list(
 async def test_tool_use_path_empty_complete_uses_fallback(
     empty_backend: _MockBackend,
 ) -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     bot = ToolBot(
         name="Telo",
         emoji="\N{WRENCH}",
@@ -173,10 +177,10 @@ async def test_tool_use_path_empty_complete_uses_fallback(
         tools=[reverse_string],
         instructions="You have tools available.",
     )
-    reply, _ = await bot.on_message(_msg("You", "reverse hello"), [])
+    new_items = await bot.on_message(_msg("You", "reverse hello"), [])
 
-    assert reply is not None
-    assert reply.text == "(tool executed, process interrupted)"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "(tool executed, process interrupted)"
 
 
 @pytest.mark.asyncio

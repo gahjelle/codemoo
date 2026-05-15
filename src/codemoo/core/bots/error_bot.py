@@ -78,9 +78,9 @@ class ErrorBot:
         self,
         message: ChatMessage,  # noqa: ARG002
         context: list[ContextItem],  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        """Return (None, []) — ErrorBot speaks only through format_error."""
-        return None, []
+    ) -> list[ContextItem]:
+        """Return [] — ErrorBot speaks only through format_error."""
+        return []
 
     async def format_error(
         self,

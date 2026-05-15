@@ -40,8 +40,10 @@ class SingleTurnToolBot:
     is_human: ClassVar[bool] = False
 
     async def on_message(
-        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        context: list[ContextItem],
+    ) -> list[ContextItem]:
         """Respond, invoking a tool first if the LLM requests one."""
         messages: list[Message] = [
             Message(role="system", content=self.instructions),
@@ -76,12 +78,8 @@ class SingleTurnToolBot:
                 ),
             ]
             text = await self.llm.complete(follow_up) or _INTERRUPTED
-            reply = ChatMessage(sender=self.name, text=text)
-            return reply, [
+            return [
                 ContextItem(content=tool_use_item, turn_id=turn),
                 ContextItem(content=AssistantMessageContent(text), turn_id=turn),
             ]
-        reply = ChatMessage(sender=self.name, text=response)
-        return reply, [
-            ContextItem(content=AssistantMessageContent(response), turn_id=turn)
-        ]
+        return [ContextItem(content=AssistantMessageContent(response), turn_id=turn)]

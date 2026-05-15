@@ -104,13 +104,15 @@ def test_guard_bot_is_not_human() -> None:
 
 @pytest.mark.asyncio
 async def test_default_ask_fn_approves_dangerous_tool() -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
 
-    reply, _ = await bot.on_message(_msg("You", "run something"), [])
+    new_items = await bot.on_message(_msg("You", "run something"), [])
 
-    assert reply is not None
-    assert reply.text == "done"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "done"
 
 
 # ---------------------------------------------------------------------------
@@ -234,6 +236,8 @@ async def test_deny_with_reason_includes_reason() -> None:
 
 @pytest.mark.asyncio
 async def test_loop_continues_after_denial() -> None:
+    from codemoo.core.context_items import AssistantMessageContent
+
     async def ask_fn(req: ApprovalRequest) -> Approved | Denied:
         return Denied(reason="no")
 
@@ -247,10 +251,10 @@ async def test_loop_continues_after_denial() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    reply, _ = await bot.on_message(_msg("You", "run it twice"), [])
+    new_items = await bot.on_message(_msg("You", "run it twice"), [])
 
-    assert reply is not None
-    assert reply.text == "gave up"
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "gave up"
     assert len(backend.step_calls) == 3
 
 

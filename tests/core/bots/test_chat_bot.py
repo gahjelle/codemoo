@@ -78,14 +78,11 @@ async def test_chat_bot_sends_context_to_llm(
 async def test_chat_bot_returns_one_assistant_item(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    reply, new_items = await chat_bot.on_message(
+    [item] = await chat_bot.on_message(
         ChatMessage(sender="You", text="hi", timestamp=_TS), []
     )
-    assert reply is not None
-    assert reply.text == "chat response"
-    assert len(new_items) == 1
-    assert isinstance(new_items[0].content, AssistantMessageContent)
-    assert new_items[0].content.text == "chat response"
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "chat response"
 
 
 @pytest.mark.asyncio

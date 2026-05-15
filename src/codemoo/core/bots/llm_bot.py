@@ -29,13 +29,13 @@ class LlmBot:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+    ) -> list[ContextItem]:
         """Respond to message using only its text; ignore context."""
         llm_messages = [Message(role="user", content=message.text)]
         response = await self.llm.complete(llm_messages)
-        reply = ChatMessage(sender=self.name, text=response)
-        new_item = ContextItem(
-            content=AssistantMessageContent(reply.text),
-            turn_id=next_turn_id(context),
-        )
-        return reply, [new_item]
+        return [
+            ContextItem(
+                content=AssistantMessageContent(response),
+                turn_id=next_turn_id(context),
+            )
+        ]

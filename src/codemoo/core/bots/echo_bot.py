@@ -23,11 +23,11 @@ class EchoBot:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+    ) -> list[ContextItem]:
         """Echo the message back with this bot as sender."""
-        reply = ChatMessage(sender=self.name, text=message.text)
-        new_item = ContextItem(
-            content=AssistantMessageContent(reply.text),
-            turn_id=next_turn_id(context),
-        )
-        return reply, [new_item]
+        return [
+            ContextItem(
+                content=AssistantMessageContent(message.text),
+                turn_id=next_turn_id(context),
+            )
+        ]

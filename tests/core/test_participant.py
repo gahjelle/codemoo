@@ -20,8 +20,8 @@ class _MinimalParticipant:
 
     async def on_message(
         self, _message: ChatMessage, _context: list[ContextItem]
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        return None, []
+    ) -> list[ContextItem]:
+        return []
 
 
 def test_duck_typed_object_satisfies_protocol() -> None:

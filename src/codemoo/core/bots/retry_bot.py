@@ -82,8 +82,10 @@ class RetryBot:
                 )
 
     async def on_message(
-        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        context: list[ContextItem],
+    ) -> list[ContextItem]:
         """Respond using context and memory, escalating after repeated tool failures."""
         system_content = self.instructions
         if self.context:
@@ -104,27 +106,22 @@ class RetryBot:
         while True:
             response = await self.llm.complete(messages, self.tools)
             if not isinstance(response, ToolUse):
-                reply = ChatMessage(sender=self.name, text=response)
-                new_items: list[ContextItem] = [
-                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
+                return [
+                    *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
+                    ContextItem(
+                        content=AssistantMessageContent(response), turn_id=turn
+                    ),
                 ]
-                new_items.append(
-                    ContextItem(content=AssistantMessageContent(response), turn_id=turn)
-                )
-                return reply, new_items
 
             retry_key = (response.name, json.dumps(response.arguments, sort_keys=True))
             if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
-                reply = self._escalation_message(retry_key[0], successful_calls)
-                new_items = [
-                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
-                ]
-                new_items.append(
+                escalation = self._escalation_message(retry_key[0], successful_calls)
+                return [
+                    *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
                     ContextItem(
-                        content=AssistantMessageContent(reply.text), turn_id=turn
-                    )
-                )
-                return reply, new_items
+                        content=AssistantMessageContent(escalation), turn_id=turn
+                    ),
+                ]
 
             if self.commentator is not None:
                 await self.commentator.comment(
@@ -176,9 +173,7 @@ class RetryBot:
                 ),
             ]
 
-    def _escalation_message(
-        self, tool_name: str, successful_calls: list[str]
-    ) -> ChatMessage:
+    def _escalation_message(self, tool_name: str, successful_calls: list[str]) -> str:
         """Build the failure summary returned when the retry budget is exhausted."""
         lines = [
             f"I tried calling `{tool_name}` {_RETRY_BUDGET} times but kept getting"
@@ -188,4 +183,4 @@ class RetryBot:
             lines.append("\nCompleted before the failure:")
             lines.extend(f"  • {call}" for call in successful_calls)
         lines.append("\nPlease let me know how you'd like to proceed.")
-        return ChatMessage(sender=self.name, text="\n".join(lines))
+        return "\n".join(lines)

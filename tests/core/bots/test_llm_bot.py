@@ -51,12 +51,13 @@ async def test_llm_bot_sends_only_current_message(
 
 
 @pytest.mark.asyncio
-async def test_llm_bot_returns_response_as_chat_message(
+async def test_llm_bot_returns_response_as_context_item(
     llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
-    mock_backend.response = "I am a bot"
-    reply, _ = await llm_bot.on_message(_msg("You", "hi"), [])
+    from codemoo.core.context_items import AssistantMessageContent
 
-    assert reply is not None
-    assert reply.sender == "LLMBot"
-    assert reply.text == "I am a bot"
+    mock_backend.response = "I am a bot"
+    [item] = await llm_bot.on_message(_msg("You", "hi"), [])
+
+    assert isinstance(item.content, AssistantMessageContent)
+    assert item.content.text == "I am a bot"

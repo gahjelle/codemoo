@@ -42,8 +42,15 @@ class _EchoParticipant:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        return ChatMessage(sender=self.name, text=message.text), []
+    ) -> list[ContextItem]:
+        from codemoo.core.context_items import AssistantMessageContent, next_turn_id
+
+        return [
+            ContextItem(
+                content=AssistantMessageContent(message.text),
+                turn_id=next_turn_id(context),
+            )
+        ]
 
 
 class _SilentParticipant:
@@ -65,8 +72,8 @@ class _SilentParticipant:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
-        return None, []
+    ) -> list[ContextItem]:
+        return []
 
 
 class _ContextCapturingParticipant:
@@ -91,9 +98,9 @@ class _ContextCapturingParticipant:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+    ) -> list[ContextItem]:
         self.received_contexts.append(list(context))
-        return None, []
+        return []
 
 
 class _MessageCapturingParticipant:
@@ -119,9 +126,9 @@ class _MessageCapturingParticipant:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+    ) -> list[ContextItem]:
         self.received_messages.append(message)
-        return None, []
+        return []
 
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
@@ -209,7 +216,7 @@ class _FailingParticipant:
         self,
         message: ChatMessage,
         context: list[ContextItem],
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+    ) -> list[ContextItem]:
         msg = "simulated LLM failure"
         raise RuntimeError(msg)
 

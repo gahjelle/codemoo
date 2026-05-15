@@ -56,8 +56,10 @@ class GuardBot:
         self._ask_fn = ask_fn
 
     async def on_message(
-        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
-    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        self,
+        message: ChatMessage,  # noqa: ARG002
+        context: list[ContextItem],
+    ) -> list[ContextItem]:
         """Respond, invoking tools repeatedly until the LLM returns plain text."""
         messages: list[Message] = [
             Message(role="system", content=self.instructions),
@@ -70,14 +72,12 @@ class GuardBot:
         while True:
             response = await self.llm.complete(messages, self.tools)
             if not isinstance(response, ToolUse):
-                reply = ChatMessage(sender=self.name, text=response)
-                new_items: list[ContextItem] = [
-                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
+                return [
+                    *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
+                    ContextItem(
+                        content=AssistantMessageContent(response), turn_id=turn
+                    ),
                 ]
-                new_items.append(
-                    ContextItem(content=AssistantMessageContent(response), turn_id=turn)
-                )
-                return reply, new_items
             if self.commentator is not None:
                 await self.commentator.comment(
                     ToolCallEvent(

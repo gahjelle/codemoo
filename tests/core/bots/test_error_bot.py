@@ -74,11 +74,11 @@ def test_error_bot_persona_is_stable_within_session() -> None:
 
 
 @pytest.mark.asyncio
-async def test_on_message_always_returns_none() -> None:
+async def test_on_message_always_returns_empty_list() -> None:
     bot = ErrorBot(llm=_MockBackend())
     msg = ChatMessage(sender="You", text="hello")
-    reply, _ = await bot.on_message(msg, [])
-    assert reply is None
+    items = await bot.on_message(msg, [])
+    assert items == []
 
 
 @pytest.mark.asyncio
