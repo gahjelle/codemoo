@@ -27,7 +27,6 @@ from codemoo.core.context_items import (
     ToolUseContent,
     next_turn_id,
 )
-from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, dispatch_tool, format_tool_call
 
 _RETRY_BUDGET = 3
@@ -83,7 +82,6 @@ class RetryBot:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
         context: list[ContextItem],
     ) -> list[ContextItem]:
         """Respond using context and memory, escalating after repeated tool failures."""

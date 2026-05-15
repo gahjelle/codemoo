@@ -1,10 +1,9 @@
-from datetime import UTC, datetime
-
 import pytest
 
 from codemoo.core.backend import Message
 from codemoo.core.bots.llm_bot import LlmBot
-from codemoo.core.message import ChatMessage
+
+from .conftest import user_ctx
 
 
 class _MockBackend:
@@ -17,13 +16,6 @@ class _MockBackend:
     async def complete(self, messages: list[Message]) -> str:
         self.calls.append(list(messages))
         return self.response
-
-
-_TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-
-
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
 
 
 @pytest.fixture
@@ -44,7 +36,7 @@ def test_llm_bot_is_not_human(llm_bot: LlmBot) -> None:
 async def test_llm_bot_sends_only_current_message(
     llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
-    await llm_bot.on_message(_msg("You", "latest"), [])
+    await llm_bot.on_message(user_ctx("latest"))
 
     assert len(mock_backend.calls) == 1
     assert mock_backend.calls[0] == [Message(role="user", content="latest")]
@@ -57,7 +49,7 @@ async def test_llm_bot_returns_response_as_context_item(
     from codemoo.core.context_items import AssistantMessageContent
 
     mock_backend.response = "I am a bot"
-    [item] = await llm_bot.on_message(_msg("You", "hi"), [])
+    [item] = await llm_bot.on_message(user_ctx("hi"))
 
     assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == "I am a bot"

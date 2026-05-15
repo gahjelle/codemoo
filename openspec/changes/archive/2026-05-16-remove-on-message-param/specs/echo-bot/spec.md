@@ -1,10 +1,4 @@
-# Spec: echo-bot
-
-## Purpose
-
-Defines the `EchoBot` participant — a minimal bot that echoes back any received message. The dispatch shell ensures EchoBot does not receive its own messages.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: EchoBot echoes messages from other participants
 The `EchoBot` participant SHALL reply to any received message by returning a `ContextItem` containing the same text as `context[-1].content.text` and the bot's own name as sender. `context[-1]` is guaranteed to be the triggering message by the dispatch shell precondition.
@@ -16,10 +10,3 @@ The `EchoBot` participant SHALL reply to any received message by returning a `Co
 #### Scenario: EchoBot reads triggering text from context
 - **WHEN** `EchoBot.on_message` is called with a context whose last item has text "hello"
 - **THEN** the returned item's text SHALL equal "hello", sourced from `context[-1].content.text`
-
-### Requirement: EchoBot has a fixed display name
-The `EchoBot` SHALL expose a stable `name` attribute used as the sender field in its replies.
-
-#### Scenario: Name is accessible
-- **WHEN** `EchoBot.name` is accessed
-- **THEN** it SHALL return a non-empty string identifying the bot

@@ -10,7 +10,7 @@ import pytest
 from codemoo.chat.app import ChatApp
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.context_items import ContextItem
+from codemoo.core.context_items import ContextItem, UserMessageContent
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 
@@ -38,16 +38,12 @@ class _EchoParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self,
-        message: ChatMessage,
-        context: list[ContextItem],
-    ) -> list[ContextItem]:
+    async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         from codemoo.core.context_items import AssistantMessageContent, next_turn_id
 
         return [
             ContextItem(
-                content=AssistantMessageContent(message.text),
+                content=AssistantMessageContent(context[-1].content.text),  # ty: ignore[unresolved-attribute]
                 turn_id=next_turn_id(context),
             )
         ]
@@ -68,11 +64,7 @@ class _SilentParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self,
-        message: ChatMessage,
-        context: list[ContextItem],
-    ) -> list[ContextItem]:
+    async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         return []
 
 
@@ -94,21 +86,17 @@ class _ContextCapturingParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self,
-        message: ChatMessage,
-        context: list[ContextItem],
-    ) -> list[ContextItem]:
+    async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         self.received_contexts.append(list(context))
         return []
 
 
-class _MessageCapturingParticipant:
-    """Participant that records every message it receives."""
+class _TextCapturingParticipant:
+    """Participant that records the triggering text from each call."""
 
     def __init__(self, name: str) -> None:
         self._name = name
-        self.received_messages: list[ChatMessage] = []
+        self.received_texts: list[str] = []
 
     @property
     def name(self) -> str:
@@ -122,12 +110,8 @@ class _MessageCapturingParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self,
-        message: ChatMessage,
-        context: list[ContextItem],
-    ) -> list[ContextItem]:
-        self.received_messages.append(message)
+    async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
+        self.received_texts.append(context[-1].content.text)  # ty: ignore[unresolved-attribute]
         return []
 
 
@@ -141,10 +125,19 @@ def _make_app(participants: list[ChatParticipant]) -> ChatApp:
     )
 
 
+def _seed_context(app: ChatApp, text: str) -> None:
+    """Establish the on_message invariant: add triggering item before dispatch."""
+    app._chat_context = [
+        *app._chat_context,
+        ContextItem(content=UserMessageContent(text)),
+    ]
+
+
 @pytest.mark.asyncio
 async def test_collect_replies_yields_echo_reply() -> None:
     app = _make_app([HumanParticipant(), _EchoParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     replies = [r async for r in app._collect_replies(initial)]
     assert len(replies) == 1
@@ -156,6 +149,7 @@ async def test_collect_replies_yields_echo_reply() -> None:
 async def test_collect_replies_yields_nothing_for_silent_bot() -> None:
     app = _make_app([HumanParticipant(), _SilentParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     replies = [r async for r in app._collect_replies(initial)]
     assert replies == []
@@ -166,6 +160,7 @@ async def test_collect_replies_does_not_loop_on_echo() -> None:
     # The shell skips the sender, so the echo bot's reply is never dispatched back.
     app = _make_app([HumanParticipant(), _EchoParticipant()])
     initial = ChatMessage(sender="You", text="ping", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     replies = [r async for r in app._collect_replies(initial)]
     # Exactly one reply: the echo. The echo bot's reply is not echoed again.
@@ -175,26 +170,29 @@ async def test_collect_replies_does_not_loop_on_echo() -> None:
 @pytest.mark.asyncio
 async def test_sender_is_not_called_with_own_message() -> None:
     # The shell must skip the sender — the bot should never receive its own message.
-    capture = _MessageCapturingParticipant("Bot")
+    capture = _TextCapturingParticipant("Bot")
     app = _make_app([HumanParticipant(), capture])
     own_message = ChatMessage(sender="Bot", text="I said this", timestamp=_TS)
+    _seed_context(app, own_message.text)
 
     [_ async for _ in app._collect_replies(own_message)]
-    assert all(m.sender != "Bot" for m in capture.received_messages)
+    # "Bot" sent the message; it must not have been dispatched back to itself
+    assert len(capture.received_texts) == 0
 
 
 @pytest.mark.asyncio
 async def test_context_passed_to_participants_reflects_app_context() -> None:
-    from codemoo.core.context_items import ContextItem, UserMessageContent
-
     capture = _ContextCapturingParticipant()
     app = _make_app([HumanParticipant(), capture])
     prior_item = ContextItem(content=UserMessageContent("earlier"))
     app._chat_context = [prior_item]
     initial = ChatMessage(sender="You", text="now", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     [_ async for _ in app._collect_replies(initial)]
-    assert capture.received_contexts[0] == [prior_item]
+    # prior_item and triggering item must both be in the context received
+    assert prior_item in capture.received_contexts[0]
+    assert capture.received_contexts[0][-1].content == UserMessageContent("now")
 
 
 class _FailingParticipant:
@@ -212,11 +210,7 @@ class _FailingParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self,
-        message: ChatMessage,
-        context: list[ContextItem],
-    ) -> list[ContextItem]:
+    async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         msg = "simulated LLM failure"
         raise RuntimeError(msg)
 
@@ -225,6 +219,7 @@ class _FailingParticipant:
 async def test_exception_yields_error_bubble_not_crash() -> None:
     app = _make_app([HumanParticipant(), _FailingParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     replies = [r async for r in app._collect_replies(initial)]
     assert len(replies) == 1
@@ -233,26 +228,27 @@ async def test_exception_yields_error_bubble_not_crash() -> None:
 
 @pytest.mark.asyncio
 async def test_exception_does_not_block_remaining_participants() -> None:
-    capture = _MessageCapturingParticipant("Capture")
+    capture = _TextCapturingParticipant("Capture")
     app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     [_ async for _ in app._collect_replies(initial)]
-    # The capture participant must still have received the message
-    assert any(m.text == "hi" for m in capture.received_messages)
+    # The capture participant must still have received the triggering message
+    assert any(t == "hi" for t in capture.received_texts)
 
 
 @pytest.mark.asyncio
 async def test_error_message_is_not_dispatched_to_other_bots() -> None:
     # Error messages must not re-enter the BFS queue — no bot should respond to them.
-    capture = _MessageCapturingParticipant("Capture")
+    capture = _TextCapturingParticipant("Capture")
     app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
+    _seed_context(app, initial.text)
 
     [_ async for _ in app._collect_replies(initial)]
-    # The capture participant must not have received the error bot's message
-    error_name = app._error_bot.name
-    assert all(m.sender != error_name for m in capture.received_messages)
+    # Capture receives "hi" from the initial dispatch but not any error bot message
+    assert len(capture.received_texts) == 1
 
 
 # ---------------------------------------------------------------------------

@@ -20,6 +20,7 @@ from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import HumanParticipant
 from codemoo.core.tools.shell import run_shell
+from tests.core.bots.conftest import user_ctx
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 _PERSONA_NAMES = {p.name for p in _PERSONAS}
@@ -193,7 +194,7 @@ async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
     )
 
     with patch.object(run_shell, "fn", _tracked_fn):
-        await bot.on_message(_msg("You", "run it"), [])
+        await bot.on_message(user_ctx("run it"))
 
     assert call_order == ["comment", "tool"]
 
@@ -247,7 +248,7 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
         commentator=mock_commentator,
     )
 
-    await bot.on_message(_msg("You", "do two things"), [])
+    await bot.on_message(user_ctx("do two things"))
 
     assert len(comment_events) == 2
     assert all(isinstance(e, ToolCallEvent) for e in comment_events)

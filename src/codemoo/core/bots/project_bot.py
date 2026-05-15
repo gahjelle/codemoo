@@ -27,7 +27,6 @@ from codemoo.core.context_items import (
     ToolUseContent,
     next_turn_id,
 )
-from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, dispatch_tool
 
 
@@ -73,7 +72,6 @@ class ProjectBot:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
         context: list[ContextItem],
     ) -> list[ContextItem]:
         """Respond using pre-loaded context and invoking tools with approval gates."""

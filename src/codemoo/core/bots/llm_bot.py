@@ -9,7 +9,6 @@ from codemoo.core.context_items import (
     ContextItem,
     next_turn_id,
 )
-from codemoo.core.message import ChatMessage
 
 
 @dataclasses.dataclass(eq=False)
@@ -27,11 +26,10 @@ class LlmBot:
 
     async def on_message(
         self,
-        message: ChatMessage,
         context: list[ContextItem],
     ) -> list[ContextItem]:
-        """Respond to message using only its text; ignore context."""
-        llm_messages = [Message(role="user", content=message.text)]
+        """Respond to context[-1] only; ignore earlier history."""
+        llm_messages = [Message(role="user", content=context[-1].content.text)]  # ty: ignore[unresolved-attribute]
         response = await self.llm.complete(llm_messages)
         return [
             ContextItem(

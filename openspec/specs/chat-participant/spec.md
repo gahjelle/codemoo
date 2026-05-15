@@ -21,7 +21,7 @@ The system SHALL represent chat messages as immutable values carrying sender nam
 The system SHALL define a `ChatParticipant` structural protocol. Any object implementing the required interface SHALL be usable as a participant without explicit subclassing.
 
 #### Scenario: Protocol requires name, emoji, is_human, and on_message
-- **WHEN** an object exposes a `name: str` attribute, an `emoji: str` attribute, an `is_human: bool` class variable, and an async `on_message(message: ChatMessage, context: list[ContextItem]) -> list[ContextItem]` method
+- **WHEN** an object exposes a `name: str` attribute, an `emoji: str` attribute, an `is_human: bool` class variable, and an async `on_message(context: list[ContextItem]) -> list[ContextItem]` method
 - **THEN** it SHALL satisfy the `ChatParticipant` protocol
 
 #### Scenario: Bot with a text reply ends its list with AssistantMessageContent
@@ -89,16 +89,16 @@ The chat session SHALL accept a list of `ChatParticipant` instances at initialis
 - **THEN** all participants SHALL already be registered and ready to receive messages
 
 ### Requirement: Dispatch shell tracks and injects conversation history
-The chat application SHALL maintain a running list of all posted messages and pass it as `history` to every `on_message` call. The `history` list passed to a participant SHALL contain all messages posted before the current `message`; it SHALL NOT include the current `message` itself.
+The chat application SHALL maintain a running list of `ContextItem` values and pass it as `context` to every `on_message` call. The dispatch shell SHALL append the triggering message as a `ContextItem` to `context` **before** calling `on_message`, so that `context[-1]` is always the item corresponding to the triggering message. This is a load-bearing precondition: bots MAY read `context[-1]` to access the triggering message and SHALL NOT be called with an empty `context`.
 
-#### Scenario: History is empty on the first message of a session
+#### Scenario: Triggering message is last in context on first dispatch
 - **WHEN** the first message of a session is dispatched
-- **THEN** every participant SHALL receive an empty `history` list
+- **THEN** every participant SHALL receive a `context` list containing exactly one item — the triggering message as a `UserMessageContent`
 
-#### Scenario: History includes all prior messages on subsequent dispatches
-- **WHEN** a message is dispatched after one or more prior messages have been posted
-- **THEN** every participant SHALL receive a `history` list containing all previously posted messages in chronological order
+#### Scenario: Triggering message is last in context on subsequent dispatches
+- **WHEN** a message is dispatched after prior turns have been recorded
+- **THEN** every participant SHALL receive a `context` list where `context[-1]` corresponds to the triggering message
 
-#### Scenario: History does not include the current message
-- **WHEN** `on_message(message, history)` is called
-- **THEN** `message` SHALL NOT appear in `history`
+#### Scenario: context is never empty when on_message is called
+- **WHEN** the dispatch shell calls `on_message`
+- **THEN** `context` SHALL contain at least one item

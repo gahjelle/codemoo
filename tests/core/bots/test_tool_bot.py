@@ -1,17 +1,10 @@
-from datetime import UTC, datetime
-
 import pytest
 
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.tool_bot import ToolBot
-from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, reverse_string
 
-_TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-
-
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
+from .conftest import user_ctx
 
 
 def _make_assistant_msg() -> Message:
@@ -111,7 +104,7 @@ def test_tool_bot_is_not_human(bot_text: ToolBot) -> None:
 async def test_text_response_path_calls_complete_with_tools(
     bot_text: ToolBot, text_backend: _MockBackend
 ) -> None:
-    await bot_text.on_message(_msg("You", "hi"), [])
+    await bot_text.on_message(user_ctx("hi"))
 
     assert len(text_backend.step_calls) == 1
     assert text_backend.complete_calls == []
@@ -121,7 +114,7 @@ async def test_text_response_path_calls_complete_with_tools(
 async def test_text_response_path_reply_sender(bot_text: ToolBot) -> None:
     from codemoo.core.context_items import AssistantMessageContent
 
-    [item] = await bot_text.on_message(_msg("You", "hi"), [])
+    [item] = await bot_text.on_message(user_ctx("hi"))
 
     assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == "plain reply"
@@ -133,7 +126,7 @@ async def test_tool_use_path_invokes_tool_and_calls_complete(
 ) -> None:
     from codemoo.core.context_items import AssistantMessageContent
 
-    new_items = await bot_tool.on_message(_msg("You", "reverse hello"), [])
+    new_items = await bot_tool.on_message(user_ctx("reverse hello"))
 
     assert len(tool_backend.step_calls) == 1
     assert len(tool_backend.complete_calls) == 1
@@ -145,7 +138,7 @@ async def test_tool_use_path_invokes_tool_and_calls_complete(
 async def test_tool_use_path_follow_up_includes_tool_result(
     bot_tool: ToolBot, tool_backend: _MockBackend
 ) -> None:
-    await bot_tool.on_message(_msg("You", "reverse hello"), [])
+    await bot_tool.on_message(user_ctx("reverse hello"))
 
     follow_up = tool_backend.complete_calls[0]
     tool_msgs = [m for m in follow_up if m.role == "tool"]
@@ -158,7 +151,7 @@ async def test_tool_use_path_follow_up_includes_tool_result(
 async def test_complete_receives_tool_list(
     bot_tool: ToolBot, tool_backend: _MockBackend
 ) -> None:
-    await bot_tool.on_message(_msg("You", "hi"), [])
+    await bot_tool.on_message(user_ctx("hi"))
 
     _, tools_sent = tool_backend.step_calls[0]
     assert tools_sent == [reverse_string]
@@ -177,7 +170,7 @@ async def test_tool_use_path_empty_complete_uses_fallback(
         tools=[reverse_string],
         instructions="You have tools available.",
     )
-    new_items = await bot.on_message(_msg("You", "reverse hello"), [])
+    new_items = await bot.on_message(user_ctx("reverse hello"))
 
     assert isinstance(new_items[-1].content, AssistantMessageContent)
     assert new_items[-1].content.text == "(tool executed, process interrupted)"
@@ -187,7 +180,7 @@ async def test_tool_use_path_empty_complete_uses_fallback(
 async def test_system_prompt_forwarded(
     bot_text: ToolBot, text_backend: _MockBackend
 ) -> None:
-    await bot_text.on_message(_msg("You", "hi"), [])
+    await bot_text.on_message(user_ctx("hi"))
 
     context, _ = text_backend.step_calls[0]
     assert context[0].role == "system"

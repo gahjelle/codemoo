@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 import pytest
 
 from codemoo.core.backend import Message
@@ -9,7 +7,8 @@ from codemoo.core.context_items import (
     ContextItem,
     UserMessageContent,
 )
-from codemoo.core.message import ChatMessage
+
+from .conftest import user_ctx
 
 
 class _MockBackend:
@@ -22,9 +21,6 @@ class _MockBackend:
     async def complete(self, messages: list[Message]) -> str:
         self.calls.append(list(messages))
         return self.response
-
-
-_TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
 def _user_item(text: str, turn_id: int = 0) -> ContextItem:
@@ -62,9 +58,7 @@ async def test_chat_bot_sends_context_to_llm(
         _assistant_item("hi there", turn_id=0),
         _user_item("how are you?", turn_id=1),
     ]
-    await chat_bot.on_message(
-        ChatMessage(sender="You", text="how are you?", timestamp=_TS), ctx
-    )
+    await chat_bot.on_message(ctx)
 
     sent = chat_backend.calls[0]
     assert sent == [
@@ -78,18 +72,14 @@ async def test_chat_bot_sends_context_to_llm(
 async def test_chat_bot_returns_one_assistant_item(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    [item] = await chat_bot.on_message(
-        ChatMessage(sender="You", text="hi", timestamp=_TS), []
-    )
+    [item] = await chat_bot.on_message(user_ctx("hi"))
     assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == "chat response"
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_empty_context_sends_empty_messages(
+async def test_chat_bot_single_message_context_sends_one_message(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    await chat_bot.on_message(
-        ChatMessage(sender="You", text="first", timestamp=_TS), []
-    )
-    assert chat_backend.calls[0] == []
+    await chat_bot.on_message(user_ctx("first"))
+    assert chat_backend.calls[0] == [Message(role="user", content="first")]

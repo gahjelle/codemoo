@@ -1,5 +1,4 @@
 from codemoo.core.context_items import ContextItem
-from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 
 
@@ -18,9 +17,7 @@ class _MinimalParticipant:
     def is_human(self) -> bool:
         return False
 
-    async def on_message(
-        self, _message: ChatMessage, _context: list[ContextItem]
-    ) -> list[ContextItem]:
+    async def on_message(self, _context: list[ContextItem]) -> list[ContextItem]:
         return []
 
 

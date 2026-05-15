@@ -10,7 +10,6 @@ from codemoo.core.context_items import (
     ContextItem,
     next_turn_id,
 )
-from codemoo.core.message import ChatMessage
 
 
 @dataclasses.dataclass(eq=False)
@@ -29,7 +28,6 @@ class SystemBot:
 
     async def on_message(
         self,
-        message: ChatMessage,  # noqa: ARG002
         context: list[ContextItem],
     ) -> list[ContextItem]:
         """Respond using conversation context prefixed by the system prompt."""

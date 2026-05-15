@@ -179,9 +179,8 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
-                    new_items = await participant.on_message(
-                        message, self._chat_context
-                    )
+                    # Invariant: self._chat_context[-1] is the triggering message
+                    new_items = await participant.on_message(self._chat_context)
                     self._chat_context = [*self._chat_context, *new_items]
                     reply = self._reply_from_items(participant, new_items)
                     # Capture thinking time for successful replies

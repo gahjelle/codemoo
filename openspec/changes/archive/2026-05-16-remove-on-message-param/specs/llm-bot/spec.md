@@ -1,17 +1,4 @@
-# Spec: llm-bot
-
-## Purpose
-
-Defines `LLMBot`, a stateless chat participant that responds to each message in isolation by forwarding only the current message to an `LLMBackend`, without considering conversation history.
-
-## Requirements
-
-### Requirement: LLMBot satisfies the ChatParticipant protocol
-`LLMBot` SHALL implement the `ChatParticipant` protocol: it SHALL expose `name: str`, `emoji: str`, and `is_human: bool` attributes, and an async `on_message(context: list[ContextItem]) -> list[ContextItem]` method. `is_human` SHALL always return `False`.
-
-#### Scenario: LLMBot.is_human returns False
-- **WHEN** `LLMBot.is_human` is accessed
-- **THEN** it SHALL return `False`
+## MODIFIED Requirements
 
 ### Requirement: LLMBot responds using only the current message
 When `on_message` is called, `LLMBot` SHALL send a single `Message(role="user", content=context[-1].content.text)` to its backend and return the response as a `ContextItem`. It SHALL ignore all items in `context` except the last one. `context[-1]` is guaranteed to be the triggering message by the dispatch shell precondition.

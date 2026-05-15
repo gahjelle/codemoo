@@ -4,14 +4,11 @@ import pytest
 
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.agent_bot import AgentBot
-from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, run_shell
 
+from .conftest import user_ctx
+
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-
-
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
 
 
 def _tool_use(call_id: str = "c1") -> ToolUse:
@@ -69,7 +66,7 @@ async def test_immediate_text_response_no_tool_call() -> None:
     backend = _SequentialBackend(["plain reply"])
     bot = _make_bot(backend)
 
-    [item] = await bot.on_message(_msg("You", "hello"), [])
+    [item] = await bot.on_message(user_ctx("hello"))
 
     assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == "plain reply"
@@ -83,7 +80,7 @@ async def test_single_tool_call_then_text_response() -> None:
     backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
-    new_items = await bot.on_message(_msg("You", "run echo hi"), [])
+    new_items = await bot.on_message(user_ctx("run echo hi"))
 
     assert isinstance(new_items[-1].content, AssistantMessageContent)
     assert new_items[-1].content.text == "done"
@@ -95,7 +92,7 @@ async def test_single_tool_call_context_fed_back() -> None:
     backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
-    await bot.on_message(_msg("You", "run echo hi"), [])
+    await bot.on_message(user_ctx("run echo hi"))
 
     second_call_msgs = backend.step_calls[1]
     tool_msgs = [m for m in second_call_msgs if m.role == "tool"]
@@ -110,7 +107,7 @@ async def test_two_sequential_tool_calls_then_text() -> None:
     backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
-    new_items = await bot.on_message(_msg("You", "do two things"), [])
+    new_items = await bot.on_message(user_ctx("do two things"))
 
     assert isinstance(new_items[-1].content, AssistantMessageContent)
     assert new_items[-1].content.text == "all done"
@@ -122,7 +119,7 @@ async def test_two_tool_calls_both_outputs_in_final_context() -> None:
     backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
-    await bot.on_message(_msg("You", "do two things"), [])
+    await bot.on_message(user_ctx("do two things"))
 
     third_call_msgs = backend.step_calls[2]
     tool_msgs = [m for m in third_call_msgs if m.role == "tool"]

@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 import pytest
 
 from codemoo.core.backend import Message
@@ -9,7 +7,8 @@ from codemoo.core.context_items import (
     ContextItem,
     UserMessageContent,
 )
-from codemoo.core.message import ChatMessage
+
+from .conftest import user_ctx
 
 
 class _MockBackend:
@@ -22,13 +21,6 @@ class _MockBackend:
     async def complete(self, messages: list[Message]) -> str:
         self.calls.append(list(messages))
         return self.response
-
-
-_TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-
-
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
 
 
 @pytest.fixture
@@ -54,7 +46,7 @@ def test_system_bot_is_not_human(system_bot: SystemBot) -> None:
 async def test_system_message_is_first_in_context(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
-    await system_bot.on_message(_msg("You", "hello"), [])
+    await system_bot.on_message(user_ctx("hello"))
 
     sent = backend.calls[0]
     assert sent[0] == Message(
@@ -69,8 +61,9 @@ async def test_system_message_present_with_history(
     ctx = [
         ContextItem(content=UserMessageContent("earlier")),
         ContextItem(content=AssistantMessageContent("reply")),
+        *user_ctx("now"),
     ]
-    await system_bot.on_message(_msg("You", "now"), ctx)
+    await system_bot.on_message(ctx)
 
     sent = backend.calls[0]
     assert sent[0] == Message(
@@ -85,8 +78,9 @@ async def test_includes_context_items_in_correct_roles(
     ctx = [
         ContextItem(content=UserMessageContent("hi")),
         ContextItem(content=AssistantMessageContent("reply")),
+        *user_ctx("follow up"),
     ]
-    await system_bot.on_message(_msg("You", "follow up"), ctx)
+    await system_bot.on_message(ctx)
 
     sent = backend.calls[0]
     assert sent[0].role == "system"
@@ -100,7 +94,7 @@ async def test_reply_is_assistant_content(
 ) -> None:
     from codemoo.core.context_items import AssistantMessageContent
 
-    [item] = await system_bot.on_message(_msg("You", "hello"), [])
+    [item] = await system_bot.on_message(user_ctx("hello"))
 
     assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == "system response"

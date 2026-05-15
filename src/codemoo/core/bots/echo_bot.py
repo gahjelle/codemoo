@@ -8,7 +8,6 @@ from codemoo.core.context_items import (
     ContextItem,
     next_turn_id,
 )
-from codemoo.core.message import ChatMessage
 
 
 @dataclasses.dataclass(eq=False)
@@ -21,13 +20,12 @@ class EchoBot:
 
     async def on_message(
         self,
-        message: ChatMessage,
         context: list[ContextItem],
     ) -> list[ContextItem]:
-        """Echo the message back with this bot as sender."""
+        """Echo the triggering message back. context[-1] is always the trigger."""
         return [
             ContextItem(
-                content=AssistantMessageContent(message.text),
+                content=AssistantMessageContent(context[-1].content.text),  # ty: ignore[unresolved-attribute]
                 turn_id=next_turn_id(context),
             )
         ]

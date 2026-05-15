@@ -1,20 +1,13 @@
 """Tests for GuardBot, GuardDecision types, and ApprovalRequest."""
 
-from datetime import UTC, datetime
-
 import pytest
 
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.approval import ApprovalRequest, Approved, Denied
 from codemoo.core.bots.guard_bot import GuardBot
-from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, ToolParam, run_shell
 
-_TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-
-
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
+from .conftest import user_ctx
 
 
 def _tool_use(name: str = "run_shell", call_id: str = "c1") -> ToolUse:
@@ -109,7 +102,7 @@ async def test_default_ask_fn_approves_dangerous_tool() -> None:
     backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
 
-    new_items = await bot.on_message(_msg("You", "run something"), [])
+    new_items = await bot.on_message(user_ctx("run something"))
 
     assert isinstance(new_items[-1].content, AssistantMessageContent)
     assert new_items[-1].content.text == "done"
@@ -132,7 +125,7 @@ async def test_safe_tool_bypasses_gate() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "read the file"), [])
+    await bot.on_message(user_ctx("read the file"))
 
     assert len(ask_calls) == 0
 
@@ -154,7 +147,7 @@ async def test_dangerous_tool_invokes_ask_fn() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "run something"), [])
+    await bot.on_message(user_ctx("run something"))
 
     assert len(ask_calls) == 1
     assert ask_calls[0].bot_name == "Cato"
@@ -175,7 +168,7 @@ async def test_approved_tool_runs_and_output_in_context() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "run it"), [])
+    await bot.on_message(user_ctx("run it"))
 
     second_call = backend.step_calls[1]
     tool_msgs = [m for m in second_call if m.role == "tool"]
@@ -197,7 +190,7 @@ async def test_plain_deny_produces_standard_message() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "run it"), [])
+    await bot.on_message(user_ctx("run it"))
 
     second_call = backend.step_calls[1]
     tool_msgs = [m for m in second_call if m.role == "tool"]
@@ -222,7 +215,7 @@ async def test_deny_with_reason_includes_reason() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "run it"), [])
+    await bot.on_message(user_ctx("run it"))
 
     second_call = backend.step_calls[1]
     tool_msgs = [m for m in second_call if m.role == "tool"]
@@ -251,7 +244,7 @@ async def test_loop_continues_after_denial() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    new_items = await bot.on_message(_msg("You", "run it twice"), [])
+    new_items = await bot.on_message(user_ctx("run it twice"))
 
     assert isinstance(new_items[-1].content, AssistantMessageContent)
     assert new_items[-1].content.text == "gave up"
@@ -308,6 +301,6 @@ async def test_only_dangerous_tools_require_approval() -> None:
     )
     bot.register_guard(ask_fn)
 
-    await bot.on_message(_msg("You", "do things"), [])
+    await bot.on_message(user_ctx("do things"))
 
     assert ask_calls == ["danger_op"]
