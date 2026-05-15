@@ -16,7 +16,7 @@ from codemoo.core.context_items import (
 
 
 def _item(content: object, **kwargs: object) -> ContextItem:
-    return ContextItem(content=content, **kwargs)  # ty: ignore[arg-type]
+    return ContextItem(content=content, **kwargs)
 
 
 # ---------------------------------------------------------------------------

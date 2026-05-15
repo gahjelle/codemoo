@@ -97,7 +97,7 @@ async def business_chat(
         _raise_error(str(err))
 
 
-async def _setup_for_launcher(*, bot: str, variant: str) -> SetupResult:
+async def _setup_for_launcher(*, bot: BotType, variant: str) -> SetupResult:
     """Build the full setup for a single-bot chat session without launching ChatApp."""
     session_folder = Path.cwd()
     bot_ref = BotRef(type=bot, variant=variant)

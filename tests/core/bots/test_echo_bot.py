@@ -1,6 +1,7 @@
 import pytest
 
 from codemoo.core.bots.echo_bot import EchoBot
+from codemoo.core.context_items import AssistantMessageContent
 from codemoo.core.message import ChatMessage
 
 
@@ -22,6 +23,7 @@ def test_name_is_non_empty(bot: EchoBot) -> None:
 async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) -> None:
     [item] = await bot.on_message(human_message, [])
 
+    assert isinstance(item.content, AssistantMessageContent)
     assert item.content.text == human_message.text
 
 
@@ -29,7 +31,7 @@ async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) ->
 async def test_returns_one_assistant_context_item(
     bot: EchoBot, human_message: ChatMessage
 ) -> None:
-    from codemoo.core.context_items import AssistantMessageContent, ItemMode
+    from codemoo.core.context_items import ItemMode
 
     [item] = await bot.on_message(human_message, [])
 

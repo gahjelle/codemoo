@@ -45,7 +45,7 @@ def test_context_item_default_turn_id_is_zero() -> None:
 def test_context_item_is_immutable() -> None:
     item = ContextItem(content=UserMessageContent("hi"))
     with pytest.raises(dataclasses.FrozenInstanceError):
-        item.mode = ItemMode.DISABLED  # ty: ignore[misc]
+        item.mode = ItemMode.DISABLED
 
 
 def test_all_content_types_are_frozen() -> None:
@@ -57,7 +57,7 @@ def test_all_content_types_are_frozen() -> None:
         SystemContent("sys"),
     ]:
         with pytest.raises((dataclasses.FrozenInstanceError, AttributeError)):
-            content.text = "mutated"  # ty: ignore[misc]
+            content.text = "mutated"
 
 
 def test_injected_content_default_role_is_user() -> None:
