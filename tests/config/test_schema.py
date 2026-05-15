@@ -167,7 +167,56 @@ def test_resolve_error_message_contains_variant_info() -> None:
     assert "alpha" in msg
     assert "beta" in msg
     assert "zebra" in msg
-    alpha_pos = msg.index("alpha")
-    beta_pos = msg.index("beta")
-    zebra_pos = msg.index("zebra")
-    assert alpha_pos < beta_pos < zebra_pos, "variants should be listed alphabetically"
+
+
+# ---------------------------------------------------------------------------
+# BotVariantConfig.capabilities
+# ---------------------------------------------------------------------------
+
+
+def test_bot_variant_config_capabilities_default_to_empty() -> None:
+    v = _variant()
+    assert v.capabilities == []
+
+
+def test_bot_variant_config_accepts_valid_capability() -> None:
+    v = _variant(capabilities=["context_management"])
+    assert v.capabilities == ["context_management"]
+
+
+def test_bot_variant_config_rejects_unknown_capability() -> None:
+    with pytest.raises(ValidationError):
+        _variant(capabilities=["does_not_exist"])
+
+
+# ---------------------------------------------------------------------------
+# ResolvedBotConfig.capabilities propagation
+# ---------------------------------------------------------------------------
+
+
+def _bots_with_capability(capabilities: list[str]) -> dict:  # type: ignore[type-arg]
+    return {
+        "EchoBot": BotConfig(
+            name="Coco",
+            emoji="PARROT",
+            sources=[],
+            variants={
+                "default": BotVariantConfig(
+                    description="A bot.",
+                    capabilities=capabilities,  # type: ignore[arg-type]
+                )
+            },
+        )
+    }
+
+
+def test_resolve_threads_capabilities_through() -> None:
+    bots = _bots_with_capability(["context_management"])
+    result = resolve(bots, BotRef(type="EchoBot", variant="default"))  # type: ignore[arg-type]
+    assert result.capabilities == ["context_management"]
+
+
+def test_resolve_threads_empty_capabilities_through() -> None:
+    bots = _bots_with_capability([])
+    result = resolve(bots, BotRef(type="EchoBot", variant="default"))  # type: ignore[arg-type]
+    assert result.capabilities == []

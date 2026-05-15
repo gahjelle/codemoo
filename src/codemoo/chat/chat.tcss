@@ -79,6 +79,13 @@ ThinkingStatus {
     text-style: italic;
 }
 
+/* ContextStatus: dim statistics line, same visual weight as ThinkingStatus */
+ContextStatus {
+    padding: 0 1;
+    color: $text-muted;
+    text-style: italic;
+}
+
 /* BackendStatus: dim footer showing active mode (left) and backend/model (right) */
 BackendStatus {
     width: 1fr;

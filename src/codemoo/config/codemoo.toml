@@ -325,6 +325,7 @@ context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_write"]
 prompts_file = "retry_bot-code.txt"
+capabilities = ["context_management"]
 
 [bots.RetryBot.variants.m365]
 description = "Retry failing M365 tool calls up to 3 times, then escalate with a clear summary."
@@ -333,6 +334,7 @@ context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "retry_bot-m365.txt"
+capabilities = ["context_management"]
 
 [bots.RetryBot.variants.workspace]
 description = "Retry failing Workspace tool calls up to 3 times, then escalate with a clear summary."
@@ -341,6 +343,7 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "retry_bot-workspace.txt"
+capabilities = ["context_management"]
 
 #
 # Microsoft 365 / Graph API, see README for set up

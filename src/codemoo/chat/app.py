@@ -1,18 +1,21 @@
 """Textual TUI application wiring together chat participants."""
 
 import asyncio
+import contextlib
 import dataclasses
 from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
+from textual.css.query import NoMatches
 from textual.events import Key
 from textual.widgets import Label
 
 from codemoo.chat.approval import ApprovalModal
 from codemoo.chat.backend_status import BackendStatus
 from codemoo.chat.bubble import ChatBubble
+from codemoo.chat.context_status import ContextStatus
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.input import ChatInput
 from codemoo.chat.slides import DemoContext, SlideScreen
@@ -24,6 +27,15 @@ from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 from codemoo.llm.factory import BackendInfo
+
+
+def _bind_context_management(app: "ChatApp") -> None:
+    app.mount(ContextStatus(), after="BackendStatus")
+
+
+_CAPABILITY_BINDERS: dict[str, Callable[["ChatApp"], None]] = {
+    "context_management": _bind_context_management,
+}
 
 
 class ChatApp(App[str | None]):
@@ -56,6 +68,9 @@ class ChatApp(App[str | None]):
             p.name: (p.emoji, p.is_human, _bubble_class(p)) for p in participants
         }
         self._sender_info[error_bot.name] = (error_bot.emoji, False, "bubble--error")
+        self._active_capabilities: frozenset[str] = frozenset(
+            cap for r in self._resolved_bots for cap in r.capabilities
+        )
         self._commentator_bot = commentator_bot
         if commentator_bot is not None:
             self._sender_info |= commentator_bot.sender_info()
@@ -86,6 +101,9 @@ class ChatApp(App[str | None]):
         """Push the slide overlay when entering demo mode and focus the input."""
         if self._commentator_bot is not None:
             self._commentator_bot.register(self._append_to_log)
+        for cap in self._active_capabilities:
+            if bind := _CAPABILITY_BINDERS.get(cap):
+                bind(self)
         self.run_worker(self._run_startup())
         if self._demo_context is not None:
             self.push_screen(SlideScreen(self._demo_context))
@@ -176,6 +194,8 @@ class ChatApp(App[str | None]):
             self._append_to_log(reply)
             replies.append(reply)
         self._history.extend(replies)
+        with contextlib.suppress(NoMatches):
+            self.query_one(ContextStatus).update_message_count(len(self._history))
 
     def _make_guard_ask_fn(
         self,

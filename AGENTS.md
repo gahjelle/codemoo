@@ -118,6 +118,19 @@ tools = ["@code_write", "extra_tool"]
 
 References are expanded before Pydantic validation; the `[tool_lists]` section is consumed and never appears on `CodemooConfig`. An unknown `@name` raises a `KeyError` at config load time with a message listing available list names.
 
+The `capabilities` field declares which environment features a variant requires. The TUI activates matching UI widgets when the bot is loaded; non-TUI runners silently ignore unknown capabilities. The valid values are defined by `BotCapability` in `src/codemoo/config/schema.py`:
+
+```toml
+[bots.RetryBot.variants.code]
+capabilities = ["context_management"]
+```
+
+Currently supported capabilities:
+
+| Capability            | UI effect                                                      |
+| --------------------- | -------------------------------------------------------------- |
+| `context_management`  | Adds a status bar showing the current conversation length      |
+
 ### Adding a New Bot
 
 When adding a bot to the progression, follow these conventions before writing any code:

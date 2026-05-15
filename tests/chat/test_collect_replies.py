@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 import pytest
 
 from codemoo.chat.app import ChatApp
+from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
@@ -251,3 +252,44 @@ async def test_error_message_is_not_dispatched_to_other_bots() -> None:
     # The capture participant must not have received the error bot's message
     error_name = app._error_bot.name
     assert all(m.sender != error_name for m in capture.received_messages)
+
+
+# ---------------------------------------------------------------------------
+# ChatApp._active_capabilities
+# ---------------------------------------------------------------------------
+
+
+def _make_resolved(capabilities: list[str]) -> ResolvedBotConfig:
+    return ResolvedBotConfig(
+        bot_type="EchoBot",
+        name="Echo",
+        emoji="\N{ROBOT FACE}",
+        variant="default",
+        sources=[],
+        description="A bot.",
+        tools=[],
+        prompts=[],
+        instructions="",
+        context_source=None,
+        capabilities=capabilities,
+    )
+
+
+def test_active_capabilities_is_union_across_resolved_bots() -> None:
+    r1 = _make_resolved(["context_management"])
+    r2 = _make_resolved([])
+    app = ChatApp(
+        participants=[HumanParticipant()],
+        error_bot=ErrorBot(llm=_MockBackend()),
+        resolved_bots=[r1, r2],
+    )
+    assert app._active_capabilities == frozenset({"context_management"})
+
+
+def test_active_capabilities_empty_when_no_capabilities_declared() -> None:
+    app = ChatApp(
+        participants=[HumanParticipant()],
+        error_bot=ErrorBot(llm=_MockBackend()),
+        resolved_bots=[_make_resolved([])],
+    )
+    assert app._active_capabilities == frozenset()

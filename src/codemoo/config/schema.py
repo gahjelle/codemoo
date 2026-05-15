@@ -24,6 +24,7 @@ type BotType = Literal[
     "RetryBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
+type BotCapability = Literal["context_management"]
 type ModelBackend = Literal[
     "mistral", "anthropic", "openrouter", "openai", "google", "ollama"
 ]
@@ -59,6 +60,7 @@ class BotVariantConfig(StrictModel):
     instructions: str = ""
     context_source: ContextSource | None = None
     memory_file: str | None = None
+    capabilities: list[BotCapability] = []
 
 
 class BotConfig(StrictModel):
@@ -113,6 +115,7 @@ class ResolvedBotConfig:
     instructions: str
     context_source: dict[str, str] | None
     memory_file: str | None = None
+    capabilities: list[str] = dataclasses.field(default_factory=list)
 
 
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
@@ -144,6 +147,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         instructions=variant.instructions,
         context_source=context_source_dict,
         memory_file=variant.memory_file,
+        capabilities=list(variant.capabilities),
     )
 
 
