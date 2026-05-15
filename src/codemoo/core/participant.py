@@ -3,6 +3,7 @@
 import dataclasses
 from typing import ClassVar, Protocol, runtime_checkable
 
+from codemoo.core.context_items import ContextItem
 from codemoo.core.message import ChatMessage
 
 
@@ -15,9 +16,9 @@ class ChatParticipant(Protocol):
     is_human: ClassVar[bool]
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
-        """Receive a message and optionally return a reply."""
+        self, message: ChatMessage, context: list[ContextItem]
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Receive a message and return a reply plus any new context items."""
         ...
 
 
@@ -27,7 +28,7 @@ class HumanParticipant:
 
     The human's messages originate from keyboard input in the UI, not from
     on_message. This participant exists so the human has a named slot and
-    receives dispatched messages, but always returns None (no programmatic reply).
+    receives dispatched messages, but always returns (None, []).
     """
 
     name: str = "You"
@@ -37,7 +38,7 @@ class HumanParticipant:
     async def on_message(
         self,
         message: ChatMessage,  # noqa: ARG002
-        history: list[ChatMessage],  # noqa: ARG002
-    ) -> ChatMessage | None:
-        """Return None — the human replies via the keyboard, not programmatically."""
-        return None
+        context: list[ContextItem],  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Return (None, []) — the human replies via keyboard, not programmatically."""
+        return None, []

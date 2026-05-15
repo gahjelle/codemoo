@@ -4,6 +4,12 @@ import dataclasses
 from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
+from codemoo.core.context_builder import build_context
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -22,19 +28,17 @@ class SystemBot:
     is_human: ClassVar[bool] = False
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
-        """Respond using conversation history prefixed by the system prompt."""
-        context = [
+        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Respond using conversation context prefixed by the system prompt."""
+        llm_messages = [
             Message(role="system", content=self.instructions),
-            *[
-                Message(
-                    role="assistant" if m.sender == self.name else "user",
-                    content=m.text,
-                )
-                for m in history
-            ],
-            Message(role="user", content=message.text),
+            *build_context(context),
         ]
-        response = await self.llm.complete(context)
-        return ChatMessage(sender=self.name, text=response)
+        response = await self.llm.complete(llm_messages)
+        reply = ChatMessage(sender=self.name, text=response)
+        new_item = ContextItem(
+            content=AssistantMessageContent(reply.text),
+            turn_id=next_turn_id(context),
+        )
+        return reply, [new_item]

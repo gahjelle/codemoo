@@ -10,6 +10,7 @@ import pytest
 from codemoo.chat.app import ChatApp
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.context_items import ContextItem
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 
@@ -40,9 +41,9 @@ class _EchoParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],
-    ) -> ChatMessage | None:
-        return ChatMessage(sender=self.name, text=message.text)
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        return ChatMessage(sender=self.name, text=message.text), []
 
 
 class _SilentParticipant:
@@ -63,20 +64,20 @@ class _SilentParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],
-    ) -> ChatMessage | None:
-        return None
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        return None, []
 
 
-class _HistoryCapturingParticipant:
-    """Participant that records the history it receives on each call."""
+class _ContextCapturingParticipant:
+    """Participant that records the context it receives on each call."""
 
     def __init__(self) -> None:
-        self.received_histories: list[list[ChatMessage]] = []
+        self.received_contexts: list[list[ContextItem]] = []
 
     @property
     def name(self) -> str:
-        return "HistoryCapture"
+        return "ContextCapture"
 
     @property
     def emoji(self) -> str:
@@ -89,10 +90,10 @@ class _HistoryCapturingParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],
-    ) -> ChatMessage | None:
-        self.received_histories.append(list(history))
-        return None
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        self.received_contexts.append(list(context))
+        return None, []
 
 
 class _MessageCapturingParticipant:
@@ -117,10 +118,10 @@ class _MessageCapturingParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],
-    ) -> ChatMessage | None:
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         self.received_messages.append(message)
-        return None
+        return None, []
 
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
@@ -138,7 +139,7 @@ async def test_collect_replies_yields_echo_reply() -> None:
     app = _make_app([HumanParticipant(), _EchoParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
 
-    replies = [r async for r in app._collect_replies(initial, [])]
+    replies = [r async for r in app._collect_replies(initial)]
     assert len(replies) == 1
     assert replies[0].sender == "Echo"
     assert replies[0].text == "hi"
@@ -149,7 +150,7 @@ async def test_collect_replies_yields_nothing_for_silent_bot() -> None:
     app = _make_app([HumanParticipant(), _SilentParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
 
-    replies = [r async for r in app._collect_replies(initial, [])]
+    replies = [r async for r in app._collect_replies(initial)]
     assert replies == []
 
 
@@ -159,7 +160,7 @@ async def test_collect_replies_does_not_loop_on_echo() -> None:
     app = _make_app([HumanParticipant(), _EchoParticipant()])
     initial = ChatMessage(sender="You", text="ping", timestamp=_TS)
 
-    replies = [r async for r in app._collect_replies(initial, [])]
+    replies = [r async for r in app._collect_replies(initial)]
     # Exactly one reply: the echo. The echo bot's reply is not echoed again.
     assert len(replies) == 1
 
@@ -171,29 +172,22 @@ async def test_sender_is_not_called_with_own_message() -> None:
     app = _make_app([HumanParticipant(), capture])
     own_message = ChatMessage(sender="Bot", text="I said this", timestamp=_TS)
 
-    [_ async for _ in app._collect_replies(own_message, [])]
+    [_ async for _ in app._collect_replies(own_message)]
     assert all(m.sender != "Bot" for m in capture.received_messages)
 
 
 @pytest.mark.asyncio
-async def test_history_passed_to_participants_excludes_current_message() -> None:
-    capture = _HistoryCapturingParticipant()
+async def test_context_passed_to_participants_reflects_app_context() -> None:
+    from codemoo.core.context_items import ContextItem, UserMessageContent
+
+    capture = _ContextCapturingParticipant()
     app = _make_app([HumanParticipant(), capture])
-    initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
-
-    [_ async for _ in app._collect_replies(initial, [])]
-    assert capture.received_histories[0] == []
-
-
-@pytest.mark.asyncio
-async def test_history_passed_includes_prior_messages() -> None:
-    prior = ChatMessage(sender="You", text="earlier", timestamp=_TS)
-    capture = _HistoryCapturingParticipant()
-    app = _make_app([HumanParticipant(), capture])
+    prior_item = ContextItem(content=UserMessageContent("earlier"))
+    app._chat_context = [prior_item]
     initial = ChatMessage(sender="You", text="now", timestamp=_TS)
 
-    [_ async for _ in app._collect_replies(initial, [prior])]
-    assert capture.received_histories[0] == [prior]
+    [_ async for _ in app._collect_replies(initial)]
+    assert capture.received_contexts[0] == [prior_item]
 
 
 class _FailingParticipant:
@@ -214,8 +208,8 @@ class _FailingParticipant:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],
-    ) -> ChatMessage | None:
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         msg = "simulated LLM failure"
         raise RuntimeError(msg)
 
@@ -225,7 +219,7 @@ async def test_exception_yields_error_bubble_not_crash() -> None:
     app = _make_app([HumanParticipant(), _FailingParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
 
-    replies = [r async for r in app._collect_replies(initial, [])]
+    replies = [r async for r in app._collect_replies(initial)]
     assert len(replies) == 1
     assert replies[0].sender == app._error_bot.name
 
@@ -236,7 +230,7 @@ async def test_exception_does_not_block_remaining_participants() -> None:
     app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
 
-    [_ async for _ in app._collect_replies(initial, [])]
+    [_ async for _ in app._collect_replies(initial)]
     # The capture participant must still have received the message
     assert any(m.text == "hi" for m in capture.received_messages)
 
@@ -248,7 +242,7 @@ async def test_error_message_is_not_dispatched_to_other_bots() -> None:
     app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
 
-    [_ async for _ in app._collect_replies(initial, [])]
+    [_ async for _ in app._collect_replies(initial)]
     # The capture participant must not have received the error bot's message
     error_name = app._error_bot.name
     assert all(m.sender != error_name for m in capture.received_messages)

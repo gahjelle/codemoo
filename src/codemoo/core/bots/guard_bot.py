@@ -1,6 +1,7 @@
 """LLM bot that loops tool calls, pausing for human approval before dangerous ones."""
 
 import dataclasses
+import json
 from collections.abc import Awaitable, Callable
 from typing import ClassVar
 
@@ -17,6 +18,13 @@ from codemoo.core.bots.approval import (
     _denial_message,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
+from codemoo.core.context_builder import build_context
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    ToolUseContent,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, dispatch_tool
 
@@ -48,26 +56,28 @@ class GuardBot:
         self._ask_fn = ask_fn
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
+        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         """Respond, invoking tools repeatedly until the LLM returns plain text."""
         messages: list[Message] = [
             Message(role="system", content=self.instructions),
-            *[
-                Message(
-                    role="assistant" if m.sender == self.name else "user",
-                    content=m.text,
-                )
-                for m in history
-            ],
-            Message(role="user", content=message.text),
+            *build_context(context),
         ]
         tool_map = {t.name: t for t in self.tools}
+        turn = next_turn_id(context)
+        tool_use_items: list[ToolUseContent] = []
 
         while True:
             response = await self.llm.complete(messages, self.tools)
             if not isinstance(response, ToolUse):
-                return ChatMessage(sender=self.name, text=response)
+                reply = ChatMessage(sender=self.name, text=response)
+                new_items: list[ContextItem] = [
+                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
+                ]
+                new_items.append(
+                    ContextItem(content=AssistantMessageContent(response), turn_id=turn)
+                )
+                return reply, new_items
             if self.commentator is not None:
                 await self.commentator.comment(
                     ToolCallEvent(
@@ -91,6 +101,14 @@ class GuardBot:
                 tool_output = await dispatch_tool(
                     tool, response.arguments, self.name, self.commentator
                 )
+            tool_use_items.append(
+                ToolUseContent(
+                    name=response.name,
+                    arguments_json=json.dumps(response.arguments),
+                    call_id=response.call_id,
+                    output=tool_output,
+                )
+            )
             messages = [
                 *messages,
                 response.assistant_message,

@@ -24,6 +24,7 @@ from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
 from codemoo.core.bots.commentator_bot import BotRestartEvent, CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.context_items import ContextItem, UserMessageContent, next_turn_id
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 from codemoo.llm.factory import BackendInfo
@@ -79,8 +80,8 @@ class ChatApp(App[str | None]):
                 participant.register_guard(self._make_guard_ask_fn())  # ty: ignore[call-non-callable]
         # Keep a reference to the human participant for outgoing message construction
         self._human = next(p for p in participants if p.is_human)
-        # Authoritative ordered history of all messages posted in this session
-        self._history: list[ChatMessage] = []
+        # Authoritative context for the session, owned by the App
+        self._chat_context: list[ContextItem] = []
         self._prompt_index = 0
 
     def compose(self) -> ComposeResult:
@@ -119,11 +120,15 @@ class ChatApp(App[str | None]):
         text = event.value
         message = ChatMessage(sender=self._human.name, text=text)
         self._append_to_log(message)
-        # Snapshot before appending: history excludes the current message
-        prior_history = list(self._history)
-        self._history.append(message)
+        self._chat_context = [
+            *self._chat_context,
+            ContextItem(
+                content=UserMessageContent(text),
+                turn_id=next_turn_id(self._chat_context),
+            ),
+        ]
         # Dispatch in a worker so participant coroutines run without blocking the UI
-        self.run_worker(self._dispatch(message, prior_history), exclusive=False)
+        self.run_worker(self._dispatch(message), exclusive=False)
 
     def _append_to_log(self, message: ChatMessage) -> None:
         default = ("\N{SPEECH BALLOON}", False, "bubble--commentator")
@@ -143,7 +148,6 @@ class ChatApp(App[str | None]):
     async def _collect_replies(
         self,
         initial_message: ChatMessage,
-        history: list[ChatMessage],
         status: ThinkingStatus | None = None,
     ) -> AsyncGenerator[ChatMessage, None]:
         """Yield reply messages in BFS order.
@@ -153,7 +157,6 @@ class ChatApp(App[str | None]):
         participant call. Exceptions are surfaced as ErrorBot messages that are
         yielded to the log but not re-queued for dispatch.
         """
-        running_history = list(history)
         queue: list[ChatMessage] = [initial_message]
         while queue:
             message = queue.pop(0)
@@ -164,7 +167,10 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
-                    reply = await participant.on_message(message, running_history)
+                    reply, new_items = await participant.on_message(
+                        message, self._chat_context
+                    )
+                    self._chat_context = [*self._chat_context, *new_items]
                     # Capture thinking time for successful replies
                     thinking_time = status.clear() if status else None
                     if thinking_time is not None and reply is not None:
@@ -182,20 +188,14 @@ class ChatApp(App[str | None]):
                 if reply is not None:
                     queue.append(reply)
                     yield reply
-            running_history.append(message)
 
-    async def _dispatch(
-        self, initial_message: ChatMessage, history: list[ChatMessage]
-    ) -> None:
+    async def _dispatch(self, initial_message: ChatMessage) -> None:
         """Consume replies from _collect_replies and render them to the log."""
         status = self.query_one(ThinkingStatus)
-        replies: list[ChatMessage] = []
-        async for reply in self._collect_replies(initial_message, history, status):
+        async for reply in self._collect_replies(initial_message, status):
             self._append_to_log(reply)
-            replies.append(reply)
-        self._history.extend(replies)
         with contextlib.suppress(NoMatches):
-            self.query_one(ContextStatus).update_message_count(len(self._history))
+            self.query_one(ContextStatus).update_message_count(len(self._chat_context))
 
     def _make_guard_ask_fn(
         self,
@@ -246,7 +246,7 @@ class ChatApp(App[str | None]):
             self.run_worker(
                 self._commentator_bot.comment(BotRestartEvent(bot_name=bot.name))
             )
-        self._history = []
+        self._chat_context = []
         self._prompt_index = 0
         prompts = self._demo_context.prompts
         self.query_one(DemoHeader).update_prompt_state(len(prompts))

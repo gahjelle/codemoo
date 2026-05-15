@@ -1,6 +1,7 @@
 """Single-round-trip tool-call loop shared by ToolBot and its subclasses."""
 
 import dataclasses
+import json
 from typing import ClassVar
 
 from codemoo.core.backend import (
@@ -9,6 +10,13 @@ from codemoo.core.backend import (
     ToolUse,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
+from codemoo.core.context_builder import build_context
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    ToolUseContent,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, dispatch_tool
 
@@ -32,20 +40,14 @@ class SingleTurnToolBot:
     is_human: ClassVar[bool] = False
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
+        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         """Respond, invoking a tool first if the LLM requests one."""
         messages: list[Message] = [
             Message(role="system", content=self.instructions),
-            *[
-                Message(
-                    role="assistant" if m.sender == self.name else "user",
-                    content=m.text,
-                )
-                for m in history
-            ],
-            Message(role="user", content=message.text),
+            *build_context(context),
         ]
+        turn = next_turn_id(context)
         response = await self.llm.complete(messages, self.tools)
         if isinstance(response, ToolUse):
             tool_map = {t.name: t for t in self.tools}
@@ -60,6 +62,12 @@ class SingleTurnToolBot:
             tool_output = await dispatch_tool(
                 tool_map[response.name], response.arguments, self.name, self.commentator
             )
+            tool_use_item = ToolUseContent(
+                name=response.name,
+                arguments_json=json.dumps(response.arguments),
+                call_id=response.call_id,
+                output=tool_output,
+            )
             follow_up = [
                 *messages,
                 response.assistant_message,
@@ -67,5 +75,13 @@ class SingleTurnToolBot:
                     role="tool", content=tool_output, tool_call_id=response.call_id
                 ),
             ]
-            response = await self.llm.complete(follow_up) or _INTERRUPTED
-        return ChatMessage(sender=self.name, text=response)
+            text = await self.llm.complete(follow_up) or _INTERRUPTED
+            reply = ChatMessage(sender=self.name, text=text)
+            return reply, [
+                ContextItem(content=tool_use_item, turn_id=turn),
+                ContextItem(content=AssistantMessageContent(text), turn_id=turn),
+            ]
+        reply = ChatMessage(sender=self.name, text=response)
+        return reply, [
+            ContextItem(content=AssistantMessageContent(response), turn_id=turn)
+        ]

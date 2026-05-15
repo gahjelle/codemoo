@@ -4,6 +4,11 @@ import dataclasses
 from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -23,9 +28,14 @@ class LlmBot:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],  # noqa: ARG002
-    ) -> ChatMessage | None:
-        """Respond to message using only its text; ignore history."""
-        context = [Message(role="user", content=message.text)]
-        response = await self.llm.complete(context)
-        return ChatMessage(sender=self.name, text=response)
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Respond to message using only its text; ignore context."""
+        llm_messages = [Message(role="user", content=message.text)]
+        response = await self.llm.complete(llm_messages)
+        reply = ChatMessage(sender=self.name, text=response)
+        new_item = ContextItem(
+            content=AssistantMessageContent(reply.text),
+            turn_id=next_turn_id(context),
+        )
+        return reply, [new_item]

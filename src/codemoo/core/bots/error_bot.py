@@ -5,6 +5,7 @@ import random
 from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
+from codemoo.core.context_items import ContextItem
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant
 
@@ -76,10 +77,10 @@ class ErrorBot:
     async def on_message(
         self,
         message: ChatMessage,  # noqa: ARG002
-        history: list[ChatMessage],  # noqa: ARG002
-    ) -> ChatMessage | None:
-        """Return None — ErrorBot speaks only through format_error."""
-        return None
+        context: list[ContextItem],  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Return (None, []) — ErrorBot speaks only through format_error."""
+        return None, []
 
     async def format_error(
         self,

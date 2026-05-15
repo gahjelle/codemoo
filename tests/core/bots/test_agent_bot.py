@@ -67,7 +67,7 @@ async def test_immediate_text_response_no_tool_call() -> None:
     backend = _SequentialBackend(["plain reply"])
     bot = _make_bot(backend)
 
-    reply = await bot.on_message(_msg("You", "hello"), [])
+    reply, _ = await bot.on_message(_msg("You", "hello"), [])
 
     assert reply is not None
     assert reply.sender == "Loom"
@@ -80,7 +80,7 @@ async def test_single_tool_call_then_text_response() -> None:
     backend = _SequentialBackend([_tool_use("c1"), "done"])
     bot = _make_bot(backend)
 
-    reply = await bot.on_message(_msg("You", "run echo hi"), [])
+    reply, _ = await bot.on_message(_msg("You", "run echo hi"), [])
 
     assert reply is not None
     assert reply.sender == "Loom"
@@ -106,7 +106,7 @@ async def test_two_sequential_tool_calls_then_text() -> None:
     backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
     bot = _make_bot(backend)
 
-    reply = await bot.on_message(_msg("You", "do two things"), [])
+    reply, _ = await bot.on_message(_msg("You", "do two things"), [])
 
     assert reply is not None
     assert reply.text == "all done"

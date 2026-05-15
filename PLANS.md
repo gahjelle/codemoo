@@ -28,5 +28,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Add num tokens in context visibly on screen
 - Stream answers
 - Show full content of first parameter in GuardBot approval box
+- Add context management capability that can customize context
+- Add tool management capability that can customize tools
 
 ## Proposed by agent

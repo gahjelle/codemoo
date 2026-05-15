@@ -107,7 +107,7 @@ async def test_default_ask_fn_approves_dangerous_tool() -> None:
     backend = _SequentialBackend([_tool_use("run_shell"), "done"])
     bot = _make_bot(backend)
 
-    reply = await bot.on_message(_msg("You", "run something"), [])
+    reply, _ = await bot.on_message(_msg("You", "run something"), [])
 
     assert reply is not None
     assert reply.text == "done"
@@ -247,7 +247,7 @@ async def test_loop_continues_after_denial() -> None:
     bot = _make_bot(backend)
     bot.register_guard(ask_fn)
 
-    reply = await bot.on_message(_msg("You", "run it twice"), [])
+    reply, _ = await bot.on_message(_msg("You", "run it twice"), [])
 
     assert reply is not None
     assert reply.text == "gave up"

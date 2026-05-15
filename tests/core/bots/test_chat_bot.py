@@ -4,6 +4,11 @@ import pytest
 
 from codemoo.core.backend import Message
 from codemoo.core.bots.chat_bot import ChatBot
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    UserMessageContent,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -22,8 +27,12 @@ class _MockBackend:
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
-def _msg(sender: str, text: str) -> ChatMessage:
-    return ChatMessage(sender=sender, text=text, timestamp=_TS)
+def _user_item(text: str, turn_id: int = 0) -> ContextItem:
+    return ContextItem(content=UserMessageContent(text), turn_id=turn_id)
+
+
+def _assistant_item(text: str, turn_id: int = 0) -> ContextItem:
+    return ContextItem(content=AssistantMessageContent(text), turn_id=turn_id)
 
 
 @pytest.fixture
@@ -45,53 +54,45 @@ def test_chat_bot_is_not_human(chat_bot: ChatBot) -> None:
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_includes_other_bot_messages_as_user_role(
+async def test_chat_bot_sends_context_to_llm(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    history = [
-        _msg("You", "hello"),
-        _msg("EchoBot", "hello"),  # now included as user role
-        _msg("ChatBot", "hi there"),
+    ctx = [
+        _user_item("hello", turn_id=0),
+        _assistant_item("hi there", turn_id=0),
+        _user_item("how are you?", turn_id=1),
     ]
-    await chat_bot.on_message(_msg("You", "how are you?"), history)
+    await chat_bot.on_message(
+        ChatMessage(sender="You", text="how are you?", timestamp=_TS), ctx
+    )
 
     sent = chat_backend.calls[0]
     assert sent == [
         Message(role="user", content="hello"),
-        Message(role="user", content="hello"),  # EchoBot message as user
         Message(role="assistant", content="hi there"),
         Message(role="user", content="how are you?"),
     ]
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_maps_own_history_to_assistant_role(
+async def test_chat_bot_returns_one_assistant_item(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    history = [_msg("ChatBot", "previous reply")]
-    await chat_bot.on_message(_msg("You", "follow up"), history)
-
-    sent = chat_backend.calls[0]
-    assert Message(role="assistant", content="previous reply") in sent
+    reply, new_items = await chat_bot.on_message(
+        ChatMessage(sender="You", text="hi", timestamp=_TS), []
+    )
+    assert reply is not None
+    assert reply.text == "chat response"
+    assert len(new_items) == 1
+    assert isinstance(new_items[0].content, AssistantMessageContent)
+    assert new_items[0].content.text == "chat response"
 
 
 @pytest.mark.asyncio
-async def test_chat_bot_maps_human_history_to_user_role(
+async def test_chat_bot_empty_context_sends_empty_messages(
     chat_bot: ChatBot, chat_backend: _MockBackend
 ) -> None:
-    history = [_msg("You", "earlier question")]
-    await chat_bot.on_message(_msg("You", "now"), history)
-
-    sent = chat_backend.calls[0]
-    assert Message(role="user", content="earlier question") in sent
-
-
-@pytest.mark.asyncio
-async def test_chat_bot_current_message_is_last_user_turn(
-    chat_bot: ChatBot, chat_backend: _MockBackend
-) -> None:
-    history = [_msg("You", "first"), _msg("ChatBot", "reply")]
-    await chat_bot.on_message(_msg("You", "final"), history)
-
-    sent = chat_backend.calls[0]
-    assert sent[-1] == Message(role="user", content="final")
+    await chat_bot.on_message(
+        ChatMessage(sender="You", text="first", timestamp=_TS), []
+    )
+    assert chat_backend.calls[0] == []

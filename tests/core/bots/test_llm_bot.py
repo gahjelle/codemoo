@@ -44,8 +44,7 @@ def test_llm_bot_is_not_human(llm_bot: LlmBot) -> None:
 async def test_llm_bot_sends_only_current_message(
     llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
-    history = [_msg("You", "earlier message")]
-    await llm_bot.on_message(_msg("You", "latest"), history)
+    await llm_bot.on_message(_msg("You", "latest"), [])
 
     assert len(mock_backend.calls) == 1
     assert mock_backend.calls[0] == [Message(role="user", content="latest")]
@@ -56,7 +55,7 @@ async def test_llm_bot_returns_response_as_chat_message(
     llm_bot: LlmBot, mock_backend: _MockBackend
 ) -> None:
     mock_backend.response = "I am a bot"
-    reply = await llm_bot.on_message(_msg("You", "hi"), [])
+    reply, _ = await llm_bot.on_message(_msg("You", "hi"), [])
 
     assert reply is not None
     assert reply.sender == "LLMBot"

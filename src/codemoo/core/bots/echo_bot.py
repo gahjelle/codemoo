@@ -3,6 +3,11 @@
 import dataclasses
 from typing import ClassVar
 
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -17,7 +22,12 @@ class EchoBot:
     async def on_message(
         self,
         message: ChatMessage,
-        history: list[ChatMessage],  # noqa: ARG002
-    ) -> ChatMessage | None:
+        context: list[ContextItem],
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         """Echo the message back with this bot as sender."""
-        return ChatMessage(sender=self.name, text=message.text)
+        reply = ChatMessage(sender=self.name, text=message.text)
+        new_item = ContextItem(
+            content=AssistantMessageContent(reply.text),
+            turn_id=next_turn_id(context),
+        )
+        return reply, [new_item]

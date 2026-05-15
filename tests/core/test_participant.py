@@ -1,3 +1,4 @@
+from codemoo.core.context_items import ContextItem
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 
@@ -18,9 +19,9 @@ class _MinimalParticipant:
         return False
 
     async def on_message(
-        self, _message: ChatMessage, _history: list[ChatMessage]
-    ) -> ChatMessage | None:
-        return None
+        self, _message: ChatMessage, _context: list[ContextItem]
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        return None, []
 
 
 def test_duck_typed_object_satisfies_protocol() -> None:

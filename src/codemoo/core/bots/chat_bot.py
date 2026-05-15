@@ -3,7 +3,13 @@
 import dataclasses
 from typing import ClassVar
 
-from codemoo.core.backend import LLMBackend, Message
+from codemoo.core.backend import LLMBackend
+from codemoo.core.context_builder import build_context
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -11,8 +17,8 @@ from codemoo.core.message import ChatMessage
 class ChatBot:
     """Chat participant that maintains conversation context.
 
-    Prepends history to the current message before sending to the LLM.
-    Stateless — history is injected by the shell.
+    Uses build_context(context) to construct LLM input from the full context list.
+    Stateless — context is injected by the shell.
     """
 
     name: str
@@ -21,18 +27,13 @@ class ChatBot:
     is_human: ClassVar[bool] = False
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
-        """Respond using conversation history."""
-        context = [
-            *[
-                Message(
-                    role="assistant" if m.sender == self.name else "user",
-                    content=m.text,
-                )
-                for m in history
-            ],
-            Message(role="user", content=message.text),
-        ]
-        response = await self.llm.complete(context)
-        return ChatMessage(sender=self.name, text=response)
+        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
+        """Respond using conversation context."""
+        response = await self.llm.complete(build_context(context))
+        reply = ChatMessage(sender=self.name, text=response)
+        new_item = ContextItem(
+            content=AssistantMessageContent(reply.text),
+            turn_id=next_turn_id(context),
+        )
+        return reply, [new_item]

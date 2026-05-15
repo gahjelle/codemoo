@@ -20,6 +20,13 @@ from codemoo.core.bots.approval import (
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
 from codemoo.core.context import read_memory_file, read_project_context
+from codemoo.core.context_builder import build_context
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    ToolUseContent,
+    next_turn_id,
+)
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import ToolDef, dispatch_tool, format_tool_call
 
@@ -75,8 +82,8 @@ class RetryBot:
                 )
 
     async def on_message(
-        self, message: ChatMessage, history: list[ChatMessage]
-    ) -> ChatMessage | None:
+        self, message: ChatMessage, context: list[ContextItem]  # noqa: ARG002
+    ) -> tuple[ChatMessage | None, list[ContextItem]]:
         """Respond using context and memory, escalating after repeated tool failures."""
         system_content = self.instructions
         if self.context:
@@ -86,28 +93,38 @@ class RetryBot:
 
         messages: list[Message] = [
             Message(role="system", content=system_content),
-            *[
-                Message(
-                    role="assistant" if m.sender == self.name else "user",
-                    content=m.text,
-                )
-                for m in history
-            ],
-            Message(role="user", content=message.text),
+            *build_context(context),
         ]
         tool_map = {t.name: t for t in self.tools}
-
+        turn = next_turn_id(context)
+        tool_use_items: list[ToolUseContent] = []
         retry_counts: dict[tuple[str, str], int] = {}
         successful_calls: list[str] = []
 
         while True:
             response = await self.llm.complete(messages, self.tools)
             if not isinstance(response, ToolUse):
-                return ChatMessage(sender=self.name, text=response)
+                reply = ChatMessage(sender=self.name, text=response)
+                new_items: list[ContextItem] = [
+                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
+                ]
+                new_items.append(
+                    ContextItem(content=AssistantMessageContent(response), turn_id=turn)
+                )
+                return reply, new_items
 
             retry_key = (response.name, json.dumps(response.arguments, sort_keys=True))
             if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
-                return self._escalation_message(retry_key[0], successful_calls)
+                reply = self._escalation_message(retry_key[0], successful_calls)
+                new_items = [
+                    ContextItem(content=tu, turn_id=turn) for tu in tool_use_items
+                ]
+                new_items.append(
+                    ContextItem(
+                        content=AssistantMessageContent(reply.text), turn_id=turn
+                    )
+                )
+                return reply, new_items
 
             if self.commentator is not None:
                 await self.commentator.comment(
@@ -143,6 +160,14 @@ class RetryBot:
                     )
                 )
 
+            tool_use_items.append(
+                ToolUseContent(
+                    name=response.name,
+                    arguments_json=json.dumps(response.arguments),
+                    call_id=response.call_id,
+                    output=tool_output,
+                )
+            )
             messages = [
                 *messages,
                 response.assistant_message,

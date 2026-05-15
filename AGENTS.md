@@ -188,6 +188,23 @@ because listing available API tools adds context the user may not know.
 and is absent from all named tool lists by design — it is an introductory teaching
 tool for Telo only.
 
+## Context Architecture
+
+The conversation moves through three layers:
+
+1. **`list[ChatMessage]`** — UI/log concern; owned by `ChatApp`; never sent to the LLM.
+2. **`list[ContextItem]`** — shapeable intermediate layer; owned by `ChatApp`; supports disabling, editing, summarising, and injecting items.
+3. **`list[Message]`** — LLM wire format; derived on-demand by `build_context()`.
+
+Key modules:
+
+- **`src/codemoo/core/context_items.py`** — `ContextItem`, `ItemMode` enum, all `ContextContent` frozen dataclasses (`UserMessageContent`, `AssistantMessageContent`, `ToolUseContent`, `InjectedContent`, `SystemContent`), and pure list operations (`add_item`, `replace_item`, `set_mode`, `set_edited`, `set_summary`, `inject_at`, `next_turn_id`).
+- **`src/codemoo/core/context_builder.py`** — `build_context(items) -> list[Message]`: DISABLED items are skipped; EDITED/SUMMARY modes substitute text; `ToolUseContent` unrolls to an assistant message + a tool message; `role_override` applies to non-tool items.
+
+`ChatApp` owns `self._context: list[ContextItem]`. Bots receive the full list as read-only input and return only the new items they produced. The app appends a `UserMessageContent` item before dispatching and extends `_context` with the bot's returned items after each turn. Bots are append-only — only the user (via a future UI modal) modifies existing items.
+
+`ToolUseContent` wraps the tool call and result atomically so that disabling a tool use also suppresses its result, preventing orphaned tool-result messages.
+
 ## Tools Architecture
 
 Tools are split into three locations: generic code tools in `src/codemoo/core/tools/`, M365-specific tools in `src/codemoo/m365/tools/`, and Google Workspace tools in `src/codemoo/workspace/tools/`.

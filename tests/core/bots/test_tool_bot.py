@@ -119,7 +119,7 @@ async def test_text_response_path_calls_complete_with_tools(
 
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ToolBot) -> None:
-    reply = await bot_text.on_message(_msg("You", "hi"), [])
+    reply, _ = await bot_text.on_message(_msg("You", "hi"), [])
 
     assert reply is not None
     assert reply.sender == "Telo"
@@ -130,7 +130,7 @@ async def test_text_response_path_reply_sender(bot_text: ToolBot) -> None:
 async def test_tool_use_path_invokes_tool_and_calls_complete(
     bot_tool: ToolBot, tool_backend: _MockBackend
 ) -> None:
-    reply = await bot_tool.on_message(_msg("You", "reverse hello"), [])
+    reply, _ = await bot_tool.on_message(_msg("You", "reverse hello"), [])
 
     assert len(tool_backend.step_calls) == 1
     assert len(tool_backend.complete_calls) == 1
@@ -173,7 +173,7 @@ async def test_tool_use_path_empty_complete_uses_fallback(
         tools=[reverse_string],
         instructions="You have tools available.",
     )
-    reply = await bot.on_message(_msg("You", "reverse hello"), [])
+    reply, _ = await bot.on_message(_msg("You", "reverse hello"), [])
 
     assert reply is not None
     assert reply.text == "(tool executed, process interrupted)"

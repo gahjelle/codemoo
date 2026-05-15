@@ -26,7 +26,7 @@ def test_name_is_non_empty(bot: EchoBot) -> None:
 
 @pytest.mark.asyncio
 async def test_echoes_human_message(bot: EchoBot, human_message: ChatMessage) -> None:
-    reply = await bot.on_message(human_message, [])
+    reply, _ = await bot.on_message(human_message, [])
 
     assert reply is not None
     assert reply.sender == bot.name
@@ -38,9 +38,22 @@ async def test_reply_has_utc_timestamp(
     bot: EchoBot, human_message: ChatMessage
 ) -> None:
     before = datetime.now(tz=UTC)
-    reply = await bot.on_message(human_message, [])
+    reply, _ = await bot.on_message(human_message, [])
     after = datetime.now(tz=UTC)
 
     assert reply is not None
     assert reply.timestamp.tzinfo is UTC
     assert before <= reply.timestamp <= after
+
+
+@pytest.mark.asyncio
+async def test_returns_one_assistant_context_item(
+    bot: EchoBot, human_message: ChatMessage
+) -> None:
+    from codemoo.core.context_items import AssistantMessageContent, ItemMode
+
+    _, new_items = await bot.on_message(human_message, [])
+
+    assert len(new_items) == 1
+    assert isinstance(new_items[0].content, AssistantMessageContent)
+    assert new_items[0].mode == ItemMode.ORIGINAL

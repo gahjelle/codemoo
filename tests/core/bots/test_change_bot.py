@@ -94,7 +94,7 @@ def test_change_bot_is_not_human(bot_text: ChangeBot) -> None:
 
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ChangeBot) -> None:
-    reply = await bot_text.on_message(_msg("You", "hi"), [])
+    reply, _ = await bot_text.on_message(_msg("You", "hi"), [])
 
     assert reply is not None
     assert reply.sender == "A"
@@ -115,7 +115,7 @@ async def test_text_response_path_no_complete_call(
 async def test_tool_use_path_runs_command_and_replies(
     bot_tool: ChangeBot, tool_backend: _MockBackend
 ) -> None:
-    reply = await bot_tool.on_message(_msg("You", "run echo hi"), [])
+    reply, _ = await bot_tool.on_message(_msg("You", "run echo hi"), [])
 
     assert len(tool_backend.step_calls) == 1
     assert len(tool_backend.complete_calls) == 1

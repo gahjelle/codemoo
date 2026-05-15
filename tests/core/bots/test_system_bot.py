@@ -4,6 +4,11 @@ import pytest
 
 from codemoo.core.backend import Message
 from codemoo.core.bots.system_bot import SystemBot
+from codemoo.core.context_items import (
+    AssistantMessageContent,
+    ContextItem,
+    UserMessageContent,
+)
 from codemoo.core.message import ChatMessage
 
 
@@ -61,8 +66,11 @@ async def test_system_message_is_first_in_context(
 async def test_system_message_present_with_history(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
-    history = [_msg("You", "earlier"), _msg("Sigma", "reply")]
-    await system_bot.on_message(_msg("You", "now"), history)
+    ctx = [
+        ContextItem(content=UserMessageContent("earlier")),
+        ContextItem(content=AssistantMessageContent("reply")),
+    ]
+    await system_bot.on_message(_msg("You", "now"), ctx)
 
     sent = backend.calls[0]
     assert sent[0] == Message(
@@ -71,30 +79,26 @@ async def test_system_message_present_with_history(
 
 
 @pytest.mark.asyncio
-async def test_includes_other_bot_messages_as_user_role(
+async def test_includes_context_items_in_correct_roles(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
-    history = [
-        _msg("You", "hi"),
-        _msg("OtherBot", "noise"),
-        _msg("Sigma", "reply"),
+    ctx = [
+        ContextItem(content=UserMessageContent("hi")),
+        ContextItem(content=AssistantMessageContent("reply")),
     ]
-    await system_bot.on_message(_msg("You", "follow up"), history)
+    await system_bot.on_message(_msg("You", "follow up"), ctx)
 
     sent = backend.calls[0]
-    # System, user, other bot as user, assistant, user
     assert sent[0].role == "system"
     assert sent[1] == Message(role="user", content="hi")
-    assert sent[2] == Message(role="user", content="noise")
-    assert sent[3] == Message(role="assistant", content="reply")
-    assert sent[4] == Message(role="user", content="follow up")
+    assert sent[2] == Message(role="assistant", content="reply")
 
 
 @pytest.mark.asyncio
 async def test_reply_sender_is_bot_name(
     system_bot: SystemBot, backend: _MockBackend
 ) -> None:
-    reply = await system_bot.on_message(_msg("You", "hello"), [])
+    reply, _ = await system_bot.on_message(_msg("You", "hello"), [])
 
     assert reply is not None
     assert reply.sender == "Sigma"
