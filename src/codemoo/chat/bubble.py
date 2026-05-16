@@ -37,6 +37,8 @@ class _BubbleContent(Widget):
         yield Label(header, classes="bubble-header", markup=True)
         if "bubble--commentator" in self.classes:
             yield Static(self._text, markup=True)
+        elif "bubble--verbatim" in self.classes:
+            yield Static(self._text, markup=False)
         else:
             yield Markdown(self._text)
 

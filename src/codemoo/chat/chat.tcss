@@ -9,7 +9,8 @@
 ChatBubble.bubble--human,
 ChatBubble.bubble--bot,
 ChatBubble.bubble--error,
-ChatBubble.bubble--commentator {
+ChatBubble.bubble--commentator,
+ChatBubble.bubble--shell {
     margin-bottom: 1;
 }
 
@@ -22,7 +23,8 @@ ChatBubble.bubble--human {
 _BubbleContent.bubble--human,
 _BubbleContent.bubble--bot,
 _BubbleContent.bubble--error,
-_BubbleContent.bubble--commentator {
+_BubbleContent.bubble--commentator,
+_BubbleContent.bubble--shell {
     padding: 0 1;
     border: tall $panel;
 }
@@ -46,6 +48,11 @@ _BubbleContent.bubble--error {
 _BubbleContent.bubble--commentator {
     background: #2a2a2a;
     color: $text-muted;
+}
+
+/* Shell output: dark green tint — signals terminal/system output */
+_BubbleContent.bubble--shell {
+    background: #0f2a1a;
 }
 
 /* Bold sender header inside each bubble */

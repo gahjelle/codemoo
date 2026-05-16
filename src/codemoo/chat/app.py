@@ -32,6 +32,7 @@ from codemoo.core.context_items import (
 )
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.core.tools.shell import _run_shell
 from codemoo.llm.factory import BackendInfo
 
 
@@ -74,6 +75,10 @@ class ChatApp(App[str | None]):
         }
         self._sender_info[human.name] = (human.emoji, "bubble--human")
         self._sender_info[error_bot.name] = (error_bot.emoji, "bubble--error")
+        self._sender_info["Shell"] = (
+            "\N{PERSONAL COMPUTER}",
+            "bubble--shell bubble--verbatim",
+        )
         self._active_capabilities: frozenset[str] = frozenset(
             cap for r in self._resolved_bots for cap in r.capabilities
         )
@@ -119,10 +124,12 @@ class ChatApp(App[str | None]):
                 await participant.startup()  # ty: ignore[call-non-callable]
 
     def on_chat_input_submitted(self, event: ChatInput.Submitted) -> None:
-        """Handle Ctrl+Enter in the input box: create a message and dispatch it."""
+        """Handle Enter: shell-mode for `!` prefix, bot dispatch otherwise."""
         text = event.value
-        message = ChatMessage(sender=self._human.name, text=text)
-        self._append_to_log(message)
+        self._append_to_log(ChatMessage(sender=self._human.name, text=text))
+        if text.startswith("!"):
+            self.run_worker(self._handle_shell_input(text[1:].strip()), exclusive=False)
+            return
         self._chat_context = [
             *self._chat_context,
             ContextItem(
@@ -131,7 +138,16 @@ class ChatApp(App[str | None]):
             ),
         ]
         # Dispatch in a worker so participant coroutines run without blocking the UI
-        self.run_worker(self._dispatch(message), exclusive=False)
+        self.run_worker(
+            self._dispatch(ChatMessage(sender=self._human.name, text=text)),
+            exclusive=False,
+        )
+
+    async def _handle_shell_input(self, command: str) -> None:
+        """Run a user-typed shell command verbatim; output bypasses context."""
+        output = _run_shell(command)
+        self._append_to_log(ChatMessage(sender="Shell", text=output))
+        self.copy_to_clipboard(output)
 
     def _append_to_log(self, message: ChatMessage) -> None:
         default = ("\N{SPEECH BALLOON}", "bubble--commentator")

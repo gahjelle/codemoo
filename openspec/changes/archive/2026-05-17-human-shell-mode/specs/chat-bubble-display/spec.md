@@ -1,21 +1,14 @@
-# Spec: chat-bubble-display
+## ADDED Requirements
 
-## Purpose
+### Requirement: Shell output bubbles use `bubble--shell` CSS class
+A shell output bubble SHALL carry the CSS classes `bubble--shell` and `bubble--verbatim`. Its color and alignment SHALL be defined in the external TCSS stylesheet via `bubble--shell`, distinct from `bubble--bot`, `bubble--human`, `bubble--error`, and `bubble--commentator`.
 
-Defines how individual chat messages are rendered as styled bubble widgets in the chat UI. Covers bubble structure (emoji, name header and Markdown body) and per-participant color coding via CSS classes, including a distinct error style for ErrorBot messages.
+#### Scenario: Shell bubble has correct CSS classes
+- **WHEN** a shell output bubble is appended to the chat log
+- **THEN** the bubble SHALL have the CSS class `bubble--shell`
+- **THEN** the bubble SHALL have the CSS class `bubble--verbatim`
 
-## Requirements
-
-### Requirement: Messages are displayed as styled chat bubbles
-The chat UI SHALL render each message as a distinct chat bubble widget. The bubble SHALL display the sender's emoji and name in bold at the top, and the message body rendered as Markdown below.
-
-#### Scenario: Bubble shows emoji and name header
-- **WHEN** a message is appended to the chat log
-- **THEN** the bubble SHALL display the sender's emoji and name in bold on the first line
-
-#### Scenario: Bubble renders Markdown body
-- **WHEN** a message with Markdown content is appended to the chat log
-- **THEN** the bubble body SHALL render the Markdown (including bold, italics, code, and lists)
+## MODIFIED Requirements
 
 ### Requirement: Bubble color is keyed to the participant
 Each participant type SHALL have a distinct bubble background color defined in the external stylesheet. The color SHALL be applied via a CSS class, not an inline style. The bot bubble background color SHALL be chosen to maintain visible contrast against Textual's Markdown code-block rendering. Error bot messages SHALL use a distinct red-tinted background to visually distinguish them from normal bot messages. Commentary messages SHALL use a distinct grey-tinted background that is softer and less prominent than the main bot bubble, signalling that the content is an aside rather than a direct reply. Shell output messages SHALL use a distinct background that signals terminal/system output, visually separate from all other bubble types.
@@ -56,25 +49,6 @@ The five CSS classes are:
 #### Scenario: Shell bubble uses shell color class
 - **WHEN** a shell output bubble is appended to the chat log
 - **THEN** the bubble SHALL have the CSS class `bubble--shell` and SHALL render with a background color visually distinct from all other bubble types
-
-### Requirement: Human bubbles are right-aligned via CSS
-The chat UI SHALL render human message bubbles right-aligned and bot message bubbles left-aligned. Alignment SHALL be implemented via CSS (`align-horizontal: right` on the outer `ChatBubble` widget for the `bubble--human` class), not via Python spacer logic. The `ChatBubble` widget SHALL NOT require an `is_human` parameter; the CSS class alone determines alignment and color.
-
-#### Scenario: Human bubble is right-aligned
-- **WHEN** a human message is appended to the chat log
-- **THEN** the bubble content SHALL appear on the right side of the chat log row
-
-#### Scenario: Bot bubble is left-aligned
-- **WHEN** a bot message is appended to the chat log
-- **THEN** the bubble content SHALL appear on the left side of the chat log row
-
-### Requirement: Shell output bubbles use `bubble--shell` CSS class
-A shell output bubble SHALL carry the CSS classes `bubble--shell` and `bubble--verbatim`. Its color and alignment SHALL be defined in the external TCSS stylesheet via `bubble--shell`, distinct from `bubble--bot`, `bubble--human`, `bubble--error`, and `bubble--commentator`.
-
-#### Scenario: Shell bubble has correct CSS classes
-- **WHEN** a shell output bubble is appended to the chat log
-- **THEN** the bubble SHALL have the CSS class `bubble--shell`
-- **THEN** the bubble SHALL have the CSS class `bubble--verbatim`
 
 ### Requirement: Non-Markdown bubbles render as Static with appropriate markup mode
 `_BubbleContent` SHALL render the message body via `Static` (not `Markdown`) for commentator and shell bubbles, using different markup modes suited to each:

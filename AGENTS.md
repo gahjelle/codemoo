@@ -50,6 +50,20 @@ uv run ty check .
 - Comments explain why, not what
 - Type checker is `ty` (not mypy) — use `# ty: ignore[<code>]` if suppression is ever needed; never `# type: ignore[mypy-code]`. Tests have a blanket override in `pyproject.toml` for Textual mock patterns, so no per-line ignores are needed there.
 
+## Shell Mode
+
+In any mode, prefixing a message with `!` runs it as a shell command instead of sending it to the bot:
+
+```
+! ls -la
+! git status
+! cat somefile.py
+```
+
+The output appears verbatim in a distinct shell bubble (💻) and is copied to the clipboard. The command is not added to the conversation context — paste from the clipboard to inject output into the next message.
+
+No sandbox or approval applies to `!` commands; the user is trusted.
+
 ## Demo Mode Keyboard Shortcuts
 
 When running `uv run codemoo demo`, the following shortcuts are active:
