@@ -7,11 +7,11 @@ TBD — defines `CommentatorBot`, a non-participant observer bot that generates 
 ## Requirements
 
 ### Requirement: CommentatorBot generates persona-driven commentary on events
-`CommentatorBot` SHALL accept a `CommentaryEvent` via its `comment(event)` method, randomly select one of its four personas (Arne, Herwich, Sølve, Rike), call the LLM backend with a persona-appropriate prompt, and post the resulting `ChatMessage` via its registered post callback. The persona SHALL be chosen freshly on each `comment()` call.
+`CommentatorBot` SHALL accept a `CommentaryEvent` via its `comment(event)` method, randomly select one of its personas from `self.personas` (uniform weight), call the LLM backend with a persona-appropriate prompt, and post the resulting `ChatMessage` via its registered post callback. The persona SHALL be chosen freshly on each `comment()` call.
 
 #### Scenario: Commentary posted with random persona name
 - **WHEN** `comment(event)` is called
-- **THEN** the `ChatMessage` posted via the callback SHALL have a `sender` matching one of: Arne, Herwich, Sølve, Rike
+- **THEN** the `ChatMessage` posted via the callback SHALL have a `sender` matching one of the names in `self.personas`
 
 #### Scenario: Different personas may appear across multiple calls
 - **WHEN** `comment(event)` is called multiple times in the same session
@@ -43,23 +43,13 @@ If the LLM call inside `comment()` raises any exception, `CommentatorBot` SHALL 
 - **WHEN** `comment()` posts a message to the UI
 - **THEN** that message SHALL NOT appear in the `history` list passed to subsequent `on_message` calls
 
-### Requirement: Four personas with distinct characters
-`CommentatorBot` SHALL define four named personas used for LLM commentary:
-- **Arne** — enthusiastic; treats every tool call as exciting
-- **Herwich** — formal and bureaucratic; precise and measured
-- **Sølve** — dry and terse; one-liners, takes nothing seriously
-- **Rike** — skeptical; questions the necessity of each action
+### Requirement: Ten personas with distinct characters
+`CommentatorBot` SHALL use the `personas: list[Persona]` injected at construction time. The module-level `_PERSONAS` list SHALL be removed. The ten personas and their characters are defined in the `commentator-personas` capability spec. Each persona supplies a system-prompt that encodes its character and instructs the LLM to comment briefly on the tool call being observed.
 
-Each persona SHALL supply a system-prompt that encodes its character and instructs the LLM to comment briefly (one sentence) on the tool call being observed. The system prompt SHALL NOT contain a hardcoded language instruction; instead it SHALL append `language_instruction()` from `codemoo.config`.
+#### Scenario: All ten persona names available as senders
+- **WHEN** `sender_info()` is called on a `CommentatorBot` built with all ten personas
+- **THEN** the returned dict SHALL contain keys for all ten persona names plus `Streik`
 
-#### Scenario: Arne persona is enthusiastic
-- **WHEN** Arne is the active persona
-- **THEN** the LLM system prompt SHALL encode an enthusiastic character
-
-#### Scenario: Sølve persona is dry and terse
-- **WHEN** Sølve is the active persona
-- **THEN** the LLM system prompt SHALL encode a dry, terse character and instruct brevity
-
-#### Scenario: No hardcoded language in persona prompts
-- **WHEN** `CODEMOO_LANGUAGE` is not set
-- **THEN** no persona system prompt SHALL contain a hardcoded language instruction (e.g., "Answer in Norwegian")
+#### Scenario: Empty personas list results in Streik-only fallback
+- **WHEN** `CommentatorBot` is constructed with `personas=[]`
+- **THEN** every `comment()` call SHALL fall back to posting a Streik message (random choice from empty list raises; implementation SHALL guard against this)

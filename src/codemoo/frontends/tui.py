@@ -25,7 +25,7 @@ from codemoo.config.schema import (
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import LLMBackend
 from codemoo.core.bots import make_bots, resolve_bot, run_init_hooks
-from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.bots.commentator_bot import CommentatorBot, Persona
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo, resolve_backend
@@ -57,7 +57,14 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
-    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(
+        llm=llm_backend,
+        personas=[
+            Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
+            for p in config.commentators.values()
+        ],
+        language=language,
+    )
 
     available, resolved_bots = await make_bots(
         llm_backend,
@@ -105,7 +112,14 @@ async def _setup_for_launcher(*, bot: BotType, variant: str) -> SetupResult:
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
-    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(
+        llm=llm_backend,
+        personas=[
+            Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
+            for p in config.commentators.values()
+        ],
+        language=language,
+    )
 
     available, resolved_bots = await make_bots(
         llm_backend,
@@ -194,7 +208,14 @@ async def select() -> None:
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
-    commentator_bot = bot_module.CommentatorBot(llm=llm_backend, language=language)
+    commentator_bot = bot_module.CommentatorBot(
+        llm=llm_backend,
+        personas=[
+            Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
+            for p in config.commentators.values()
+        ],
+        language=language,
+    )
 
     _run_init_hooks_for_resolved(selected)
 

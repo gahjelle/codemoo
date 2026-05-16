@@ -188,6 +188,36 @@ because listing available API tools adds context the user may not know.
 and is absent from all named tool lists by design — it is an introductory teaching
 tool for Telo only.
 
+## Commentator Configuration
+
+Commentator personas are declared in `codemoo.toml` under `[commentators.<key>]` and loaded into `CommentatorBot` at startup. Each entry follows the same `name` / `emoji` / `instructions_file` pattern used by bot variants:
+
+```toml
+[commentators.arne]
+name = "Arne"
+emoji = "OWL"
+instructions_file = "arne.txt"
+```
+
+Instruction files live in `src/codemoo/config/commentators/`. File naming convention: `{lowercase-key}.txt` (e.g. `arne.txt`, `karen-marie.txt`). Inline `instructions = "..."` is also supported.
+
+`CommentatorBot` receives the resolved `list[Persona]` via its `personas` constructor argument — it holds no hardcoded personas of its own. The TUI constructs it with `personas=list(config.commentators.values())` at each startup site. All personas are selected with uniform random weight.
+
+The ten current personas and their real-world inspirations:
+
+| Name | Based on | Character |
+| ----------- | ------------------------------------------------------------------- | ------------------------------------------------- |
+| Arne | Arne Scheie (NRK football & ski jumping, 1971–2013) | Sage elder — measured, Gandalf-like authority |
+| Herwig | Jon Herwig Carlsen (NRK biathlon, known for live limericks) | Flowery — rhymes and alliteration |
+| Sølve | Sølve Grotmol (NRK sports & news, 1960s–2010) | Deadpan — terse, unimpressed |
+| Rike | Kjell Kristian Rike (NRK biathlon, partner of Carlsen) | Skeptical — secretly impressed |
+| Unni | Unni Anisdahl (NRK handball, 72 Norway caps) | Excited athlete — insider credibility |
+| Th | Knut Th. Gleditsch (NRK football & alpine, 1966–2001) | Warm and witty — charming, light-hearted |
+| Karen Marie | Karen-Marie Ellefsen (first female NRK sports reporter, 10 Olympics) | Pioneer authority — precise, unflappable |
+| Bjørnsen | Knut Bjørnsen (NRK speed skating; quiz host) | Quiz questions only — never answered |
+| Bredeli | Harald Bredeli (TV2 handball) | Outlandish bets on every moment |
+| Jorsett | Per Jorsett (NRK speed skating, alongside Bjørnsen) | Measurable outcomes and comparisons |
+
 ## Context Architecture
 
 The conversation moves through three layers:

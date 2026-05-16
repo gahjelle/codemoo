@@ -346,6 +346,59 @@ prompts_file = "retry_bot-workspace.txt"
 capabilities = ["context_management"]
 
 #
+# Commentator personas
+#
+[commentators.arne]
+name = "Arne"
+emoji = "OWL"
+instructions_file = "arne.txt"
+
+[commentators.herwig]
+name = "Herwig"
+emoji = "GLOWING STAR"
+instructions_file = "herwig.txt"
+
+[commentators.solve]
+name = "Sølve"
+emoji = "MOYAI"
+instructions_file = "solve.txt"
+
+[commentators.rike]
+name = "Rike"
+emoji = "EYES"
+instructions_file = "rike.txt"
+
+[commentators.unni]
+name = "Unni"
+emoji = "PARTY POPPER"
+instructions_file = "unni.txt"
+
+[commentators.th]
+name = "Th"
+emoji = "SOCCER BALL"
+instructions_file = "th.txt"
+
+[commentators.karen-marie]
+name = "Karen Marie"
+emoji = "RAISED FIST"
+instructions_file = "karen-marie.txt"
+
+[commentators.bjornsen]
+name = "Bjørnsen"
+emoji = "THOUGHT BALLOON"
+instructions_file = "bjornsen.txt"
+
+[commentators.bredeli]
+name = "Bredeli"
+emoji = "HANDSHAKE"
+instructions_file = "bredeli.txt"
+
+[commentators.jorsett]
+name = "Jorsett"
+emoji = "BAR CHART"
+instructions_file = "jorsett.txt"
+
+#
 # Microsoft 365 / Graph API, see README for set up
 #
 [m365]

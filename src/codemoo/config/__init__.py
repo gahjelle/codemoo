@@ -14,10 +14,20 @@ __all__ = ["config"]
 config_path = Path(__file__).parent / "codemoo.toml"
 _instructions_dir = config_path.parent / "instructions"
 _prompts_dir = config_path.parent / "example_prompts"
+_commentators_dir = config_path.parent / "commentators"
+
+
+def _resolve_commentator_refs(data: dict[str, Any]) -> None:
+    for persona_data in data.get("commentators", {}).values():
+        if instr_file := persona_data.pop("instructions_file", None):
+            persona_data["instructions"] = (_commentators_dir / instr_file).read_text(
+                encoding="utf-8"
+            )
 
 
 def _resolve_file_refs(data: dict[str, Any]) -> None:
     tool_lists = data.pop("tool_lists", {})
+    _resolve_commentator_refs(data)
     for bot_data in data.get("bots", {}).values():
         for variant in bot_data.get("variants", {}).values():
             if instr_file := variant.pop("instruction_file", None):

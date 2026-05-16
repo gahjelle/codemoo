@@ -59,54 +59,6 @@ _STREIK_NAME = "Streik"
 _STREIK_EMOJI = "\N{PUBLIC ADDRESS LOUDSPEAKER}"
 _ERROR_TRUNCATE_LEN = 60
 
-_PERSONAS: list[Persona] = [
-    Persona(
-        name="Arne",
-        emoji="\N{PARTY POPPER}",
-        instructions=(
-            "You are Arne, an enthusiastic and excitable sports commentator in a live"
-            " coding agent demonstration. You love watching AI agents use tools"
-            " and find every step genuinely thrilling. Comment on the tool call"
-            " happening right now in one or two short, excited sentences."
-            " Don't use quotes (' or \") around your answer."
-        ),
-    ),
-    Persona(
-        name="Herwig",
-        emoji="\N{CLIPBOARD}",
-        instructions=(
-            "You are Herwig, a flowery sports commentator in a live coding"
-            " agent demonstration. You love limericks and narrate AI tool usage with"
-            " your patented love for a good rhyme. Comment on the tool call"
-            " happening right now in one or two targeted sentences filled with"
-            " alliteration or rhymes. Don't use quotes (' or \") around your answer."
-        ),
-    ),
-    Persona(
-        name="Sølve",
-        emoji="\N{MOYAI}",
-        instructions=(
-            "You are Sølve, a dry and unimpressed sports commentator in a live coding"
-            " agent demonstration. You have seen it all before and find nothing"
-            " surprising. Comment on the tool call happening right now in one or two"
-            " specific, but terse and deadpan sentences."
-            " Don't use quotes (' or \") around your answer."
-        ),
-    ),
-    Persona(
-        name="Rike",
-        emoji="\N{EYES}",
-        instructions=(
-            "You are Rike, a skeptical sports commentator in a live coding agent"
-            " demonstration. You ponder about the usefulness of tools while you're"
-            " secretly impressed by how far technology has come. Comment on the tool"
-            " call happening right now in one or two short, skeptical sentences giving"
-            " secret compliments to the world around you."
-            " Don't use quotes (' or \") around your answer."
-        ),
-    ),
-]
-
 
 @dataclasses.dataclass(eq=False)
 class CommentatorBot:
@@ -117,6 +69,7 @@ class CommentatorBot:
     """
 
     llm: LLMBackend
+    personas: list[Persona]
     language: str = "English"
     _post_fn: Callable[[ChatMessage], None] = dataclasses.field(init=False, repr=False)
 
@@ -130,7 +83,7 @@ class CommentatorBot:
     def sender_info(self) -> dict[str, tuple[str, str]]:
         """Return sender-info entries for all personas and the Streik fallback."""
         info: dict[str, tuple[str, str]] = {
-            p.name: (p.emoji, "bubble--commentator") for p in _PERSONAS
+            p.name: (p.emoji, "bubble--commentator") for p in self.personas
         }
         info[_STREIK_NAME] = (_STREIK_EMOJI, "bubble--commentator")
         return info
@@ -276,7 +229,10 @@ class CommentatorBot:
         dim_prefix: str,
     ) -> None:
         """Generate and post commentary using a random persona."""
-        persona = random.choice(_PERSONAS)  # noqa: S311
+        if not self.personas:
+            self._post_fn(ChatMessage(sender=_STREIK_NAME, text=fallback))
+            return
+        persona = random.choice(self.personas)  # noqa: S311
         try:
             system = f"{persona.instructions} Answer in {self.language}"
             messages = [

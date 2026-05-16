@@ -10,9 +10,9 @@ from codemoo.chat.app import ChatApp
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.commentator_bot import (
-    _PERSONAS,
     _STREIK_NAME,
     CommentatorBot,
+    Persona,
     ToolCallEvent,
 )
 from codemoo.core.bots.error_bot import ErrorBot
@@ -23,7 +23,12 @@ from codemoo.core.tools.shell import run_shell
 from tests.core.bots.conftest import user_ctx
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
-_PERSONA_NAMES = {p.name for p in _PERSONAS}
+
+_TEST_PERSONAS = [
+    Persona(name="TestA", emoji="🎉", instructions="You are TestA."),
+    Persona(name="TestB", emoji="📋", instructions="You are TestB."),
+]
+_TEST_PERSONA_NAMES = {p.name for p in _TEST_PERSONAS}
 
 
 def _msg(sender: str, text: str) -> ChatMessage:
@@ -64,7 +69,7 @@ class _MockBackend:
 @pytest.mark.asyncio
 async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
     backend = _MockBackend(response="Oh wow, a shell command!")
-    bot = CommentatorBot(llm=backend)
+    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -74,7 +79,7 @@ async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
     await bot.comment(event)
 
     assert len(received) == 1
-    assert received[0].sender in _PERSONA_NAMES
+    assert received[0].sender in _TEST_PERSONA_NAMES
     assert "Oh wow, a shell command!" in received[0].text
     assert "run_shell" in received[0].text
     assert "[dim]" in received[0].text
@@ -83,7 +88,7 @@ async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
 @pytest.mark.asyncio
 async def test_comment_passes_event_info_in_prompt() -> None:
     backend = _MockBackend()
-    bot = CommentatorBot(llm=backend)
+    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
     bot.register(lambda _: None)
 
     event = ToolCallEvent(
@@ -110,7 +115,7 @@ class _FailingBackend:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_on_llm_error() -> None:
-    bot = CommentatorBot(llm=_FailingBackend())
+    bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -125,7 +130,7 @@ async def test_streik_fallback_on_llm_error() -> None:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_text_contains_tool_name_and_bot_name() -> None:
-    bot = CommentatorBot(llm=_FailingBackend())
+    bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -294,9 +299,9 @@ def test_known_senders_are_not_affected() -> None:
 
 
 def test_sender_info_contains_all_personas() -> None:
-    bot = CommentatorBot(llm=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
     info = bot.sender_info()
-    for persona in _PERSONAS:
+    for persona in _TEST_PERSONAS:
         assert persona.name in info
         emoji, css = info[persona.name]
         assert emoji == persona.emoji
@@ -304,22 +309,29 @@ def test_sender_info_contains_all_personas() -> None:
 
 
 def test_sender_info_contains_streik() -> None:
-    bot = CommentatorBot(llm=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
     info = bot.sender_info()
     assert _STREIK_NAME in info
     _, css = info[_STREIK_NAME]
     assert css == "bubble--commentator"
 
 
+def test_sender_info_keys_match_injected_personas_plus_streik() -> None:
+    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
+    info = bot.sender_info()
+    expected = {p.name for p in _TEST_PERSONAS} | {_STREIK_NAME}
+    assert set(info.keys()) == expected
+
+
 def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
-    bot = CommentatorBot(llm=_NullBackend())
+    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
     app = ChatApp(
         human=_HUMAN,
         participants=[],
         error_bot=ErrorBot(llm=_NullBackend()),
         commentator_bot=bot,
     )
-    for persona in _PERSONAS:
+    for persona in _TEST_PERSONAS:
         assert persona.name in app._sender_info
         emoji, _ = app._sender_info[persona.name]
         assert emoji == persona.emoji
@@ -328,7 +340,7 @@ def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
 @pytest.mark.asyncio
 async def test_display_header_truncates_long_values_with_ellipsis() -> None:
     backend = _MockBackend(response="Nice!")
-    bot = CommentatorBot(llm=backend)
+    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
@@ -349,7 +361,7 @@ def test_streik_fallback_has_no_dim_prefix() -> None:
     """Streik posts just the call sig with no [dim] markup."""
 
     async def _run() -> ChatMessage:
-        bot = CommentatorBot(llm=_FailingBackend())
+        bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
         received: list[ChatMessage] = []
         bot.register(received.append)
         event = ToolCallEvent(
@@ -360,3 +372,18 @@ def test_streik_fallback_has_no_dim_prefix() -> None:
 
     msg = asyncio.run(_run())
     assert "[dim]" not in msg.text
+
+
+@pytest.mark.asyncio
+async def test_empty_personas_falls_back_to_streik() -> None:
+    bot = CommentatorBot(llm=_MockBackend(), personas=[])
+    received: list[ChatMessage] = []
+    bot.register(received.append)
+
+    event = ToolCallEvent(
+        bot_name="Loom", tool_name="run_shell", arguments={"command": "ls"}
+    )
+    await bot.comment(event)
+
+    assert len(received) == 1
+    assert received[0].sender == _STREIK_NAME

@@ -197,6 +197,25 @@ class WorkspaceConfig(StrictModel):
     scopes: list[str]
 
 
+class PersonaConfig(StrictModel):
+    """Config for one commentator persona."""
+
+    name: str
+    emoji: str
+    instructions: str = ""
+    instructions_file: str | None = None
+
+    @field_validator("emoji", mode="before")
+    @classmethod
+    def resolve_emoji(cls, v: str) -> str:
+        """Resolve a Unicode character name (e.g. 'OWL') to its character."""
+        try:
+            return unicodedata.lookup(v)
+        except KeyError:
+            msg = f"Unknown Unicode character name: {v!r}"
+            raise ValueError(msg) from None
+
+
 class CodemooConfig(StrictModel):
     """Full configuration of Codemoo."""
 
@@ -207,3 +226,4 @@ class CodemooConfig(StrictModel):
     models: ModelsConfig
     m365: M365Config
     workspace: WorkspaceConfig
+    commentators: dict[str, PersonaConfig] = {}
