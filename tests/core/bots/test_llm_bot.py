@@ -28,10 +28,6 @@ def llm_bot(mock_backend: _MockBackend) -> LlmBot:
     return LlmBot(name="LLMBot", emoji="\N{ROBOT FACE}", llm=mock_backend)
 
 
-def test_llm_bot_is_not_human(llm_bot: LlmBot) -> None:
-    assert llm_bot.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_llm_bot_sends_only_current_message(
     llm_bot: LlmBot, mock_backend: _MockBackend

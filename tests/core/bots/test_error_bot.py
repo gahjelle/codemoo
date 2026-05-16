@@ -26,7 +26,6 @@ class _FailingBackend:
 class _MockParticipant:
     name = "Iris"
     emoji = "\N{EYE}"
-    is_human = False
 
     async def on_message(
         self,
@@ -58,11 +57,6 @@ def test_error_bot_name_and_emoji_match_a_known_persona() -> None:
     known_emojis = {p.emoji for p in _PERSONAS}
     assert bot.name in known_names
     assert bot.emoji in known_emojis
-
-
-def test_error_bot_is_not_human() -> None:
-    bot = ErrorBot(llm=_MockBackend())
-    assert bot.is_human is False
 
 
 def test_error_bot_persona_is_stable_within_session() -> None:

@@ -1,7 +1,6 @@
 """Context-aware LLM bot with a fixed system prompt."""
 
 import dataclasses
-from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.context_builder import build_context
@@ -24,7 +23,6 @@ class SystemBot:
     emoji: str
     llm: LLMBackend
     instructions: str
-    is_human: ClassVar[bool] = False
 
     async def on_message(
         self,

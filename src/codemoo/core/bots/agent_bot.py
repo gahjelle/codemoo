@@ -2,7 +2,6 @@
 
 import dataclasses
 import json
-from typing import ClassVar
 
 from codemoo.core.backend import (
     LLMBackend,
@@ -35,7 +34,6 @@ class AgentBot:
     tools: list[ToolDef]
     instructions: str
     commentator: CommentatorBot | None = None
-    is_human: ClassVar[bool] = False
 
     async def on_message(
         self,

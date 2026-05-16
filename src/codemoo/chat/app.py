@@ -31,7 +31,7 @@ from codemoo.core.context_items import (
     next_turn_id,
 )
 from codemoo.core.message import ChatMessage
-from codemoo.core.participant import ChatParticipant
+from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.llm.factory import BackendInfo
 
 
@@ -51,6 +51,7 @@ class ChatApp(App[str | None]):
 
     def __init__(  # noqa: PLR0913
         self,
+        human: HumanParticipant,
         participants: Sequence[ChatParticipant],
         error_bot: ErrorBot,
         commentator_bot: CommentatorBot | None = None,
@@ -58,22 +59,21 @@ class ChatApp(App[str | None]):
         backend_info: BackendInfo | None = None,
         resolved_bots: list[ResolvedBotConfig] | None = None,
     ) -> None:
-        """Initialise with an ordered list of chat participants and the error bot."""
+        """Initialise with the human, bot participants, and error bot."""
         super().__init__()
+        self._human = human
         self._participants = list(participants)
         self._error_bot = error_bot
         self._demo_context = demo_context
         self._backend_info = backend_info
         self._resolved_bots = resolved_bots or []
 
-        # Build a lookup from sender name → (emoji, is_human, css_class)
-        def _bubble_class(p: ChatParticipant) -> str:
-            return "bubble--human" if p.is_human else "bubble--bot"
-
-        self._sender_info: dict[str, tuple[str, bool, str]] = {
-            p.name: (p.emoji, p.is_human, _bubble_class(p)) for p in participants
+        # Build a lookup from sender name → (emoji, css_class)
+        self._sender_info: dict[str, tuple[str, str]] = {
+            p.name: (p.emoji, "bubble--bot") for p in participants
         }
-        self._sender_info[error_bot.name] = (error_bot.emoji, False, "bubble--error")
+        self._sender_info[human.name] = (human.emoji, "bubble--human")
+        self._sender_info[error_bot.name] = (error_bot.emoji, "bubble--error")
         self._active_capabilities: frozenset[str] = frozenset(
             cap for r in self._resolved_bots for cap in r.capabilities
         )
@@ -83,8 +83,6 @@ class ChatApp(App[str | None]):
         for participant in participants:
             if hasattr(participant, "register_guard"):
                 participant.register_guard(self._make_guard_ask_fn())  # ty: ignore[call-non-callable]
-        # Keep a reference to the human participant for outgoing message construction
-        self._human = next(p for p in participants if p.is_human)
         # Authoritative context for the session, owned by the App
         self._chat_context: list[ContextItem] = []
         self._prompt_index = 0
@@ -92,7 +90,7 @@ class ChatApp(App[str | None]):
     def compose(self) -> ComposeResult:
         """Yield the scrollable log, thinking status bar, input, and backend footer."""
         if self._demo_context is not None:
-            bot = next(p for p in self._participants if not p.is_human)
+            bot = self._participants[0]
             prompt_count = len(self._demo_context.prompts)
             yield DemoHeader(bot, self._demo_context.position, prompt_count)
         yield VerticalScroll(id="log")
@@ -136,14 +134,13 @@ class ChatApp(App[str | None]):
         self.run_worker(self._dispatch(message), exclusive=False)
 
     def _append_to_log(self, message: ChatMessage) -> None:
-        default = ("\N{SPEECH BALLOON}", False, "bubble--commentator")
-        emoji, is_human, css_class = self._sender_info.get(message.sender, default)
+        default = ("\N{SPEECH BALLOON}", "bubble--commentator")
+        emoji, css_class = self._sender_info.get(message.sender, default)
         bubble = ChatBubble(
             message.sender,
             emoji,
             message.text,
             thinking_time=message.thinking_time,
-            is_human=is_human,
             css_class=css_class,
         )
         log = self.query_one("#log", VerticalScroll)
@@ -175,7 +172,7 @@ class ChatApp(App[str | None]):
             for participant in self._participants:
                 if message.sender == participant.name:
                     continue
-                if status and not participant.is_human:
+                if status:
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
@@ -254,7 +251,7 @@ class ChatApp(App[str | None]):
         )
         log.scroll_end(animate=False)
         if self._commentator_bot is not None:
-            bot = next(p for p in self._participants if not p.is_human)
+            bot = self._participants[0]
             self.run_worker(
                 self._commentator_bot.comment(BotRestartEvent(bot_name=bot.name))
             )

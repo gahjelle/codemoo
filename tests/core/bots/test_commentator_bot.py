@@ -264,24 +264,27 @@ class _NullBackend:
         return ""
 
 
+_HUMAN = HumanParticipant()
+
+
 def _make_app() -> ChatApp:
     return ChatApp(
-        participants=[HumanParticipant()],
+        human=_HUMAN,
+        participants=[],
         error_bot=ErrorBot(llm=_NullBackend()),
     )
 
 
 def test_unknown_sender_resolved_to_commentator_class() -> None:
     app = _make_app()
-    default = ("\N{SPEECH BALLOON}", False, "bubble--commentator")
-    _, _, css_class = app._sender_info.get("UnknownPersona", default)
+    default = ("\N{SPEECH BALLOON}", "bubble--commentator")
+    _, css_class = app._sender_info.get("UnknownPersona", default)
     assert css_class == "bubble--commentator"
 
 
 def test_known_senders_are_not_affected() -> None:
-    human = HumanParticipant()
     app = _make_app()
-    _, _, css_class = app._sender_info[human.name]
+    _, css_class = app._sender_info[_HUMAN.name]
     assert css_class == "bubble--human"
 
 
@@ -295,7 +298,7 @@ def test_sender_info_contains_all_personas() -> None:
     info = bot.sender_info()
     for persona in _PERSONAS:
         assert persona.name in info
-        emoji, _, css = info[persona.name]
+        emoji, css = info[persona.name]
         assert emoji == persona.emoji
         assert css == "bubble--commentator"
 
@@ -304,20 +307,21 @@ def test_sender_info_contains_streik() -> None:
     bot = CommentatorBot(llm=_NullBackend())
     info = bot.sender_info()
     assert _STREIK_NAME in info
-    _, _, css = info[_STREIK_NAME]
+    _, css = info[_STREIK_NAME]
     assert css == "bubble--commentator"
 
 
 def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
     bot = CommentatorBot(llm=_NullBackend())
     app = ChatApp(
-        participants=[HumanParticipant()],
+        human=_HUMAN,
+        participants=[],
         error_bot=ErrorBot(llm=_NullBackend()),
         commentator_bot=bot,
     )
     for persona in _PERSONAS:
         assert persona.name in app._sender_info
-        emoji, _, _ = app._sender_info[persona.name]
+        emoji, _ = app._sender_info[persona.name]
         assert emoji == persona.emoji
 
 

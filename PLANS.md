@@ -8,14 +8,12 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Questions
 
 - Is there a real difference with ReadBot and ScanBot / ChangeBot and SendBot? Should we merge them?
-- Should tool output be added to conversation history?
 - Using select with several bots is fun, but it might be more useful to have the bots ignore each other?
 - Can we detect and move on when a shell script needs interactive input (e.g. uv run python -c "input('hei ')") and stop it/resume it?
 - Can we use raw LLM response to calculate token usage?
 
 ## Tasks
 
-- Add Ascii splash screen
 - Improve save_memory: write in english, don't lose old memories
 - Add shell mode to manually call run_shell
 - Maybe include a file mode to manually read files? Not really necessary, since we have !cat
@@ -24,11 +22,11 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Edit file-tool to change existing files
 - Update prompts to "trust the tool"
 - Add sessions and store them to disk, include --resume functionality
-- Include some information about current context on status bar
 - Add num tokens in context visibly on screen
 - Stream answers
 - Show full content of first parameter in GuardBot approval box
 - Add context management capability that can customize context
 - Add tool management capability that can customize tools
+- Run all tool calls in one turn, not only the first one
 
 ## Proposed by agent

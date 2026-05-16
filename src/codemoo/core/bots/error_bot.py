@@ -2,7 +2,6 @@
 
 import dataclasses
 import random
-from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.context_items import ContextItem
@@ -64,7 +63,6 @@ class ErrorBot:
 
     llm: LLMBackend
     language: str = "English"
-    is_human: ClassVar[bool] = False
     name: str = dataclasses.field(init=False)
     emoji: str = dataclasses.field(init=False)
     _persona: Persona = dataclasses.field(init=False, repr=False)

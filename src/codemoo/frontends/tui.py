@@ -130,7 +130,8 @@ async def _chat(*, bot: BotType, variant: str) -> None:
     """Instantiate a single bot and launch the chat."""
     setup = await _setup_for_launcher(bot=bot, variant=variant)
     await ChatApp(
-        participants=[setup.human, *setup.available],
+        human=setup.human,
+        participants=setup.available,
         error_bot=setup.error_bot,
         commentator_bot=setup.commentator_bot,
         backend_info=setup.backend_info,
@@ -205,9 +206,9 @@ async def select() -> None:
         commentator=commentator_bot,
         session_folder=Path.cwd(),
     )
-    participants: list[ChatParticipant] = [human, *available]
     await ChatApp(
-        participants=participants,
+        human=human,
+        participants=available,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
         backend_info=backend_info,
@@ -270,7 +271,8 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
             prompts=list(demo_resolved[i].prompts),
         )
         result = await ChatApp(
-            participants=[setup.human, bot],
+            human=setup.human,
+            participants=[bot],
             error_bot=setup.error_bot,
             commentator_bot=setup.commentator_bot,
             demo_context=context,

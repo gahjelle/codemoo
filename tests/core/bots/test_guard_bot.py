@@ -85,11 +85,6 @@ def test_approval_request_fields() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_guard_bot_is_not_human() -> None:
-    backend = _SequentialBackend(["hi"])
-    assert _make_bot(backend).is_human is False
-
-
 # ---------------------------------------------------------------------------
 # Default ask_fn approves without prompting
 # ---------------------------------------------------------------------------

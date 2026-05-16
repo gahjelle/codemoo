@@ -81,10 +81,6 @@ def bot_tool(tool_backend: _MockBackend) -> ReadBot:
     )
 
 
-def test_read_bot_is_not_human(bot_text: ReadBot) -> None:
-    assert bot_text.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ReadBot) -> None:
     from codemoo.core.context_items import AssistantMessageContent

@@ -96,10 +96,6 @@ def bot_tool(tool_backend: _MockBackend) -> ToolBot:
     )
 
 
-def test_tool_bot_is_not_human(bot_text: ToolBot) -> None:
-    assert bot_text.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_text_response_path_calls_complete_with_tools(
     bot_text: ToolBot, text_backend: _MockBackend

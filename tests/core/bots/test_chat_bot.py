@@ -45,10 +45,6 @@ def chat_bot(chat_backend: _MockBackend) -> ChatBot:
     )
 
 
-def test_chat_bot_is_not_human(chat_bot: ChatBot) -> None:
-    assert chat_bot.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_chat_bot_sends_context_to_llm(
     chat_bot: ChatBot, chat_backend: _MockBackend

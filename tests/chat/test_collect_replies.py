@@ -34,10 +34,6 @@ class _EchoParticipant:
     def emoji(self) -> str:
         return "\N{ROBOT FACE}"
 
-    @property
-    def is_human(self) -> bool:
-        return False
-
     async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         from codemoo.core.context_items import AssistantMessageContent, next_turn_id
 
@@ -60,10 +56,6 @@ class _SilentParticipant:
     def emoji(self) -> str:
         return "\N{ZIPPER-MOUTH FACE}"
 
-    @property
-    def is_human(self) -> bool:
-        return False
-
     async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         return []
 
@@ -81,10 +73,6 @@ class _ContextCapturingParticipant:
     @property
     def emoji(self) -> str:
         return "\N{CLIPBOARD}"
-
-    @property
-    def is_human(self) -> bool:
-        return False
 
     async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         self.received_contexts.append(list(context))
@@ -106,20 +94,18 @@ class _TextCapturingParticipant:
     def emoji(self) -> str:
         return "\N{MEMO}"
 
-    @property
-    def is_human(self) -> bool:
-        return False
-
     async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         self.received_texts.append(context[-1].content.text)  # ty: ignore[unresolved-attribute]
         return []
 
 
 _TS = datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
+_HUMAN = HumanParticipant()
 
 
 def _make_app(participants: list[ChatParticipant]) -> ChatApp:
     return ChatApp(
+        human=_HUMAN,
         participants=participants,
         error_bot=ErrorBot(llm=_MockBackend()),
     )
@@ -135,7 +121,7 @@ def _seed_context(app: ChatApp, text: str) -> None:
 
 @pytest.mark.asyncio
 async def test_collect_replies_yields_echo_reply() -> None:
-    app = _make_app([HumanParticipant(), _EchoParticipant()])
+    app = _make_app([_EchoParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -147,7 +133,7 @@ async def test_collect_replies_yields_echo_reply() -> None:
 
 @pytest.mark.asyncio
 async def test_collect_replies_yields_nothing_for_silent_bot() -> None:
-    app = _make_app([HumanParticipant(), _SilentParticipant()])
+    app = _make_app([_SilentParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -158,7 +144,7 @@ async def test_collect_replies_yields_nothing_for_silent_bot() -> None:
 @pytest.mark.asyncio
 async def test_collect_replies_does_not_loop_on_echo() -> None:
     # The shell skips the sender, so the echo bot's reply is never dispatched back.
-    app = _make_app([HumanParticipant(), _EchoParticipant()])
+    app = _make_app([_EchoParticipant()])
     initial = ChatMessage(sender="You", text="ping", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -171,7 +157,7 @@ async def test_collect_replies_does_not_loop_on_echo() -> None:
 async def test_sender_is_not_called_with_own_message() -> None:
     # The shell must skip the sender — the bot should never receive its own message.
     capture = _TextCapturingParticipant("Bot")
-    app = _make_app([HumanParticipant(), capture])
+    app = _make_app([capture])
     own_message = ChatMessage(sender="Bot", text="I said this", timestamp=_TS)
     _seed_context(app, own_message.text)
 
@@ -183,7 +169,7 @@ async def test_sender_is_not_called_with_own_message() -> None:
 @pytest.mark.asyncio
 async def test_context_passed_to_participants_reflects_app_context() -> None:
     capture = _ContextCapturingParticipant()
-    app = _make_app([HumanParticipant(), capture])
+    app = _make_app([capture])
     prior_item = ContextItem(content=UserMessageContent("earlier"))
     app._chat_context = [prior_item]
     initial = ChatMessage(sender="You", text="now", timestamp=_TS)
@@ -206,10 +192,6 @@ class _FailingParticipant:
     def emoji(self) -> str:
         return "\N{COLLISION SYMBOL}"
 
-    @property
-    def is_human(self) -> bool:
-        return False
-
     async def on_message(self, context: list[ContextItem]) -> list[ContextItem]:
         msg = "simulated LLM failure"
         raise RuntimeError(msg)
@@ -217,7 +199,7 @@ class _FailingParticipant:
 
 @pytest.mark.asyncio
 async def test_exception_yields_error_bubble_not_crash() -> None:
-    app = _make_app([HumanParticipant(), _FailingParticipant()])
+    app = _make_app([_FailingParticipant()])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -229,7 +211,7 @@ async def test_exception_yields_error_bubble_not_crash() -> None:
 @pytest.mark.asyncio
 async def test_exception_does_not_block_remaining_participants() -> None:
     capture = _TextCapturingParticipant("Capture")
-    app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
+    app = _make_app([_FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -242,7 +224,7 @@ async def test_exception_does_not_block_remaining_participants() -> None:
 async def test_error_message_is_not_dispatched_to_other_bots() -> None:
     # Error messages must not re-enter the BFS queue — no bot should respond to them.
     capture = _TextCapturingParticipant("Capture")
-    app = _make_app([HumanParticipant(), _FailingParticipant(), capture])
+    app = _make_app([_FailingParticipant(), capture])
     initial = ChatMessage(sender="You", text="hi", timestamp=_TS)
     _seed_context(app, initial.text)
 
@@ -276,7 +258,8 @@ def test_active_capabilities_is_union_across_resolved_bots() -> None:
     r1 = _make_resolved(["context_management"])
     r2 = _make_resolved([])
     app = ChatApp(
-        participants=[HumanParticipant()],
+        human=_HUMAN,
+        participants=[],
         error_bot=ErrorBot(llm=_MockBackend()),
         resolved_bots=[r1, r2],
     )
@@ -285,7 +268,8 @@ def test_active_capabilities_is_union_across_resolved_bots() -> None:
 
 def test_active_capabilities_empty_when_no_capabilities_declared() -> None:
     app = ChatApp(
-        participants=[HumanParticipant()],
+        human=_HUMAN,
+        participants=[],
         error_bot=ErrorBot(llm=_MockBackend()),
         resolved_bots=[_make_resolved([])],
     )

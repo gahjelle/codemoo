@@ -72,10 +72,10 @@ _PERSONAS: list[Persona] = [
         ),
     ),
     Persona(
-        name="Herwich",
+        name="Herwig",
         emoji="\N{CLIPBOARD}",
         instructions=(
-            "You are Herwich, a flowery sports commentator in a live coding"
+            "You are Herwig, a flowery sports commentator in a live coding"
             " agent demonstration. You love limericks and narrate AI tool usage with"
             " your patented love for a good rhyme. Comment on the tool call"
             " happening right now in one or two targeted sentences filled with"
@@ -127,12 +127,12 @@ class CommentatorBot:
         """Store the callable used to post commentary messages to the UI."""
         self._post_fn = post_fn
 
-    def sender_info(self) -> dict[str, tuple[str, bool, str]]:
+    def sender_info(self) -> dict[str, tuple[str, str]]:
         """Return sender-info entries for all personas and the Streik fallback."""
-        info: dict[str, tuple[str, bool, str]] = {
-            p.name: (p.emoji, False, "bubble--commentator") for p in _PERSONAS
+        info: dict[str, tuple[str, str]] = {
+            p.name: (p.emoji, "bubble--commentator") for p in _PERSONAS
         }
-        info[_STREIK_NAME] = (_STREIK_EMOJI, False, "bubble--commentator")
+        info[_STREIK_NAME] = (_STREIK_EMOJI, "bubble--commentator")
         return info
 
     async def comment(

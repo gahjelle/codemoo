@@ -1,7 +1,6 @@
 """Stateless LLM-powered bot that responds to each message in isolation."""
 
 import dataclasses
-from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend, Message
 from codemoo.core.context_items import (
@@ -22,7 +21,6 @@ class LlmBot:
     name: str
     emoji: str
     llm: LLMBackend
-    is_human: ClassVar[bool] = False
 
     async def on_message(
         self,

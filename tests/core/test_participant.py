@@ -13,10 +13,6 @@ class _MinimalParticipant:
     def emoji(self) -> str:
         return "\N{WHITE SMILING FACE}"
 
-    @property
-    def is_human(self) -> bool:
-        return False
-
     async def on_message(self, _context: list[ContextItem]) -> list[ContextItem]:
         return []
 

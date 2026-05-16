@@ -54,11 +54,6 @@ def _make_bot(backend: _SequentialBackend) -> AgentBot:
     )
 
 
-def test_agent_bot_is_not_human() -> None:
-    backend = _SequentialBackend(["hi"])
-    assert _make_bot(backend).is_human is False
-
-
 @pytest.mark.asyncio
 async def test_immediate_text_response_no_tool_call() -> None:
     from codemoo.core.context_items import AssistantMessageContent

@@ -38,10 +38,6 @@ def system_bot(backend: _MockBackend) -> SystemBot:
     )
 
 
-def test_system_bot_is_not_human(system_bot: SystemBot) -> None:
-    assert system_bot.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_system_message_is_first_in_context(
     system_bot: SystemBot, backend: _MockBackend

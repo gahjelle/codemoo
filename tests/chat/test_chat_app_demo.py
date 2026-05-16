@@ -48,7 +48,8 @@ def _make_app(demo_context: DemoContext | None = None) -> ChatApp:
     bot = EchoBot(name="Coco", emoji="\N{PARROT}")
     error_bot = ErrorBot(llm=_MockBackend())
     return ChatApp(
-        participants=[human, bot],
+        human=human,
+        participants=[bot],
         error_bot=error_bot,
         demo_context=demo_context,
     )

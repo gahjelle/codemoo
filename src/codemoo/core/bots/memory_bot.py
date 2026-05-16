@@ -4,7 +4,6 @@ import dataclasses
 import json
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import ClassVar
 
 from codemoo.core.backend import (
     LLMBackend,
@@ -49,7 +48,6 @@ class MemoryBot:
     commentator: CommentatorBot | None = None
     context: str | None = None
     memory: str | None = None
-    is_human: ClassVar[bool] = False
 
     def __post_init__(self) -> None:  # noqa: D105
         self._ask_fn = _async_approved

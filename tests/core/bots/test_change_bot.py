@@ -81,10 +81,6 @@ def bot_tool(tool_backend: _MockBackend) -> ChangeBot:
     )
 
 
-def test_change_bot_is_not_human(bot_text: ChangeBot) -> None:
-    assert bot_text.is_human is False
-
-
 @pytest.mark.asyncio
 async def test_text_response_path_reply_sender(bot_text: ChangeBot) -> None:
     from codemoo.core.context_items import AssistantMessageContent

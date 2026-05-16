@@ -1,7 +1,6 @@
 """Simple bot that echoes every message back to the chat."""
 
 import dataclasses
-from typing import ClassVar
 
 from codemoo.core.context_items import (
     AssistantMessageContent,
@@ -16,7 +15,6 @@ class EchoBot:
 
     name: str
     emoji: str
-    is_human: ClassVar[bool] = False
 
     async def on_message(
         self,

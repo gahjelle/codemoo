@@ -3,7 +3,6 @@
 import dataclasses
 import json
 from collections.abc import Awaitable, Callable
-from typing import ClassVar
 
 from codemoo.core.backend import (
     LLMBackend,
@@ -43,7 +42,6 @@ class GuardBot:
     tools: list[ToolDef]
     instructions: str
     commentator: CommentatorBot | None = None
-    is_human: ClassVar[bool] = False
 
     def __post_init__(self) -> None:  # noqa: D105
         self._ask_fn = _async_approved

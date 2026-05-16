@@ -1,7 +1,6 @@
 """Context-aware LLM bot that maintains conversation history."""
 
 import dataclasses
-from typing import ClassVar
 
 from codemoo.core.backend import LLMBackend
 from codemoo.core.context_builder import build_context
@@ -23,7 +22,6 @@ class ChatBot:
     name: str
     emoji: str
     llm: LLMBackend
-    is_human: ClassVar[bool] = False
 
     async def on_message(
         self,

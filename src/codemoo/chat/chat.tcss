@@ -5,33 +5,45 @@
     padding: 0 1;
 }
 
-/* Shared bubble content styles (fractional widths are structural, defined in DEFAULT_CSS) */
-.bubble--human,
-.bubble--bot,
-.bubble--error,
-.bubble--commentator {
-    padding: 0 1;
+/* Outer bubble row: spacing and alignment */
+ChatBubble.bubble--human,
+ChatBubble.bubble--bot,
+ChatBubble.bubble--error,
+ChatBubble.bubble--commentator {
     margin-bottom: 1;
+}
+
+/* Human messages right-aligned; bot/error/commentator default to left */
+ChatBubble.bubble--human {
+    align-horizontal: right;
+}
+
+/* Inner content box: visual styling */
+_BubbleContent.bubble--human,
+_BubbleContent.bubble--bot,
+_BubbleContent.bubble--error,
+_BubbleContent.bubble--commentator {
+    padding: 0 1;
     border: tall $panel;
 }
 
 /* Human messages: blue tint */
-.bubble--human {
+_BubbleContent.bubble--human {
     background: #1a3a5c;
 }
 
 /* Bot messages: dark violet — distinct from Markdown code-block backgrounds */
-.bubble--bot {
+_BubbleContent.bubble--bot {
     background: #150f25;
 }
 
 /* Error bot messages: dark red */
-.bubble--error {
+_BubbleContent.bubble--error {
     background: #3a0f0f;
 }
 
 /* Commentator asides: soft grey — visually subordinate to the main conversation */
-.bubble--commentator {
+_BubbleContent.bubble--commentator {
     background: #2a2a2a;
     color: $text-muted;
 }
