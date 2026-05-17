@@ -1,0 +1,1 @@
+{bot_name} tried to call '{tool_name}' with arguments: {sig}, but was blocked: {detail}. Give a brief, in-character reaction to this security enforcement.

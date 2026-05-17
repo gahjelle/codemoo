@@ -1,0 +1,5 @@
+{bot_name} just loaded its memory from {path}. The memory is {content_len} characters long and starts with:
+
+{preview}
+
+Give a brief, in-character reaction to what {bot_name} now remembers about the user.

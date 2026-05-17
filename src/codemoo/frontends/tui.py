@@ -63,6 +63,7 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
             Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
             for p in config.commentators.values()
         ],
+        templates=dict(config.commentary_templates),
         language=language,
     )
 
@@ -118,6 +119,7 @@ async def _setup_for_launcher(*, bot: BotType, variant: str) -> SetupResult:
             Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
             for p in config.commentators.values()
         ],
+        templates=dict(config.commentary_templates),
         language=language,
     )
 
@@ -214,6 +216,7 @@ async def select() -> None:
             Persona(name=p.name, emoji=p.emoji, instructions=p.instructions)
             for p in config.commentators.values()
         ],
+        templates=dict(config.commentary_templates),
         language=language,
     )
 

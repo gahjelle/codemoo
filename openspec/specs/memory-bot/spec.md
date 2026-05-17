@@ -13,13 +13,13 @@ MemoryBot SHALL read its memory file at startup (in `startup()`) after loading p
 - **WHEN** MemoryBot starts up
 - **AND** `.codemoo/memory.md` exists in the session folder
 - **THEN** the contents SHALL be loaded and stored on the bot instance
-- **AND** a `MemoryLoadEvent` SHALL be emitted to the commentator
+- **AND** a `LoadEvent(kind="memory")` SHALL be emitted to the commentator
 
 #### Scenario: Memory file absent at startup
 - **WHEN** MemoryBot starts up
 - **AND** `.codemoo/memory.md` does not exist
 - **THEN** `self.memory` SHALL be set to `None`
-- **AND** no `MemoryLoadEvent` is emitted
+- **AND** no `LoadEvent` is emitted
 - **AND** MemoryBot operates without memory for the session
 
 #### Scenario: Memory file read fails at startup

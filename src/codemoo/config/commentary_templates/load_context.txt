@@ -1,0 +1,5 @@
+{bot_name} just loaded project context from {source_desc}. The context is {content_len} characters long and starts with:
+
+{preview}
+
+Give a brief, in-character reaction to what {bot_name} now knows about the project.

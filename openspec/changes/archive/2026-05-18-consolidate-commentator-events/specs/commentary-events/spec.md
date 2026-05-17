@@ -1,10 +1,22 @@
-# Spec: commentary-events
+## REMOVED Requirements
 
-## Purpose
+### Requirement: ToolCallEvent carries tool invocation details
+**Reason**: Replaced by `ToolEvent(outcome="call")`. The three separate tool event dataclasses are consolidated into one.
+**Migration**: Replace `ToolCallEvent(bot_name=..., tool_name=..., arguments=...)` with `ToolEvent(outcome="call", bot_name=..., tool_name=..., arguments=...)`.
 
-Defines the consolidated event types (`ToolEvent`, `LoadEvent`, `BotRestartEvent`) and the protocol by which tool dispatch and context/memory loading emit events to the commentator.
+### Requirement: ValidationBlockEvent carries tool block details
+**Reason**: Replaced by `ToolEvent(outcome="blocked", detail=reason)`.
+**Migration**: Replace `ValidationBlockEvent(bot_name=..., tool_name=..., arguments=..., reason=...)` with `ToolEvent(outcome="blocked", ..., detail=reason)`.
 
-## Requirements
+### Requirement: Bots emit ToolCallEvent via the commentator before tool invocation
+**Reason**: Tool event emission is moved entirely into `dispatch_tool`. Bots no longer emit any commentator event directly for tool calls — passing the commentator to `dispatch_tool` is sufficient.
+**Migration**: Remove `await commentator.comment(ToolCallEvent(...))` from `SingleTurnToolBot`, `AgentBot`, `GuardBot`, `ProjectBot`, and `RetryBot`. Remove the `ToolCallEvent` import from each.
+
+### Requirement: CommentatorBot generates colour commentary for validation blocks
+**Reason**: Superseded by the `ToolEvent` handler requirement below; `ValidationBlockEvent` no longer exists.
+**Migration**: See "CommentatorBot handles ToolEvent outcomes via template" requirement.
+
+## ADDED Requirements
 
 ### Requirement: ToolEvent is a unified frozen dataclass for all tool dispatch outcomes
 `ToolEvent` SHALL be a frozen dataclass defined in `commentator_bot.py` with fields: `outcome: Literal["call", "blocked", "error"]`, `bot_name: str`, `tool_name: str`, `arguments: dict[str, object]`, and `detail: str | None = None`. The `detail` field SHALL carry the block reason for `"blocked"` outcomes and the error string for `"error"` outcomes; it SHALL be `None` for `"call"` outcomes.
@@ -79,39 +91,3 @@ Defines the consolidated event types (`ToolEvent`, `LoadEvent`, `BotRestartEvent
 #### Scenario: LoadEvent memory kind uses memory template
 - **WHEN** `commentator.comment(LoadEvent(kind="memory", ...))` is awaited
 - **THEN** the prompt SHALL be built from the `"memory"` template
-
-### Requirement: BotRestartEvent carries the restarting bot's name
-A `BotRestartEvent` SHALL be a frozen dataclass with one field: `bot_name: str` (the name of the bot being restarted). It SHALL be defined in `commentator_bot.py` alongside the other event types and included in the `CommentatorBot.comment()` union type.
-
-#### Scenario: BotRestartEvent fields match the bot being restarted
-- **WHEN** `ChatApp._restart_bot()` constructs a `BotRestartEvent`
-- **THEN** `event.bot_name` SHALL equal the name of the active (non-human) participant
-
-### Requirement: CommentatorBot generates persona commentary for BotRestartEvent
-`CommentatorBot.comment()` SHALL accept `BotRestartEvent` in its event union. It SHALL handle the event by calling `_comment_on_restart()`, which generates LLM persona commentary about the bot's memory being cleared and a fresh start beginning.
-
-#### Scenario: BotRestartEvent produces a commentary bubble
-- **WHEN** `commentator.comment(BotRestartEvent(bot_name="Lore"))` is awaited
-- **THEN** a commentary bubble SHALL be posted to the UI
-- **AND** the bubble SHALL include a dimmed prefix line (e.g. `↺ Restarted`)
-- **AND** the bubble SHALL include an LLM-generated in-character sentence about the fresh start
-
-#### Scenario: Commentary falls back to Streik on LLM failure
-- **WHEN** the LLM call inside `_comment_on_restart` raises an exception
-- **THEN** a fallback message SHALL be posted using the Streik persona
-- **AND** the fallback SHALL reference the bot name and restart action
-
-### Requirement: CommentatorBot uses format_tool_call for all tool call formatting
-`CommentatorBot` SHALL use `format_tool_call()` from `core/tools/formatting.py` in place of the private `_format_args` function and inline `short_sig` slicing. The display signature shown in the `[dim]` header SHALL use `max_value_len=40`. The LLM prompt describing the tool call SHALL use no truncation, so the model receives full argument values.
-
-#### Scenario: Display signature truncates long values at 40 characters
-- **WHEN** a tool call has an argument value longer than 40 characters
-- **THEN** the `[dim]` header line in the commentator bubble SHALL show the value truncated with `…`
-
-#### Scenario: LLM prompt receives full argument values
-- **WHEN** the LLM is asked to generate a commentary sentence
-- **THEN** the prompt SHALL include the full untruncated argument values
-
-#### Scenario: Truncated display ends with ellipsis, not a raw character
-- **WHEN** a value is truncated in the display signature
-- **THEN** the last character of the displayed value SHALL be `…` (U+2026), not the original character at that position

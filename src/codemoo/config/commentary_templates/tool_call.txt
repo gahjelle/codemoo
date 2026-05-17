@@ -1,0 +1,1 @@
+{bot_name} is calling the '{tool_name}' tool with arguments: {sig}. Give a brief, in-character one-sentence aside to the viewer.

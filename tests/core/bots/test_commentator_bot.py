@@ -1,8 +1,8 @@
-"""Tests for CommentatorBot, ToolCallEvent, and persona fallback."""
+"""Tests for CommentatorBot, ToolEvent, LoadEvent, and persona fallback."""
 
 import asyncio
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -12,8 +12,9 @@ from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.commentator_bot import (
     _STREIK_NAME,
     CommentatorBot,
+    LoadEvent,
     Persona,
-    ToolCallEvent,
+    ToolEvent,
 )
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
@@ -30,29 +31,94 @@ _TEST_PERSONAS = [
 ]
 _TEST_PERSONA_NAMES = {p.name for p in _TEST_PERSONAS}
 
+_TEST_TEMPLATES = {
+    "call": "{bot_name} is calling '{tool_name}' with {sig}. Comment briefly.",
+    "blocked": "{bot_name} was blocked calling '{tool_name}': {detail}. React.",
+    "error": "{bot_name} got an error from '{tool_name}': {detail}. React.",
+    "context": "{bot_name} loaded context from {source_desc} ({content_len} chars): {preview}",
+    "memory": "{bot_name} loaded memory from {path} ({content_len} chars): {preview}",
+}
+
 
 def _msg(sender: str, text: str) -> ChatMessage:
     return ChatMessage(sender=sender, text=text, timestamp=_TS)
 
 
 # ---------------------------------------------------------------------------
-# 6.1 ToolCallEvent
+# ToolEvent dataclass
 # ---------------------------------------------------------------------------
 
 
-def test_tool_call_event_fields() -> None:
-    event = ToolCallEvent(
+def test_tool_event_call_fields() -> None:
+    event = ToolEvent(
+        outcome="call",
         bot_name="Loom",
         tool_name="run_shell",
         arguments={"command": "echo hi"},
     )
+    assert event.outcome == "call"
     assert event.bot_name == "Loom"
     assert event.tool_name == "run_shell"
     assert event.arguments == {"command": "echo hi"}
+    assert event.detail is None
+
+
+def test_tool_event_blocked_fields() -> None:
+    event = ToolEvent(
+        outcome="blocked",
+        bot_name="Loom",
+        tool_name="write_file",
+        arguments={"path": "../secret"},
+        detail="path escapes sandbox",
+    )
+    assert event.outcome == "blocked"
+    assert event.detail == "path escapes sandbox"
+
+
+def test_tool_event_error_fields() -> None:
+    event = ToolEvent(
+        outcome="error",
+        bot_name="Loom",
+        tool_name="run_shell",
+        arguments={"command": "bad"},
+        detail="Error: command not found",
+    )
+    assert event.outcome == "error"
+    assert event.detail == "Error: command not found"
 
 
 # ---------------------------------------------------------------------------
-# 6.2 CommentatorBot happy path
+# LoadEvent dataclass
+# ---------------------------------------------------------------------------
+
+
+def test_load_event_context_fields() -> None:
+    event = LoadEvent(
+        kind="context",
+        bot_name="Lore",
+        source="file",
+        path="AGENTS.md",
+        content="# Project\n...",
+    )
+    assert event.kind == "context"
+    assert event.source == "file"
+    assert event.path == "AGENTS.md"
+
+
+def test_load_event_memory_fields() -> None:
+    event = LoadEvent(
+        kind="memory",
+        bot_name="Aura",
+        source="file",
+        path="/home/user/.codemoo/memory.md",
+        content="User prefers Python.",
+    )
+    assert event.kind == "memory"
+    assert event.source == "file"
+
+
+# ---------------------------------------------------------------------------
+# CommentatorBot happy path
 # ---------------------------------------------------------------------------
 
 
@@ -67,14 +133,19 @@ class _MockBackend:
 
 
 @pytest.mark.asyncio
-async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
+async def test_comment_tool_call_posts_message_with_persona_sender() -> None:
     backend = _MockBackend(response="Oh wow, a shell command!")
-    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     received: list[ChatMessage] = []
     bot.register(received.append)
 
-    event = ToolCallEvent(
-        bot_name="Loom", tool_name="run_shell", arguments={"command": "ls"}
+    event = ToolEvent(
+        outcome="call",
+        bot_name="Loom",
+        tool_name="run_shell",
+        arguments={"command": "ls"},
     )
     await bot.comment(event)
 
@@ -88,11 +159,16 @@ async def test_comment_happy_path_posts_message_with_persona_sender() -> None:
 @pytest.mark.asyncio
 async def test_comment_passes_event_info_in_prompt() -> None:
     backend = _MockBackend()
-    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     bot.register(lambda _: None)
 
-    event = ToolCallEvent(
-        bot_name="Ash", tool_name="read_file", arguments={"path": "README.md"}
+    event = ToolEvent(
+        outcome="call",
+        bot_name="Ash",
+        tool_name="read_file",
+        arguments={"path": "README.md"},
     )
     await bot.comment(event)
 
@@ -102,8 +178,71 @@ async def test_comment_passes_event_info_in_prompt() -> None:
     assert "read_file" in user_msg.content
 
 
+@pytest.mark.asyncio
+async def test_comment_blocked_uses_blocked_template() -> None:
+    backend = _MockBackend(response="Security!")
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    bot.register(lambda _: None)
+
+    event = ToolEvent(
+        outcome="blocked",
+        bot_name="Cato",
+        tool_name="write_file",
+        arguments={"path": "../secret"},
+        detail="path escapes sandbox",
+    )
+    await bot.comment(event)
+
+    user_msg = next(m for m in backend.calls[0] if m.role == "user")
+    assert "path escapes sandbox" in user_msg.content
+
+
+@pytest.mark.asyncio
+async def test_comment_load_context_uses_context_template() -> None:
+    backend = _MockBackend(response="Loaded context!")
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    bot.register(lambda _: None)
+
+    event = LoadEvent(
+        kind="context",
+        bot_name="Lore",
+        source="file",
+        path="AGENTS.md",
+        content="# Project context",
+    )
+    await bot.comment(event)
+
+    user_msg = next(m for m in backend.calls[0] if m.role == "user")
+    assert "AGENTS.md" in user_msg.content
+
+
+@pytest.mark.asyncio
+async def test_comment_load_memory_uses_memory_template() -> None:
+    backend = _MockBackend(response="Remembered!")
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    bot.register(lambda _: None)
+
+    event = LoadEvent(
+        kind="memory",
+        bot_name="Aura",
+        source="file",
+        path="memory.md",
+        content="User likes cats.",
+    )
+    await bot.comment(event)
+
+    user_msg = next(m for m in backend.calls[0] if m.role == "user")
+    assert "memory.md" in user_msg.content
+
+
 # ---------------------------------------------------------------------------
-# 6.3 Streik fallback
+# Streik fallback
 # ---------------------------------------------------------------------------
 
 
@@ -115,12 +254,17 @@ class _FailingBackend:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_on_llm_error() -> None:
-    bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_FailingBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     received: list[ChatMessage] = []
     bot.register(received.append)
 
-    event = ToolCallEvent(
-        bot_name="Loom", tool_name="run_shell", arguments={"command": "ls"}
+    event = ToolEvent(
+        outcome="call",
+        bot_name="Loom",
+        tool_name="run_shell",
+        arguments={"command": "ls"},
     )
     await bot.comment(event)  # must not raise
 
@@ -130,12 +274,17 @@ async def test_streik_fallback_on_llm_error() -> None:
 
 @pytest.mark.asyncio
 async def test_streik_fallback_text_contains_tool_name_and_bot_name() -> None:
-    bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_FailingBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     received: list[ChatMessage] = []
     bot.register(received.append)
 
-    event = ToolCallEvent(
-        bot_name="Ash", tool_name="read_file", arguments={"path": "SCRIPT.md"}
+    event = ToolEvent(
+        outcome="call",
+        bot_name="Ash",
+        tool_name="read_file",
+        arguments={"path": "SCRIPT.md"},
     )
     await bot.comment(event)
 
@@ -146,7 +295,7 @@ async def test_streik_fallback_text_contains_tool_name_and_bot_name() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6.4 SingleTurnToolBot calls commentator before tool fn
+# dispatch_tool emits ToolEvent; bots no longer emit directly
 # ---------------------------------------------------------------------------
 
 _TOOL_USE = ToolUse(
@@ -177,17 +326,12 @@ class _SingleStepBackend:
 
 
 @pytest.mark.asyncio
-async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
-    call_order: list[str] = []
+async def test_single_turn_tool_bot_commentator_called_via_dispatch() -> None:
+    """dispatch_tool (not the bot) emits the ToolEvent; commentator still fires."""
+    received_events: list[object] = []
 
     mock_commentator = AsyncMock()
-    mock_commentator.comment = AsyncMock(
-        side_effect=lambda _: call_order.append("comment")
-    )
-
-    def _tracked_fn(**kwargs: object) -> str:
-        call_order.append("tool")
-        return "output"
+    mock_commentator.comment = AsyncMock(side_effect=received_events.append)
 
     bot = SingleTurnToolBot(
         name="Ash",
@@ -198,14 +342,15 @@ async def test_single_turn_tool_bot_calls_commentator_before_tool() -> None:
         commentator=mock_commentator,
     )
 
-    with patch.object(run_shell, "fn", _tracked_fn):
-        await bot.on_message(user_ctx("run it"))
+    await bot.on_message(user_ctx("run it"))
 
-    assert call_order == ["comment", "tool"]
+    assert len(received_events) == 1
+    assert isinstance(received_events[0], ToolEvent)
+    assert received_events[0].outcome == "call"
 
 
 # ---------------------------------------------------------------------------
-# 6.5 AgentBot calls commentator on each tool call in a multi-step loop
+# AgentBot calls commentator on each tool call in a multi-step loop
 # ---------------------------------------------------------------------------
 
 
@@ -239,7 +384,7 @@ def _tool_use(call_id: str) -> ToolUse:
 
 @pytest.mark.asyncio
 async def test_agent_bot_calls_commentator_per_tool_step() -> None:
-    comment_events: list[ToolCallEvent] = []
+    comment_events: list[object] = []
     mock_commentator = AsyncMock()
     mock_commentator.comment = AsyncMock(side_effect=comment_events.append)
 
@@ -256,11 +401,12 @@ async def test_agent_bot_calls_commentator_per_tool_step() -> None:
     await bot.on_message(user_ctx("do two things"))
 
     assert len(comment_events) == 2
-    assert all(isinstance(e, ToolCallEvent) for e in comment_events)
+    assert all(isinstance(e, ToolEvent) for e in comment_events)
+    assert all(e.outcome == "call" for e in comment_events)  # ty: ignore[unresolved-attribute]
 
 
 # ---------------------------------------------------------------------------
-# 6.6 ChatApp._append_to_log fallback for unknown sender
+# ChatApp._append_to_log fallback for unknown sender
 # ---------------------------------------------------------------------------
 
 
@@ -299,7 +445,9 @@ def test_known_senders_are_not_affected() -> None:
 
 
 def test_sender_info_contains_all_personas() -> None:
-    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_NullBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     info = bot.sender_info()
     for persona in _TEST_PERSONAS:
         assert persona.name in info
@@ -309,7 +457,9 @@ def test_sender_info_contains_all_personas() -> None:
 
 
 def test_sender_info_contains_streik() -> None:
-    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_NullBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     info = bot.sender_info()
     assert _STREIK_NAME in info
     _, css = info[_STREIK_NAME]
@@ -317,14 +467,18 @@ def test_sender_info_contains_streik() -> None:
 
 
 def test_sender_info_keys_match_injected_personas_plus_streik() -> None:
-    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_NullBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     info = bot.sender_info()
     expected = {p.name for p in _TEST_PERSONAS} | {_STREIK_NAME}
     assert set(info.keys()) == expected
 
 
 def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
-    bot = CommentatorBot(llm=_NullBackend(), personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=_NullBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     app = ChatApp(
         human=_HUMAN,
         participants=[],
@@ -340,11 +494,14 @@ def test_chat_app_registers_persona_emojis_when_commentator_provided() -> None:
 @pytest.mark.asyncio
 async def test_display_header_truncates_long_values_with_ellipsis() -> None:
     backend = _MockBackend(response="Nice!")
-    bot = CommentatorBot(llm=backend, personas=_TEST_PERSONAS)
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
     received: list[ChatMessage] = []
     bot.register(received.append)
 
-    event = ToolCallEvent(
+    event = ToolEvent(
+        outcome="call",
         bot_name="Loom",
         tool_name="write_file",
         arguments={"path": "f.py", "content": "x" * 200},
@@ -361,11 +518,16 @@ def test_streik_fallback_has_no_dim_prefix() -> None:
     """Streik posts just the call sig with no [dim] markup."""
 
     async def _run() -> ChatMessage:
-        bot = CommentatorBot(llm=_FailingBackend(), personas=_TEST_PERSONAS)
+        bot = CommentatorBot(
+            llm=_FailingBackend(), personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+        )
         received: list[ChatMessage] = []
         bot.register(received.append)
-        event = ToolCallEvent(
-            bot_name="Ash", tool_name="read_file", arguments={"path": "x.md"}
+        event = ToolEvent(
+            outcome="call",
+            bot_name="Ash",
+            tool_name="read_file",
+            arguments={"path": "x.md"},
         )
         await bot.comment(event)
         return received[0]
@@ -376,12 +538,15 @@ def test_streik_fallback_has_no_dim_prefix() -> None:
 
 @pytest.mark.asyncio
 async def test_empty_personas_falls_back_to_streik() -> None:
-    bot = CommentatorBot(llm=_MockBackend(), personas=[])
+    bot = CommentatorBot(llm=_MockBackend(), personas=[], templates=_TEST_TEMPLATES)
     received: list[ChatMessage] = []
     bot.register(received.append)
 
-    event = ToolCallEvent(
-        bot_name="Loom", tool_name="run_shell", arguments={"command": "ls"}
+    event = ToolEvent(
+        outcome="call",
+        bot_name="Loom",
+        tool_name="run_shell",
+        arguments={"command": "ls"},
     )
     await bot.comment(event)
 

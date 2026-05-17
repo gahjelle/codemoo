@@ -56,16 +56,16 @@ The system SHALL allow bots to read project context from a SharePoint document s
 - **AND** no error is raised
 
 ### Requirement: Context loading emits commentator events
-The system SHALL emit a `ContextLoadEvent` when a bot successfully loads project context.
+The system SHALL emit a `LoadEvent(kind="context")` when a bot successfully loads project context. `ContextLoadEvent` is removed; `LoadEvent` from `commentary-events` is the replacement.
 
-#### Scenario: ContextLoadEvent emitted at startup
-- **WHEN** `ProjectBot.startup()` successfully reads context from any source
-- **THEN** a `ContextLoadEvent` is emitted to the commentator
-- **AND** the event includes the bot name, source type, path, and content
+#### Scenario: LoadEvent emitted at startup
+- **WHEN** `read_project_context()` successfully reads context from any source
+- **THEN** a `LoadEvent(kind="context", bot_name=..., source=source_type, path=path, content=content)` SHALL be emitted to the commentator
+- **AND** the event SHALL include the bot name, source type, resolved path, and full content
 
-#### Scenario: No ContextLoadEvent when context is absent
-- **WHEN** `ProjectBot.startup()` finds no context (source not configured, file missing, or remote failure)
-- **THEN** no `ContextLoadEvent` is emitted
+#### Scenario: No LoadEvent when context is absent
+- **WHEN** `read_project_context()` finds no context (source not configured, file missing, or remote failure)
+- **THEN** no `LoadEvent` SHALL be emitted
 
 ### Requirement: Context is injected into system prompt
 The system SHALL format the loaded context and inject it into the bot's system prompt.
@@ -140,32 +140,25 @@ The system SHALL allow bots to read project context from a Google Drive file spe
 - **THEN** the bot proceeds without context
 - **AND** no error is raised
 
-#### Scenario: ContextLoadEvent for Drive source
+#### Scenario: LoadEvent for Drive source
 - **WHEN** a bot successfully reads context from Google Drive
-- **THEN** a ContextLoadEvent is emitted
+- **THEN** a `LoadEvent(kind="context")` is emitted
 - **AND** the event includes bot name, source type `"drive"`, path `"drive:TEAM.md"`, and content
 
-### Requirement: context.py exposes a MemoryLoadEvent dataclass
-A `MemoryLoadEvent` frozen dataclass SHALL exist in `core/context.py` with the same fields as `ContextLoadEvent`: `bot_name: str`, `source: str` (always `"file"` for memory), `path: str` (the memory file path as a string), and `content: str` (the full memory file contents).
-
-#### Scenario: MemoryLoadEvent has the correct fields
-- **WHEN** `MemoryLoadEvent(bot_name="Aura", source="file", path=".codemoo/memory.md", content="# Memory")` is constructed
-- **THEN** all four fields SHALL be accessible on the instance
-
 ### Requirement: context.py exposes a read_memory_file function
-A `read_memory_file(memory_file_path: Path, bot_name: str, commentator: CommentatorBot) -> str | None` function SHALL exist in `core/context.py`. It SHALL read the file at `memory_file_path` if it exists, emit a `MemoryLoadEvent` to the commentator on success, and return the contents. If the file does not exist or reading fails, it SHALL return `None` without raising.
+A `read_memory_file(memory_file_path: Path, bot_name: str, commentator: CommentatorBot) -> str | None` function SHALL exist in `core/context.py`. It SHALL read the file at `memory_file_path` if it exists, emit a `LoadEvent(kind="memory")` to the commentator on success, and return the contents. If the file does not exist or reading fails, it SHALL return `None` without raising.
 
 #### Scenario: read_memory_file reads an existing file
 - **WHEN** `read_memory_file` is called with a path pointing to an existing file
 - **THEN** it SHALL return the file's contents as a string
-- **AND** emit a `MemoryLoadEvent` to the commentator
+- **AND** emit a `LoadEvent(kind="memory", bot_name=..., source="file", path=str(memory_file_path), content=content)` to the commentator
 
 #### Scenario: read_memory_file returns None when file absent
 - **WHEN** `read_memory_file` is called with a path to a non-existent file
 - **THEN** it SHALL return `None`
-- **AND** no `MemoryLoadEvent` is emitted
+- **AND** no `LoadEvent` is emitted
 
 #### Scenario: read_memory_file returns None on read error
 - **WHEN** reading the file raises any exception
 - **THEN** `read_memory_file` SHALL return `None` without raising
-- **AND** no `MemoryLoadEvent` is emitted
+- **AND** no `LoadEvent` is emitted

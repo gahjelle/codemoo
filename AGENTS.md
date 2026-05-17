@@ -223,7 +223,9 @@ instructions_file = "arne.txt"
 
 Instruction files live in `src/codemoo/config/commentators/`. File naming convention: `{lowercase-key}.txt` (e.g. `arne.txt`, `karen-marie.txt`). Inline `instructions = "..."` is also supported.
 
-`CommentatorBot` receives the resolved `list[Persona]` via its `personas` constructor argument — it holds no hardcoded personas of its own. The TUI constructs it with `personas=list(config.commentators.values())` at each startup site. All personas are selected with uniform random weight.
+`CommentatorBot` receives the resolved `list[Persona]` via its `personas` constructor argument and a `templates: dict[str, str]` of pre-loaded prompt templates keyed by event outcome/kind (`"call"`, `"blocked"`, `"error"`, `"context"`, `"memory"`). It holds no hardcoded personas or prompt strings of its own. The TUI constructs it with `personas=list(config.commentators.values())` and `templates=dict(config.commentary_templates)` at each startup site. All personas are selected with uniform random weight.
+
+Commentary event prompt templates are declared in `codemoo.toml` under `[commentary_templates]` and loaded from `src/codemoo/config/commentary_templates/`. Templates use `str.format()` placeholders (`{bot_name}`, `{tool_name}`, `{sig}`, `{detail}`, `{source_desc}`, `{path}`, `{content_len}`, `{preview}`).
 
 The ten current personas and their real-world inspirations:
 
@@ -273,7 +275,7 @@ Tools are split into three locations: generic code tools in `src/codemoo/core/to
 
 `ToolDef` has an optional `validate: Callable[..., str | None] | None = None` field. When set, it is called with the tool's arguments before `fn` runs; a non-`None` return hard-blocks the call and returns an error to the LLM.
 
-`dispatch_tool(tool, arguments, bot_name, commentator)` is the async dispatch helper used by all bots instead of `tool.fn(**arguments)` directly. It runs `validate`, emits a `ValidationBlockEvent` to the commentator if blocked, then calls `fn`.
+`dispatch_tool(tool, arguments, bot_name, commentator)` is the async dispatch helper used by all bots instead of `tool.fn(**arguments)` directly. It is the **sole emitter** of tool commentary events: it emits `ToolEvent(outcome="blocked")` when a validator rejects the call, `ToolEvent(outcome="call")` when the tool is about to execute, and `ToolEvent(outcome="error")` when the tool returns a result starting with `"Error "`. Bots do not emit tool events directly — passing the commentator to `dispatch_tool` is sufficient.
 
 At startup, `Path.cwd()` is captured as the **session folder** and passed through `make_bots()` → `_make_bot()`. During bot construction, `read_file`, `write_file`, `list_files`, and `run_shell` are automatically wrapped with session-folder validators via `dataclasses.replace`. The underlying tool definitions in `files.py` and `shell.py` stay pure.
 

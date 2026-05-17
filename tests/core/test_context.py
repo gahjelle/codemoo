@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from codemoo.core.context import ContextLoadEvent, read_project_context
+from codemoo.core.bots.commentator_bot import LoadEvent
+from codemoo.core.context import read_project_context
 
 
 class _MockCommentator:
@@ -32,7 +33,7 @@ async def test_drive_context_source_returns_content() -> None:
 
 
 @pytest.mark.asyncio
-async def test_drive_context_source_emits_event() -> None:
+async def test_drive_context_source_emits_load_event() -> None:
     commentator = _MockCommentator()
     with patch(
         "codemoo.workspace.tools.read._read_gdrive_by_name", return_value="team content"
@@ -45,7 +46,8 @@ async def test_drive_context_source_emits_event() -> None:
         )
     assert len(commentator.events) == 1
     event = commentator.events[0]
-    assert isinstance(event, ContextLoadEvent)
+    assert isinstance(event, LoadEvent)
+    assert event.kind == "context"
     assert event.source == "drive"
     assert event.path == "drive:TEAM.md"
     assert event.bot_name == "Lore"

@@ -1,31 +1,12 @@
 """Shared utility for reading project context from file or SharePoint."""
 
-import dataclasses
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from codemoo.core.bots.commentator_bot import LoadEvent
+
 if TYPE_CHECKING:
     from codemoo.core.bots.commentator_bot import CommentatorBot
-
-
-@dataclasses.dataclass(frozen=True)
-class ContextLoadEvent:
-    """Emitted when a bot loads project context."""
-
-    bot_name: str
-    source: str  # "file", "sharepoint", or "drive"
-    path: str  # "AGENTS.md", "sharepoint:TEAM.md", or "drive:TEAM.md"
-    content: str  # Full content of the context file
-
-
-@dataclasses.dataclass(frozen=True)
-class MemoryLoadEvent:
-    """Emitted when a bot loads its memory file."""
-
-    bot_name: str
-    source: str  # always "file"
-    path: str  # path to the memory file
-    content: str  # Full content of the memory file
 
 
 async def read_project_context(
@@ -83,7 +64,8 @@ async def read_project_context(
             else source_name
         )
         await commentator.comment(
-            ContextLoadEvent(
+            LoadEvent(
+                kind="context",
                 bot_name=bot_name,
                 source=source_type,
                 path=path,
@@ -99,7 +81,7 @@ async def read_memory_file(
     bot_name: str,
     commentator: "CommentatorBot",
 ) -> str | None:
-    """Read the bot's memory file if it exists and emit a MemoryLoadEvent.
+    """Read the bot's memory file if it exists and emit a LoadEvent.
 
     Returns the file contents on success, None if absent or on any error.
     """
@@ -112,7 +94,8 @@ async def read_memory_file(
 
     if content:
         await commentator.comment(
-            MemoryLoadEvent(
+            LoadEvent(
+                kind="memory",
                 bot_name=bot_name,
                 source="file",
                 path=str(memory_file_path),

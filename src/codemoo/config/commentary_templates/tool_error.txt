@@ -1,0 +1,1 @@
+{bot_name} called '{tool_name}' with arguments: {sig}, but the tool returned an error: {detail}. Give a brief, in-character one-sentence aside reacting to this failure.

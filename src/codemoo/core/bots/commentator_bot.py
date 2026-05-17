@@ -3,40 +3,33 @@
 import dataclasses
 import random
 from collections.abc import Callable
+from typing import Literal
 
 from codemoo.core.backend import LLMBackend, Message
-from codemoo.core.context import ContextLoadEvent, MemoryLoadEvent
 from codemoo.core.message import ChatMessage
 from codemoo.core.tools import format_tool_call
 
 
 @dataclasses.dataclass(frozen=True)
-class ToolCallEvent:
-    """Emitted by a bot before invoking a tool; carries what commentary needs."""
+class ToolEvent:
+    """Emitted by dispatch_tool for every tool dispatch outcome."""
 
+    outcome: Literal["call", "blocked", "error"]
     bot_name: str
     tool_name: str
     arguments: dict[str, object]
+    detail: str | None = None
 
 
 @dataclasses.dataclass(frozen=True)
-class ValidationBlockEvent:
-    """Emitted by dispatch_tool when a validator hard-blocks a tool call."""
+class LoadEvent:
+    """Emitted when a bot loads project context or its memory file."""
 
+    kind: Literal["context", "memory"]
     bot_name: str
-    tool_name: str
-    arguments: dict[str, object]
-    reason: str
-
-
-@dataclasses.dataclass(frozen=True)
-class ToolErrorEvent:
-    """Emitted by dispatch_tool when a tool returns a result starting with 'Error '."""
-
-    bot_name: str
-    tool_name: str
-    arguments: dict[str, object]
-    result: str
+    source: str
+    path: str
+    content: str
 
 
 @dataclasses.dataclass(frozen=True)
@@ -58,6 +51,7 @@ class Persona:
 _STREIK_NAME = "Streik"
 _STREIK_EMOJI = "\N{PUBLIC ADDRESS LOUDSPEAKER}"
 _ERROR_TRUNCATE_LEN = 60
+_PREVIEW_LEN = 600
 
 
 @dataclasses.dataclass(eq=False)
@@ -70,6 +64,7 @@ class CommentatorBot:
 
     llm: LLMBackend
     personas: list[Persona]
+    templates: dict[str, str]
     language: str = "English"
     _post_fn: Callable[[ChatMessage], None] = dataclasses.field(init=False, repr=False)
 
@@ -90,80 +85,65 @@ class CommentatorBot:
 
     async def comment(
         self,
-        event: (
-            ToolCallEvent
-            | ContextLoadEvent
-            | MemoryLoadEvent
-            | ValidationBlockEvent
-            | ToolErrorEvent
-            | BotRestartEvent
-        ),
+        event: ToolEvent | LoadEvent | BotRestartEvent,
     ) -> None:
         """Generate and post a persona-driven aside for the given event."""
-        if isinstance(event, ToolCallEvent):
-            await self._comment_on_tool_call(event)
-        elif isinstance(event, ContextLoadEvent):
-            await self._comment_on_context(event)
-        elif isinstance(event, MemoryLoadEvent):
-            await self._comment_on_memory(event)
-        elif isinstance(event, ValidationBlockEvent):
-            await self._comment_on_validation_block(event)
-        elif isinstance(event, ToolErrorEvent):
-            await self._comment_on_tool_error(event)
+        if isinstance(event, ToolEvent):
+            await self._comment_on_tool(event)
+        elif isinstance(event, LoadEvent):
+            await self._comment_on_load(event)
         elif isinstance(event, BotRestartEvent):
             await self._comment_on_restart(event)
 
-    async def _comment_on_tool_call(self, event: ToolCallEvent) -> None:
-        """Generate commentary about a tool call."""
+    async def _comment_on_tool(self, event: ToolEvent) -> None:
+        """Generate commentary about a tool dispatch outcome."""
         full_sig = format_tool_call(event.tool_name, event.arguments)
         display_sig = format_tool_call(
             event.tool_name, event.arguments, max_value_len=40
         )
-        prompt = (
-            f"{event.bot_name} is calling the '{event.tool_name}' tool"
-            f" with arguments: {full_sig}."
-            " Give a brief, in-character one-sentence aside to the viewer."
+        detail = event.detail or ""
+        prompt = self.templates[event.outcome].format(
+            bot_name=event.bot_name,
+            tool_name=event.tool_name,
+            sig=full_sig,
+            detail=detail,
         )
+        if event.outcome == "call":
+            fallback = f"{event.bot_name} calls {full_sig}"
+            dim_prefix = display_sig
+        elif event.outcome == "blocked":
+            fallback = f"Blocked: {detail}"
+            dim_prefix = f"Blocked: {detail}"
+        else:
+            if len(detail) > _ERROR_TRUNCATE_LEN:
+                truncated = detail[:_ERROR_TRUNCATE_LEN] + "\N{HORIZONTAL ELLIPSIS}"
+            else:
+                truncated = detail
+            fallback = f"{display_sig} → {truncated}"
+            dim_prefix = fallback
         await self._generate_comment(
-            prompt=prompt,
-            fallback=f"{event.bot_name} calls {full_sig}",
-            dim_prefix=display_sig,
+            prompt=prompt, fallback=fallback, dim_prefix=dim_prefix
         )
 
-    async def _comment_on_tool_error(self, event: ToolErrorEvent) -> None:
-        """Generate commentary about a tool call that returned an error."""
-        full_sig = format_tool_call(event.tool_name, event.arguments)
-        display_sig = format_tool_call(
-            event.tool_name, event.arguments, max_value_len=40
+    async def _comment_on_load(self, event: LoadEvent) -> None:
+        """Generate commentary about a context or memory load."""
+        preview = event.content[:_PREVIEW_LEN]
+        source_desc = "SharePoint" if event.source == "sharepoint" else event.path
+        prompt = self.templates[event.kind].format(
+            bot_name=event.bot_name,
+            source_desc=source_desc,
+            path=event.path,
+            content_len=len(event.content),
+            preview=preview,
         )
-        truncated_error = (
-            event.result[:_ERROR_TRUNCATE_LEN] + "…"
-            if len(event.result) > _ERROR_TRUNCATE_LEN
-            else event.result
-        )
-        prompt = (
-            f"{event.bot_name} called '{event.tool_name}' with arguments: {full_sig},"
-            f" but the tool returned an error: {event.result}."
-            " Give a brief, in-character one-sentence aside reacting to this failure."
-        )
+        if event.kind == "memory":
+            fallback = f"{event.bot_name} loaded memory from {event.path}"
+            dim_prefix = f"Loaded memory ({len(event.content):,} chars)"
+        else:
+            fallback = f"{event.bot_name} loaded project context from {source_desc}"
+            dim_prefix = f"Loaded {source_desc} ({len(event.content):,} chars)"
         await self._generate_comment(
-            prompt=prompt,
-            fallback=f"{display_sig} → {truncated_error}",
-            dim_prefix=f"{display_sig} → {truncated_error}",
-        )
-
-    async def _comment_on_validation_block(self, event: ValidationBlockEvent) -> None:
-        """Generate commentary about a blocked tool call."""
-        full_sig = format_tool_call(event.tool_name, event.arguments)
-        prompt = (
-            f"{event.bot_name} tried to call '{event.tool_name}' with arguments:"
-            f" {full_sig}, but was blocked: {event.reason}."
-            " Give a brief, in-character reaction to this security enforcement."
-        )
-        await self._generate_comment(
-            prompt=prompt,
-            fallback=f"Blocked: {event.reason}",
-            dim_prefix=f"Blocked: {event.reason}",
+            prompt=prompt, fallback=fallback, dim_prefix=dim_prefix
         )
 
     async def _comment_on_restart(self, event: BotRestartEvent) -> None:
@@ -177,49 +157,6 @@ class CommentatorBot:
             prompt=prompt,
             fallback=f"{event.bot_name} restarted — memory cleared",
             dim_prefix="\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Restarted",
-        )
-
-    async def _comment_on_memory(self, event: MemoryLoadEvent) -> None:
-        """Generate commentary about memory loading."""
-        preview_len = 200
-        content_preview = (
-            event.content[:preview_len]
-            if len(event.content) > preview_len
-            else event.content
-        )
-        prompt = (
-            f"{event.bot_name} just loaded its memory from {event.path}."
-            f" The memory is {len(event.content)} characters long"
-            f" and starts with:\n\n{content_preview}\n\n"
-            f"Give a brief, in-character reaction to what {event.bot_name} now"
-            f" remembers about the user."
-        )
-        await self._generate_comment(
-            prompt=prompt,
-            fallback=f"{event.bot_name} loaded memory from {event.path}",
-            dim_prefix=f"Loaded memory ({len(event.content)} chars)",
-        )
-
-    async def _comment_on_context(self, event: ContextLoadEvent) -> None:
-        """Generate commentary about context loading."""
-        preview_len = 200
-        content_preview = (
-            event.content[:preview_len]
-            if len(event.content) > preview_len
-            else event.content
-        )
-        source_desc = "SharePoint" if event.source == "sharepoint" else event.path
-        prompt = (
-            f"{event.bot_name} just loaded project context from {source_desc}."
-            f" The context is {len(event.content)} characters long"
-            f" and starts with:\n\n{content_preview}\n\n"
-            f"Give a brief, in-character reaction to what {event.bot_name} now"
-            f" knows about the project."
-        )
-        await self._generate_comment(
-            prompt=prompt,
-            fallback=f"{event.bot_name} loaded project context from {source_desc}",
-            dim_prefix=f"Loaded {source_desc}",
         )
 
     async def _generate_comment(

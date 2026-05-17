@@ -15,6 +15,7 @@ config_path = Path(__file__).parent / "codemoo.toml"
 _instructions_dir = config_path.parent / "instructions"
 _prompts_dir = config_path.parent / "example_prompts"
 _commentators_dir = config_path.parent / "commentators"
+_commentary_templates_dir = config_path.parent / "commentary_templates"
 
 
 def _resolve_commentator_refs(data: dict[str, Any]) -> None:
@@ -25,9 +26,18 @@ def _resolve_commentator_refs(data: dict[str, Any]) -> None:
             )
 
 
+def _resolve_commentary_template_refs(data: dict[str, Any]) -> None:
+    templates = data.get("commentary_templates", {})
+    for key, filename in templates.items():
+        templates[key] = (_commentary_templates_dir / filename).read_text(
+            encoding="utf-8"
+        )
+
+
 def _resolve_file_refs(data: dict[str, Any]) -> None:
     tool_lists = data.pop("tool_lists", {})
     _resolve_commentator_refs(data)
+    _resolve_commentary_template_refs(data)
     for bot_data in data.get("bots", {}).values():
         for variant in bot_data.get("variants", {}).values():
             if instr_file := variant.pop("instruction_file", None):

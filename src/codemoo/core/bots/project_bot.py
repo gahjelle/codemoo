@@ -17,7 +17,7 @@ from codemoo.core.bots.approval import (
     _async_approved,
     _denial_message,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
+from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.context import read_project_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
@@ -96,14 +96,6 @@ class ProjectBot:
                         content=AssistantMessageContent(response), turn_id=turn
                     ),
                 ]
-            if self.commentator is not None:
-                await self.commentator.comment(
-                    ToolCallEvent(
-                        bot_name=self.name,
-                        tool_name=response.name,
-                        arguments=response.arguments,
-                    )
-                )
             tool = tool_map[response.name]
             if tool.requires_approval:
                 decision = await self._ask_fn(

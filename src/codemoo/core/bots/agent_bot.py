@@ -8,7 +8,7 @@ from codemoo.core.backend import (
     Message,
     ToolUse,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot, ToolCallEvent
+from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,
@@ -57,14 +57,6 @@ class AgentBot:
                         content=AssistantMessageContent(response), turn_id=turn
                     ),
                 ]
-            if self.commentator is not None:
-                await self.commentator.comment(
-                    ToolCallEvent(
-                        bot_name=self.name,
-                        tool_name=response.name,
-                        arguments=response.arguments,
-                    )
-                )
             tool_output = await dispatch_tool(
                 tool_map[response.name], response.arguments, self.name, self.commentator
             )

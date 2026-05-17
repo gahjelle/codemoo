@@ -227,3 +227,4 @@ class CodemooConfig(StrictModel):
     m365: M365Config
     workspace: WorkspaceConfig
     commentators: dict[str, PersonaConfig] = {}
+    commentary_templates: dict[str, str] = {}

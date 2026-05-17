@@ -354,6 +354,16 @@ tools = ["@code_write", "save_memory"]
 capabilities = ["context_management"]
 
 #
+# Commentary event prompt templates
+#
+[commentary_templates]
+call = "tool_call.txt"
+blocked = "tool_blocked.txt"
+error = "tool_error.txt"
+context = "load_context.txt"
+memory = "load_memory.txt"
+
+#
 # Commentator personas
 #
 [commentators.arne]

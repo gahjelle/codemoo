@@ -5,7 +5,7 @@ from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from codemoo.core.bots.commentator_bot import ValidationBlockEvent
+from codemoo.core.bots.commentator_bot import ToolEvent
 from codemoo.core.tools import ToolDef, ToolParam, dispatch_tool
 from codemoo.core.tools.files import make_file_validator
 from codemoo.core.tools.shell import make_shell_validator
@@ -53,7 +53,7 @@ def test_dispatch_tool_validate_blocks_fn_not_called() -> None:
     assert fn_called == []
 
 
-def test_dispatch_tool_emits_validation_block_event() -> None:
+def test_dispatch_tool_emits_blocked_event() -> None:
     events: list[object] = []
 
     async def fake_comment(event: object) -> None:
@@ -67,10 +67,47 @@ def test_dispatch_tool_emits_validation_block_event() -> None:
 
     assert len(events) == 1
     event = events[0]
-    assert isinstance(event, ValidationBlockEvent)
+    assert isinstance(event, ToolEvent)
+    assert event.outcome == "blocked"
     assert event.bot_name == "MyBot"
     assert event.tool_name == "test_tool"
-    assert event.reason == "path escape"
+    assert event.detail == "path escape"
+
+
+def test_dispatch_tool_emits_call_event_on_success() -> None:
+    events: list[object] = []
+
+    async def fake_comment(event: object) -> None:
+        events.append(event)
+
+    commentator = MagicMock()
+    commentator.comment = fake_comment
+
+    tool = _make_tool(lambda **_: "ok")
+    asyncio.run(dispatch_tool(tool, {"x": "v"}, "MyBot", commentator))
+
+    assert len(events) == 1
+    event = events[0]
+    assert isinstance(event, ToolEvent)
+    assert event.outcome == "call"
+    assert event.bot_name == "MyBot"
+
+
+def test_dispatch_tool_blocked_emits_no_call_event() -> None:
+    """Blocked call must not emit a 'call' event — only 'blocked'."""
+    events: list[object] = []
+
+    async def fake_comment(event: object) -> None:
+        events.append(event)
+
+    commentator = MagicMock()
+    commentator.comment = fake_comment
+
+    tool = _make_tool(lambda **_: "bad", validate=lambda **_: "blocked reason")
+    asyncio.run(dispatch_tool(tool, {"x": "v"}, "MyBot", commentator))
+
+    assert len(events) == 1
+    assert events[0].outcome == "blocked"  # ty: ignore[unresolved-attribute]
 
 
 def test_dispatch_tool_blocked_no_commentator_returns_error() -> None:
