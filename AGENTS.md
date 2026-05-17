@@ -132,6 +132,14 @@ tools = ["@code_write", "extra_tool"]
 
 References are expanded before Pydantic validation; the `[tool_lists]` section is consumed and never appears on `CodemooConfig`. An unknown `@name` raises a `KeyError` at config load time with a message listing available list names.
 
+The special token `"save_memory"` may be added to any variant's `tools` list alongside a `memory_file` path. It is not in any tool registry — the factory intercepts it, builds a path-parameterised `save_memory` ToolDef from `memory_file` (or a default path inside `.codemoo/`), and appends it to the resolved tool list:
+
+```toml
+[bots.RetryBot.variants.codemoo]
+memory_file = "{project_settings_path}/memory-code.md"
+tools = ["@code_write", "save_memory"]
+```
+
 The `capabilities` field declares which environment features a variant requires. The TUI activates matching UI widgets when the bot is loaded; non-TUI runners silently ignore unknown capabilities. The valid values are defined by `BotCapability` in `src/codemoo/config/schema.py`:
 
 ```toml

@@ -294,7 +294,7 @@ description = "Persist facts and preferences across sessions via a local memory 
 instruction_file = "memory_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write"]
+tools = ["@code_write", "save_memory"]
 prompts_file = "memory_bot-code.txt"
 
 [bots.MemoryBot.variants.m365]
@@ -302,7 +302,7 @@ description = "Persist user preferences across sessions via a local memory file.
 instruction_file = "memory_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
-tools = ["@m365_read", "@m365_write"]
+tools = ["@m365_read", "@m365_write", "save_memory"]
 prompts_file = "memory_bot-m365.txt"
 
 [bots.MemoryBot.variants.workspace]
@@ -310,7 +310,7 @@ description = "Persist user preferences across sessions via a local memory file.
 instruction_file = "memory_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
-tools = ["@workspace_read", "@workspace_write"]
+tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "memory_bot-workspace.txt"
 
 [bots.RetryBot]
@@ -323,7 +323,7 @@ description = "Retry failing tool calls up to 3 times, then escalate with a clea
 instruction_file = "retry_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write"]
+tools = ["@code_write", "save_memory"]
 prompts_file = "retry_bot-code.txt"
 capabilities = ["context_management"]
 
@@ -332,7 +332,7 @@ description = "Retry failing M365 tool calls up to 3 times, then escalate with a
 instruction_file = "retry_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
-tools = ["@m365_read", "@m365_write"]
+tools = ["@m365_read", "@m365_write", "save_memory"]
 prompts_file = "retry_bot-m365.txt"
 capabilities = ["context_management"]
 
@@ -341,8 +341,16 @@ description = "Retry failing Workspace tool calls up to 3 times, then escalate w
 instruction_file = "retry_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
-tools = ["@workspace_read", "@workspace_write"]
+tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "retry_bot-workspace.txt"
+capabilities = ["context_management"]
+
+[bots.RetryBot.variants.codemoo]
+description = "Full-capability coding assistant — sharp, terse, production-ready."
+instruction_file = "retry_bot-codemoo.txt"
+context_source = { type = "file", name = "AGENTS.md" }
+memory_file = "{project_settings_path}/memory-code.md"
+tools = ["@code_write", "save_memory"]
 capabilities = ["context_management"]
 
 #

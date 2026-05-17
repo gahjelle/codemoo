@@ -15,8 +15,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Improve save_memory: write in english, don't lose old memories
-- Add shell mode to manually call run_shell
-- Maybe include a file mode to manually read files? Not really necessary, since we have !cat
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files

@@ -88,7 +88,12 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
             return dataclasses.replace(tool, validate=_shell_validator)
         return tool
 
-    tools = [_sandbox(_ALL_TOOLS[name]) for name in bot.tools]
+    registry_names = [n for n in bot.tools if n != "save_memory"]
+    tools = [_sandbox(_ALL_TOOLS[name]) for name in registry_names]
+    if "save_memory" in bot.tools:
+        memory_path = Path(bot.memory_file) if bot.memory_file else None
+        effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
+        tools.append(make_memory_tool(effective_path))
     match bot.bot_type:
         case "EchoBot":
             return EchoBot(name=bot.name, emoji=bot.emoji)
@@ -182,32 +187,26 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 commentator=commentator,
             )
         case "MemoryBot":
-            memory_path = Path(bot.memory_file) if bot.memory_file else None
-            effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
-            memory_tool = make_memory_tool(effective_path)
             return MemoryBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,
-                tools=[*tools, memory_tool],
+                tools=tools,
                 instructions=bot.instructions,
                 context_source=bot.context_source,
-                memory_file=memory_path,
+                memory_file=Path(bot.memory_file) if bot.memory_file else None,
                 session_folder=session_folder,
                 commentator=commentator,
             )
         case "RetryBot":
-            memory_path = Path(bot.memory_file) if bot.memory_file else None
-            effective_path = memory_path or session_folder / ".codemoo" / "memory.md"
-            memory_tool = make_memory_tool(effective_path)
             return RetryBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,
-                tools=[*tools, memory_tool],
+                tools=tools,
                 instructions=bot.instructions,
                 context_source=bot.context_source,
-                memory_file=memory_path,
+                memory_file=Path(bot.memory_file) if bot.memory_file else None,
                 session_folder=session_folder,
                 commentator=commentator,
             )
