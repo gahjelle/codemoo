@@ -2,6 +2,14 @@
 
 from textual.widgets import Label
 
+_KILO = 1000
+
+
+def _format_tokens(count: int) -> str:
+    if count >= _KILO:
+        return f"~{count / _KILO:.1f}k tokens"
+    return f"~{count} tokens"
+
 
 class ContextStatus(Label):
     """A status bar that shows context statistics when context_management is active.
@@ -19,7 +27,7 @@ class ContextStatus(Label):
     def on_mount(self) -> None:  # noqa: D102
         self.display = False
 
-    def update_message_count(self, count: int) -> None:
-        """Update the displayed message count and make the widget visible."""
-        self.update(f"Num messages: {count}")
+    def update_context(self, message_count: int, token_count: int) -> None:
+        """Update the displayed message and token counts and make the widget visible."""
+        self.update(f"{message_count} messages · {_format_tokens(token_count)}")
         self.display = True

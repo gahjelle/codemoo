@@ -25,6 +25,7 @@ dependencies = [
     "pydantic>=2.13.3",
     "rich>=15.0.0",
     "textual>=8.2.1",
+    "tiktoken>=0.13.0",
 ]
 
 [project.scripts]

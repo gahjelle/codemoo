@@ -24,6 +24,7 @@ from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
 from codemoo.core.bots.commentator_bot import BotRestartEvent, CommentatorBot
 from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,
     ContextItem,
@@ -32,6 +33,7 @@ from codemoo.core.context_items import (
 )
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.core.token_counter import estimate_tokens
 from codemoo.core.tools.shell import _run_shell
 from codemoo.llm.factory import BackendInfo
 
@@ -220,7 +222,10 @@ class ChatApp(App[str | None]):
         async for reply in self._collect_replies(initial_message, status):
             self._append_to_log(reply)
         with contextlib.suppress(NoMatches):
-            self.query_one(ContextStatus).update_message_count(len(self._chat_context))
+            token_count = estimate_tokens(build_context(self._chat_context))
+            self.query_one(ContextStatus).update_context(
+                len(self._chat_context), token_count
+            )
 
     def _make_guard_ask_fn(
         self,

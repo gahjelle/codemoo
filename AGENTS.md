@@ -151,7 +151,7 @@ Currently supported capabilities:
 
 | Capability            | UI effect                                                      |
 | --------------------- | -------------------------------------------------------------- |
-| `context_management`  | Adds a status bar showing the current conversation length      |
+| `context_management`  | Adds a status bar showing message count and estimated token count (e.g. `12 messages · ~3.2k tokens`) |
 
 ### Adding a New Bot
 
