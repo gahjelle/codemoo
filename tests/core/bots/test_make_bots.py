@@ -5,8 +5,8 @@ import pytest
 from codemoo.config import config
 from codemoo.config.schema import BotConfig, BotRef, BotVariantConfig
 from codemoo.core.bots import make_bots
+from codemoo.core.bots.compact_bot import CompactBot
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.retry_bot import RetryBot
 
 
 class _MockBackend:
@@ -25,8 +25,8 @@ async def _bots() -> list:
 
 
 @pytest.mark.asyncio
-async def test_make_bots_returns_twelve_bots() -> None:
-    assert len(await _bots()) == 12
+async def test_make_bots_returns_thirteen_bots() -> None:
+    assert len(await _bots()) == 13
 
 
 @pytest.mark.asyncio
@@ -35,8 +35,8 @@ async def test_make_bots_first_is_echo_bot() -> None:
 
 
 @pytest.mark.asyncio
-async def test_make_bots_last_is_retry_bot() -> None:
-    assert isinstance((await _bots())[-1], RetryBot)
+async def test_make_bots_last_is_compact_bot() -> None:
+    assert isinstance((await _bots())[-1], CompactBot)
 
 
 @pytest.mark.asyncio

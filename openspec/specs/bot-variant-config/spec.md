@@ -7,7 +7,7 @@ TBD — defines the `BotVariantConfig` model, `BotRef` model, and `ResolvedBotCo
 ## Requirements
 
 ### Requirement: BotVariantConfig carries description, tools, prompts, and instructions
-A `BotVariantConfig` Pydantic model SHALL exist with fields `description: str`, `tools: list[str] = []`, `prompts: list[str] = []`, and `instructions: str = ""`. It SHALL use `StrictModel` (extra fields forbidden).
+A `BotVariantConfig` Pydantic model SHALL exist with fields `description: str`, `tools: list[str] = []`, `prompts: list[str] = []`, `instructions: str = ""`, `memory_file: str | None = None`, and `compact_threshold: int | None = None`. It SHALL use `StrictModel` (extra fields forbidden).
 
 #### Scenario: BotVariantConfig is parsed with all fields
 - **WHEN** a variant entry contains `description`, `tools`, `prompts`, and `instructions`
@@ -145,6 +145,17 @@ A `ResolvedBotConfig` dataclass (not a Pydantic model) SHALL carry: `bot_type: B
 #### Scenario: BotVariantConfig with unknown capability name raises validation error
 - **WHEN** a variant entry contains `capabilities = ["does_not_exist"]`
 - **THEN** Pydantic SHALL raise a validation error
+
+### Requirement: BotVariantConfig accepts an optional compact_threshold field
+`BotVariantConfig` SHALL accept an optional `compact_threshold: int | None = None` field. When present, the value is the token count at which compaction is triggered for this variant. When absent, the field SHALL default to `None`. The field SHALL be propagated through `ResolvedBotConfig` and passed to `CompactBot` at construction time.
+
+#### Scenario: BotVariantConfig with compact_threshold set
+- **WHEN** a variant entry contains `compact_threshold = 8000`
+- **THEN** `BotVariantConfig.compact_threshold` SHALL equal `8000`
+
+#### Scenario: BotVariantConfig without compact_threshold defaults to None
+- **WHEN** a variant entry omits the `compact_threshold` key
+- **THEN** `BotVariantConfig.compact_threshold` SHALL equal `None` with no validation error
 
 ### Requirement: ResolvedBotConfig carries capabilities from the variant
 `ResolvedBotConfig` SHALL include a `capabilities: list[str]` field. The `resolve()` function SHALL copy `BotVariantConfig.capabilities` into `ResolvedBotConfig.capabilities` unchanged.

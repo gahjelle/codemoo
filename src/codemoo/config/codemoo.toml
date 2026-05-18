@@ -22,6 +22,7 @@ bots = [
     { type = "ProjectBot", variant = "code" },
     { type = "MemoryBot", variant = "code" },
     { type = "RetryBot", variant = "code" },
+    { type = "CompactBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -46,6 +47,7 @@ bots = [
     { type = "ProjectBot", variant = "m365" },
     { type = "MemoryBot", variant = "m365" },
     { type = "RetryBot", variant = "m365" },
+    { type = "CompactBot", variant = "m365" },
 ]
 
 [scripts.workspace]
@@ -62,6 +64,7 @@ bots = [
     { type = "ProjectBot", variant = "workspace" },
     { type = "MemoryBot", variant = "workspace" },
     { type = "RetryBot", variant = "workspace" },
+    { type = "CompactBot", variant = "workspace" },
 ]
 
 [scripts.vs]
@@ -352,6 +355,50 @@ context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_write", "save_memory"]
 capabilities = ["context_management"]
+
+[bots.CompactBot]
+name = "Drop"
+emoji = "BROOM"
+sources = ["compact_bot.py"]
+
+[bots.CompactBot.variants.code]
+description = "Summarise old context automatically when the token budget is exceeded."
+instruction_file = "compact_bot-code.txt"
+context_source = { type = "file", name = "AGENTS.md" }
+memory_file = "{project_settings_path}/memory-code.md"
+tools = ["@code_write", "save_memory"]
+prompts_file = "compact_bot-code.txt"
+capabilities = ["context_management"]
+compact_threshold = 8000
+
+[bots.CompactBot.variants.m365]
+description = "Summarise old context automatically when the token budget is exceeded."
+instruction_file = "compact_bot-m365.txt"
+context_source = { type = "sharepoint", name = "TEAM.md" }
+memory_file = "{user_settings_path}/memory-m365.md"
+tools = ["@m365_read", "@m365_write", "save_memory"]
+prompts_file = "compact_bot-m365.txt"
+capabilities = ["context_management"]
+compact_threshold = 8000
+
+[bots.CompactBot.variants.workspace]
+description = "Summarise old context automatically when the token budget is exceeded."
+instruction_file = "compact_bot-workspace.txt"
+context_source = { type = "drive", name = "TEAM.md" }
+memory_file = "{user_settings_path}/memory-workspace.md"
+tools = ["@workspace_read", "@workspace_write", "save_memory"]
+prompts_file = "compact_bot-workspace.txt"
+capabilities = ["context_management"]
+compact_threshold = 8000
+
+[bots.CompactBot.variants.codemoo]
+description = "Full-capability coding assistant with automatic context summarisation."
+instruction_file = "compact_bot-codemoo.txt"
+context_source = { type = "file", name = "AGENTS.md" }
+memory_file = "{project_settings_path}/memory-code.md"
+tools = ["@code_write", "save_memory"]
+capabilities = ["context_management"]
+compact_threshold = 8000
 
 #
 # Commentary event prompt templates

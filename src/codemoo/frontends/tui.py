@@ -86,7 +86,7 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
 
 
 @code_app.default
-async def code_chat(*, bot: BotType = "RetryBot", variant: str = "codemoo") -> None:
+async def code_chat(*, bot: BotType = "CompactBot", variant: str = "codemoo") -> None:
     """Launch the code chat with the main bot, or a specific one via --bot/--variant."""
     try:
         return await _chat(bot=bot, variant=variant)
@@ -96,7 +96,7 @@ async def code_chat(*, bot: BotType = "RetryBot", variant: str = "codemoo") -> N
 
 @business_app.default
 async def business_chat(
-    *, bot: BotType = "RetryBot", variant: str = "workspace"
+    *, bot: BotType = "CompactBot", variant: str = "workspace"
 ) -> None:
     """Launch the business chat with the main bot; use --bot/--variant to override."""
     try:

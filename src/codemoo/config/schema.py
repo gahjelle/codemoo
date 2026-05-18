@@ -22,6 +22,7 @@ type BotType = Literal[
     "ProjectBot",
     "MemoryBot",
     "RetryBot",
+    "CompactBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
 type BotCapability = Literal["context_management"]
@@ -61,6 +62,7 @@ class BotVariantConfig(StrictModel):
     context_source: ContextSource | None = None
     memory_file: str | None = None
     capabilities: list[BotCapability] = []
+    compact_threshold: int | None = None
 
 
 class BotConfig(StrictModel):
@@ -116,6 +118,7 @@ class ResolvedBotConfig:
     context_source: dict[str, str] | None
     memory_file: str | None = None
     capabilities: list[str] = dataclasses.field(default_factory=list)
+    compact_threshold: int | None = None
 
 
 def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
@@ -148,6 +151,7 @@ def resolve(bots: dict[BotType, BotConfig], ref: BotRef) -> ResolvedBotConfig:
         context_source=context_source_dict,
         memory_file=variant.memory_file,
         capabilities=list(variant.capabilities),
+        compact_threshold=variant.compact_threshold,
     )
 
 

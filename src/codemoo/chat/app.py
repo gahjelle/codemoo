@@ -172,7 +172,7 @@ class ChatApp(App[str | None]):
             return ChatMessage(sender=participant.name, text=items[-1].content.text)
         return None
 
-    async def _collect_replies(
+    async def _collect_replies(  # noqa: C901
         self,
         initial_message: ChatMessage,
         status: ThinkingStatus | None = None,
@@ -194,6 +194,10 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
+                    if hasattr(participant, "compact"):
+                        self._chat_context = await participant.compact(
+                            self._chat_context
+                        )  # ty: ignore[call-non-callable]
                     # Invariant: self._chat_context[-1] is the triggering message
                     new_items = await participant.on_message(self._chat_context)
                     self._chat_context = [*self._chat_context, *new_items]

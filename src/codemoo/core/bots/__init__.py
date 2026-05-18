@@ -10,6 +10,7 @@ from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.bots.chat_bot import ChatBot
 from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.bots.compact_bot import _DEFAULT_COMPACT_THRESHOLD, CompactBot
 from codemoo.core.bots.echo_bot import EchoBot
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.guard_bot import GuardBot
@@ -42,6 +43,7 @@ __all__ = [
     "ChangeBot",
     "ChatBot",
     "CommentatorBot",
+    "CompactBot",
     "EchoBot",
     "ErrorBot",
     "GuardBot",
@@ -208,6 +210,19 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 context_source=bot.context_source,
                 memory_file=Path(bot.memory_file) if bot.memory_file else None,
                 session_folder=session_folder,
+                commentator=commentator,
+            )
+        case "CompactBot":
+            return CompactBot(
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                tools=tools,
+                instructions=bot.instructions,
+                context_source=bot.context_source,
+                memory_file=Path(bot.memory_file) if bot.memory_file else None,
+                session_folder=session_folder,
+                compact_threshold=bot.compact_threshold or _DEFAULT_COMPACT_THRESHOLD,
                 commentator=commentator,
             )
 

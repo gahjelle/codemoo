@@ -38,3 +38,20 @@ def test_workspace_script_uses_workspace_variants() -> None:
     for bot_ref in config.scripts["workspace"].bots:
         if bot_ref.type in ("ScanBot", "SendBot", "AgentBot", "GuardBot", "ProjectBot"):
             assert bot_ref.variant == "workspace"
+
+
+def test_compact_bot_code_variant_has_threshold() -> None:
+    resolved = resolve(config.bots, BotRef(type="CompactBot", variant="code"))
+    assert resolved.compact_threshold is not None
+    assert resolved.compact_threshold > 0
+
+
+def test_compact_bot_variants_all_have_context_management() -> None:
+    for variant in ("code", "m365", "workspace", "codemoo"):
+        resolved = resolve(config.bots, BotRef(type="CompactBot", variant=variant))
+        assert "context_management" in resolved.capabilities
+
+
+def test_default_script_includes_compact_bot() -> None:
+    types = [ref.type for ref in config.scripts["default"].bots]
+    assert "CompactBot" in types

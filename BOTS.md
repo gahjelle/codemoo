@@ -22,12 +22,12 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 10  | ProjectBot | code, m365, workspace | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`              | Reads project context                                     |
 | 11  | MemoryBot  | code, m365, workspace | Aura | An aura surrounds and travels with you — it accumulates over time       | 😇     | `SMILING FACE WITH HALO` | A halo is the aura around you — it follows you everywhere |
 | 12  | RetryBot   | code, m365, workspace | Undo | Undo the failure — retry from a known good state                        | 🎲     | `GAME DIE`               | Roll again — each retry is another chance                 |
+| 13  | CompactBot | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread                         | 🧹     | `BROOM`            | What's dropped leaves no trace in the visible context     |
 
 **Provisional** *(add emojis when each bot is implemented)*
 
 | #   | Bot         | Mode                  | Name | Name rationale                                            |
 | --- | ----------- | --------------------- | ---- | --------------------------------------------------------- |
-| 13  | CompactBot  | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread           |
 | 14  | CommandBot  | code, m365, workspace | Exec | Exec a command — the slash prefix runs the script         |
 | 15  | SkillBot    | code, m365, workspace | Cord | A cord connects the steps of a workflow in sequence       |
 | 16  | WebBot      | code, m365, workspace | Omni | Omni — the web is everywhere, knows everything            |
@@ -64,12 +64,12 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 10  | ProjectBot | Lore | Context first — conventions are rarely arbitrary.                |
 | 11  | MemoryBot  | Aura | Past turns are future context.                                   |
 | 12  | RetryBot   | Undo | Failure is data — use it.                                        |
+| 13  | CompactBot | Drop | Let go of the detail, hold the thread.                           |
 
 **Provisional** *(revisit and confirm when each bot is implemented)*:
 
 | #   | Bot         | Name | Credo                                                        |
 | --- | ----------- | ---- | ------------------------------------------------------------ |
-| 13  | CompactBot  | Drop | Let go of the detail, hold the thread.                       |
 | 14  | CommandBot  | Exec | Name the action, own the intention.                          |
 | 15  | SkillBot    | Cord | A skill is a promise — keep it consistent.                   |
 | 16  | WebBot      | Omni | When the answer isn't local, go find it.                     |
@@ -319,4 +319,3 @@ Bot types marked with * are unique to `workspace` mode.
   1. Extend `ChatMessage` to carry image data alongside text
   2. Images read from disk via a dedicated tool (no message model change, lower friction)
 - The tool-based approach is lower risk and can be shipped without changing the message contract
-

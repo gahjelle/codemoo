@@ -1,0 +1,3 @@
+Explore the demo/ folder: list all files, read each one, and give me a summary of what the demo does and what bugs you can spot.
+---
+Run `uv run python demo/whoami.py` five times and note the results. Then fix the KeyError and run the fixed script once more to confirm it works.

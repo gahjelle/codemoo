@@ -140,6 +140,13 @@ memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_write", "save_memory"]
 ```
 
+The optional `compact_threshold` field sets the token count at which `CompactBot` triggers compaction for that variant. Omit it for bots that don't implement `compact()`.
+
+```toml
+[bots.CompactBot.variants.code]
+compact_threshold = 8000
+```
+
 The `capabilities` field declares which environment features a variant requires. The TUI activates matching UI widgets when the bot is loaded; non-TUI runners silently ignore unknown capabilities. The valid values are defined by `BotCapability` in `src/codemoo/config/schema.py`:
 
 ```toml
@@ -205,6 +212,7 @@ because listing available API tools adds context the user may not know.
 | Lore (ProjectBot) | Context first — conventions are rarely arbitrary.                |
 | Aura (MemoryBot)  | Past turns are future context.                                   |
 | Undo (RetryBot)   | Failure is data — use it.                                        |
+| Drop (CompactBot) | Let go of the detail, hold the thread.                           |
 
 `reverse_string` is assigned directly to Telo's variant (not via any named list)
 and is absent from all named tool lists by design — it is an introductory teaching
