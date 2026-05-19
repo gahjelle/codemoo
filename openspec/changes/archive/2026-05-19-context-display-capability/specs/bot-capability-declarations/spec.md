@@ -1,10 +1,4 @@
-# Spec: bot-capability-declarations
-
-## Purpose
-
-TBD — defines the `BotCapability` Literal type, the `ChatApp._active_capabilities` frozenset computed at construction, and the `_CAPABILITY_BINDERS` dispatch table used to activate capabilities on mount.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: BotCapability is a closed Literal type in schema.py
 A `BotCapability` type alias SHALL be defined as `Literal["context_display"]`. It SHALL follow the same pattern as `BotType` and `ScriptName`. Adding new capability names requires extending the Literal.

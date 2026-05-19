@@ -25,7 +25,7 @@ type BotType = Literal[
     "CompactBot",
 ]
 type ScriptName = Literal["default", "focused", "m365", "workspace", "vs"]
-type BotCapability = Literal["context_management"]
+type BotCapability = Literal["context_display"]
 type ModelBackend = Literal[
     "mistral", "anthropic", "openrouter", "openai", "google", "ollama"
 ]

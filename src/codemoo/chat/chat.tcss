@@ -254,6 +254,30 @@ ChatInput:focus {
     border: tall $accent;
 }
 
+/* ── ContextInspectModal ── */
+
+#context-inspect-container {
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+    width: 90%;
+    height: 80%;
+}
+
+#context-inspect-header {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#context-inspect-body {
+    height: 1fr;
+}
+
+.context-inspect-separator {
+    color: $text-muted;
+    text-style: dim;
+}
+
 /* Restart divider: full-width separator mounted in the log when Ctrl-R is pressed */
 .restart-divider {
     width: 1fr;

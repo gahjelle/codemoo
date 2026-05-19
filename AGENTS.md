@@ -73,7 +73,7 @@ When running `uv run codemoo demo`, the following shortcuts are active:
 | Ctrl-N | Advance to the next bot in the progression                                               |
 | Ctrl-S | Reopen the current bot's slide overlay                                                   |
 | Ctrl-E | Insert the next preset example prompt                                                    |
-| Ctrl-R | Restart the current bot (clears history, reloads context/memory, resets example prompts) |
+| Ctrl-R | Restart the current bot (clears history, reloads context/memory, resets example prompts) — also works outside demo mode |
 
 ## Demo Environment
 
@@ -151,14 +151,14 @@ The `capabilities` field declares which environment features a variant requires.
 
 ```toml
 [bots.RetryBot.variants.code]
-capabilities = ["context_management"]
+capabilities = ["context_display"]
 ```
 
 Currently supported capabilities:
 
-| Capability            | UI effect                                                      |
-| --------------------- | -------------------------------------------------------------- |
-| `context_management`  | Adds a status bar showing message count and estimated token count (e.g. `12 messages · ~3.2k tokens`) |
+| Capability         | UI effect                                                      |
+| ------------------ | -------------------------------------------------------------- |
+| `context_display`  | Adds a status bar showing message count and estimated token count (e.g. `12 messages · ~3.2k tokens`); Ctrl-X opens a read-only context inspector modal |
 
 ### Adding a New Bot
 

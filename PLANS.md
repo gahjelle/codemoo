@@ -15,7 +15,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Improve save_memory: write in english, don't lose old memories
-- Include Ctrl-R (restart) outside of demo mode
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files
@@ -24,8 +23,9 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Add sessions and store them to disk, include --resume functionality
 - Stream answers
 - Show full content of first parameter in GuardBot approval box
-- Add context management capability that can customize context
+- Add context editing capability: select, disable, summarise, or edit individual context items via a modal UI (the read-only inspector from `context_display` is the foundation)
 - Add tool management capability that can customize tools
+- Move compaction limit to config. Use a small window on CompactBot (demo), but a bigger (100k?) on other bots, including the codemoo variant.
 
 ## Proposed by agent
 

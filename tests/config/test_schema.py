@@ -180,8 +180,8 @@ def test_bot_variant_config_capabilities_default_to_empty() -> None:
 
 
 def test_bot_variant_config_accepts_valid_capability() -> None:
-    v = _variant(capabilities=["context_management"])
-    assert v.capabilities == ["context_management"]
+    v = _variant(capabilities=["context_display"])
+    assert v.capabilities == ["context_display"]
 
 
 def test_bot_variant_config_rejects_unknown_capability() -> None:
@@ -211,9 +211,9 @@ def _bots_with_capability(capabilities: list[str]) -> dict:  # type: ignore[type
 
 
 def test_resolve_threads_capabilities_through() -> None:
-    bots = _bots_with_capability(["context_management"])
+    bots = _bots_with_capability(["context_display"])
     result = resolve(bots, BotRef(type="EchoBot", variant="default"))  # type: ignore[arg-type]
-    assert result.capabilities == ["context_management"]
+    assert result.capabilities == ["context_display"]
 
 
 def test_resolve_threads_empty_capabilities_through() -> None:

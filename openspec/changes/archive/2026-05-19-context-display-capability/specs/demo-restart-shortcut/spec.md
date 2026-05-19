@@ -1,10 +1,4 @@
-# Spec: demo-restart-shortcut
-
-## Purpose
-
-TBD — defines the Ctrl-R keyboard shortcut that restarts the current bot in-place in any ChatApp session, clearing history and resetting state without advancing to the next bot. In demo mode, Ctrl-R additionally resets the preset prompt index and updates DemoHeader.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Ctrl-R restarts the current bot session in any ChatApp session
 Pressing Ctrl-R SHALL reset the current bot session in any `ChatApp` session (demo or non-demo). The reset SHALL clear conversation history, re-run `startup()` for bots that define it, and mount a visual divider in the log. In demo mode only, Ctrl-R SHALL additionally reset the preset prompt index and update `DemoHeader`. In non-demo mode, those two steps are skipped.

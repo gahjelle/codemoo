@@ -15,6 +15,7 @@ from textual.widgets import Label
 from codemoo.chat.approval import ApprovalModal
 from codemoo.chat.backend_status import BackendStatus
 from codemoo.chat.bubble import ChatBubble
+from codemoo.chat.context_inspect import ContextInspectModal
 from codemoo.chat.context_status import ContextStatus
 from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.input import ChatInput
@@ -43,7 +44,7 @@ def _bind_context_management(app: "ChatApp") -> None:
 
 
 _CAPABILITY_BINDERS: dict[str, Callable[["ChatApp"], None]] = {
-    "context_management": _bind_context_management,
+    "context_display": _bind_context_management,
 }
 
 
@@ -84,6 +85,7 @@ class ChatApp(App[str | None]):
         self._active_capabilities: frozenset[str] = frozenset(
             cap for r in self._resolved_bots for cap in r.capabilities
         )
+        self._last_token_count: int = 0
         self._commentator_bot = commentator_bot
         if commentator_bot is not None:
             self._sender_info |= commentator_bot.sender_info()
@@ -227,6 +229,7 @@ class ChatApp(App[str | None]):
             self._append_to_log(reply)
         with contextlib.suppress(NoMatches):
             token_count = estimate_tokens(build_context(self._chat_context))
+            self._last_token_count = token_count
             self.query_one(ContextStatus).update_context(
                 len(self._chat_context), token_count
             )
@@ -245,7 +248,15 @@ class ChatApp(App[str | None]):
         return ask_fn
 
     def on_key(self, event: Key) -> None:
-        """Handle demo-mode keyboard shortcuts (Ctrl-N, Ctrl-E, Ctrl-S, Ctrl-R)."""
+        """Handle keyboard shortcuts: Ctrl-R/X are global; Ctrl-N/E/S are demo-only."""
+        if event.key == "ctrl+r":
+            self._restart_bot()
+            return
+        if event.key == "ctrl+x" and "context_display" in self._active_capabilities:
+            self.push_screen(
+                ContextInspectModal(self._chat_context, self._last_token_count)
+            )
+            return
         if self._demo_context is None:
             return
         if event.key == "ctrl+n":
@@ -254,8 +265,6 @@ class ChatApp(App[str | None]):
             self._insert_next_prompt()
         elif event.key == "ctrl+s":
             self._reopen_slide()
-        elif event.key == "ctrl+r":
-            self._restart_bot()
 
     def _reopen_slide(self) -> None:
         if self._demo_context is None:
@@ -265,8 +274,6 @@ class ChatApp(App[str | None]):
         self.push_screen(SlideScreen(self._demo_context))
 
     def _restart_bot(self) -> None:
-        if self._demo_context is None:
-            return
         log = self.query_one("#log", VerticalScroll)
         log.mount(
             Label(
@@ -297,8 +304,9 @@ class ChatApp(App[str | None]):
             )
         self._chat_context = []
         self._prompt_index = 0
-        prompts = self._demo_context.prompts
-        self.query_one(DemoHeader).update_prompt_state(len(prompts))
+        if self._demo_context is not None:
+            prompts = self._demo_context.prompts
+            self.query_one(DemoHeader).update_prompt_state(len(prompts))
         self.run_worker(self._run_startup())
 
     def _insert_next_prompt(self) -> None:

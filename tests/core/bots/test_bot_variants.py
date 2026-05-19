@@ -46,10 +46,10 @@ def test_compact_bot_code_variant_has_threshold() -> None:
     assert resolved.compact_threshold > 0
 
 
-def test_compact_bot_variants_all_have_context_management() -> None:
+def test_compact_bot_variants_all_have_context_display() -> None:
     for variant in ("code", "m365", "workspace", "codemoo"):
         resolved = resolve(config.bots, BotRef(type="CompactBot", variant=variant))
-        assert "context_management" in resolved.capabilities
+        assert "context_display" in resolved.capabilities
 
 
 def test_default_script_includes_compact_bot() -> None:

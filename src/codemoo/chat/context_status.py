@@ -29,5 +29,13 @@ class ContextStatus(Label):
 
     def update_context(self, message_count: int, token_count: int) -> None:
         """Update the displayed message and token counts and make the widget visible."""
-        self.update(f"{message_count} messages · {_format_tokens(token_count)}")
+        self.update(
+            "  \N{BULLET}  ".join(
+                [
+                    f"{message_count} messages",
+                    f"{_format_tokens(token_count)}",
+                    "^X: inspect context",
+                ]
+            )
+        )
         self.display = True
