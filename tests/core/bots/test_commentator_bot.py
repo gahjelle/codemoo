@@ -12,6 +12,7 @@ from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.commentator_bot import (
     _STREIK_NAME,
     CommentatorBot,
+    ContextEvent,
     LoadEvent,
     Persona,
     ToolEvent,
@@ -37,6 +38,8 @@ _TEST_TEMPLATES = {
     "error": "{bot_name} got an error from '{tool_name}': {detail}. React.",
     "context": "{bot_name} loaded context from {source_desc} ({content_len} chars): {preview}",
     "memory": "{bot_name} loaded memory from {path} ({content_len} chars): {preview}",
+    "restart": "{bot_name} restarted, dropping {items_affected} items. Last: {preview}. Lament.",
+    "compact": "{bot_name} compacted {items_affected} items. Summary: {preview}. Celebrate.",
 }
 
 
@@ -552,3 +555,76 @@ async def test_empty_personas_falls_back_to_streik() -> None:
 
     assert len(received) == 1
     assert received[0].sender == _STREIK_NAME
+
+
+# ---------------------------------------------------------------------------
+# ContextEvent — restart and compact kinds
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_context_event_compact_posts_bubble_with_dim_prefix() -> None:
+    backend = _MockBackend(response="Clarity achieved!")
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    received: list[ChatMessage] = []
+    bot.register(received.append)
+
+    event = ContextEvent(
+        kind="compact",
+        bot_name="Drop",
+        items_affected=8,
+        preview="User asked about bugs. Drop identified the issue.",
+    )
+    await bot.comment(event)
+
+    assert len(received) == 1
+    assert received[0].sender in _TEST_PERSONA_NAMES
+    assert "Compacted 8 items" in received[0].text
+    assert "[dim]" in received[0].text
+
+
+@pytest.mark.asyncio
+async def test_context_event_restart_posts_bubble_with_dim_prefix() -> None:
+    backend = _MockBackend(response="All is lost!")
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    received: list[ChatMessage] = []
+    bot.register(received.append)
+
+    event = ContextEvent(
+        kind="restart",
+        bot_name="Drop",
+        items_affected=12,
+        preview="User: fix it\nDrop: on it",
+    )
+    await bot.comment(event)
+
+    assert len(received) == 1
+    assert received[0].sender in _TEST_PERSONA_NAMES
+    assert "Restarted — 12 items dropped" in received[0].text
+    assert "[dim]" in received[0].text
+
+
+@pytest.mark.asyncio
+async def test_context_event_uses_correct_template_key() -> None:
+    backend = _MockBackend()
+    bot = CommentatorBot(
+        llm=backend, personas=_TEST_PERSONAS, templates=_TEST_TEMPLATES
+    )
+    bot.register(lambda _: None)
+
+    event = ContextEvent(
+        kind="compact",
+        bot_name="Drop",
+        items_affected=5,
+        preview="Decisions logged.",
+    )
+    await bot.comment(event)
+
+    user_msg = next(m for m in backend.calls[0] if m.role == "user")
+    assert "Drop" in user_msg.content
+    assert "5" in user_msg.content
+    assert "Decisions logged." in user_msg.content

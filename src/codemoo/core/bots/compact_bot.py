@@ -17,7 +17,7 @@ from codemoo.core.bots.approval import (
     _async_approved,
     _denial_message,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.bots.commentator_bot import CommentatorBot, ContextEvent
 from codemoo.core.context import read_memory_file, read_project_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
@@ -150,6 +150,15 @@ class CompactBot:
         )
         new_context.extend(context[recent_start:])
         self._compacted = True
+        if self.commentator is not None:
+            await self.commentator.comment(
+                ContextEvent(
+                    kind="compact",
+                    bot_name=self.name,
+                    items_affected=len(items_to_summarise),
+                    preview=summary_text[:300],
+                )
+            )
         return new_context
 
     async def _summarise(self, items: list[ContextItem]) -> str:

@@ -33,10 +33,13 @@ class LoadEvent:
 
 
 @dataclasses.dataclass(frozen=True)
-class BotRestartEvent:
-    """Emitted by ChatApp when the user restarts the current bot in demo mode."""
+class ContextEvent:
+    """Emitted on context window operations: full restart or compaction."""
 
+    kind: Literal["restart", "compact"]
     bot_name: str
+    items_affected: int
+    preview: str
 
 
 @dataclasses.dataclass(frozen=True)
@@ -85,15 +88,15 @@ class CommentatorBot:
 
     async def comment(
         self,
-        event: ToolEvent | LoadEvent | BotRestartEvent,
+        event: ToolEvent | LoadEvent | ContextEvent,
     ) -> None:
         """Generate and post a persona-driven aside for the given event."""
         if isinstance(event, ToolEvent):
             await self._comment_on_tool(event)
         elif isinstance(event, LoadEvent):
             await self._comment_on_load(event)
-        elif isinstance(event, BotRestartEvent):
-            await self._comment_on_restart(event)
+        elif isinstance(event, ContextEvent):
+            await self._comment_on_context(event)
 
     async def _comment_on_tool(self, event: ToolEvent) -> None:
         """Generate commentary about a tool dispatch outcome."""
@@ -146,17 +149,23 @@ class CommentatorBot:
             prompt=prompt, fallback=fallback, dim_prefix=dim_prefix
         )
 
-    async def _comment_on_restart(self, event: BotRestartEvent) -> None:
-        """Generate commentary about a bot restart."""
-        prompt = (
-            f"{event.bot_name}'s memory has been wiped and is starting fresh."
-            " Give a brief, in-character one-sentence aside to the viewer about"
-            " this clean slate."
+    async def _comment_on_context(self, event: ContextEvent) -> None:
+        """Generate commentary about a context window operation."""
+        prompt = self.templates[event.kind].format(
+            bot_name=event.bot_name,
+            items_affected=event.items_affected,
+            preview=event.preview,
         )
+        if event.kind == "restart":
+            fallback = (
+                f"{event.bot_name} restarted — {event.items_affected} items dropped"
+            )
+            dim_prefix = f"Restarted — {event.items_affected} items dropped"
+        else:
+            fallback = f"Compacted {event.items_affected} items"
+            dim_prefix = f"Compacted {event.items_affected} items"
         await self._generate_comment(
-            prompt=prompt,
-            fallback=f"{event.bot_name} restarted — memory cleared",
-            dim_prefix="\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Restarted",
+            prompt=prompt, fallback=fallback, dim_prefix=dim_prefix
         )
 
     async def _generate_comment(

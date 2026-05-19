@@ -409,6 +409,8 @@ blocked = "tool_blocked.txt"
 error = "tool_error.txt"
 context = "load_context.txt"
 memory = "load_memory.txt"
+restart = "context_restart.txt"
+compact = "context_compact.txt"
 
 #
 # Commentator personas

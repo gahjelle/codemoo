@@ -22,7 +22,7 @@ from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
-from codemoo.core.bots.commentator_bot import BotRestartEvent, CommentatorBot
+from codemoo.core.bots.commentator_bot import CommentatorBot, ContextEvent
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
@@ -277,8 +277,23 @@ class ChatApp(App[str | None]):
         log.scroll_end(animate=False)
         if self._commentator_bot is not None:
             bot = self._participants[0]
+            message_texts = [
+                item.content.text[:300]
+                for item in self._chat_context
+                if isinstance(
+                    item.content, (UserMessageContent, AssistantMessageContent)
+                )
+            ]
+            preview = "\n".join(message_texts[-2:])
             self.run_worker(
-                self._commentator_bot.comment(BotRestartEvent(bot_name=bot.name))
+                self._commentator_bot.comment(
+                    ContextEvent(
+                        kind="restart",
+                        bot_name=bot.name,
+                        items_affected=len(self._chat_context),
+                        preview=preview,
+                    )
+                )
             )
         self._chat_context = []
         self._prompt_index = 0

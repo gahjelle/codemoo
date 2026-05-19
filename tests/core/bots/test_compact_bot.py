@@ -2,10 +2,12 @@
 
 import dataclasses
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 import pytest
 
 from codemoo.core.backend import Message
+from codemoo.core.bots.commentator_bot import ContextEvent
 from codemoo.core.bots.compact_bot import CompactBot
 from codemoo.core.context_items import (
     ContextItem,
@@ -170,3 +172,58 @@ async def test_startup_resets_compacted_flag() -> None:
 
     await bot.startup()
     assert bot._compacted is False
+
+
+# ---------------------------------------------------------------------------
+# compact() — ContextEvent emission
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_compact_emits_context_event_when_commentator_set() -> None:
+    long_text = "word " * 20
+    ctx = _ctx([long_text, long_text, long_text])
+    bot = _make_bot(threshold=5, llm_responses=["The summary text."])
+
+    received_events: list[object] = []
+    mock_commentator = AsyncMock()
+    mock_commentator.comment = AsyncMock(side_effect=received_events.append)
+    bot.commentator = mock_commentator
+
+    await bot.compact(ctx)
+
+    assert len(received_events) == 1
+    event = received_events[0]
+    assert isinstance(event, ContextEvent)
+    assert event.kind == "compact"
+    assert event.bot_name == "Drop"
+    assert event.items_affected >= 1
+    assert event.preview == "The summary text."[:300]
+
+
+@pytest.mark.asyncio
+async def test_compact_emits_no_event_when_commentator_is_none() -> None:
+    long_text = "word " * 20
+    ctx = _ctx([long_text, long_text, long_text])
+    bot = _make_bot(threshold=5, llm_responses=["Summary."])
+
+    assert bot.commentator is None
+    result = await bot.compact(ctx)
+
+    disabled = [i for i in result if i.mode == ItemMode.DISABLED]
+    assert len(disabled) >= 1
+
+
+@pytest.mark.asyncio
+async def test_compact_emits_no_event_below_threshold() -> None:
+    ctx = _ctx(["short"])
+    bot = _make_bot(threshold=100_000, llm_responses=[])
+
+    received_events: list[object] = []
+    mock_commentator = AsyncMock()
+    mock_commentator.comment = AsyncMock(side_effect=received_events.append)
+    bot.commentator = mock_commentator
+
+    await bot.compact(ctx)
+
+    assert len(received_events) == 0

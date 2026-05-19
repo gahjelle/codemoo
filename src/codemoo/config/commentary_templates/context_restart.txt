@@ -1,0 +1,5 @@
+{bot_name}'s memory has been completely wiped — {items_affected} items dropped and gone. The last things {bot_name} knew were:
+
+{preview}
+
+Give a brief, in-character one-sentence aside to the viewer, lamenting what has been lost.

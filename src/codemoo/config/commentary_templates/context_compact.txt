@@ -1,0 +1,5 @@
+{bot_name} just condensed {items_affected} older messages into a focused summary. The distilled essence reads:
+
+{preview}
+
+Give a brief, in-character one-sentence aside to the viewer, celebrating the sharpened focus — the noise is shed, the signal preserved.

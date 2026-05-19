@@ -15,9 +15,11 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 ## Tasks
 
 - Improve save_memory: write in english, don't lose old memories
+- Include Ctrl-R (restart) outside of demo mode
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files
+- Make tool calls async and update the loop to use asyncio.gather()
 - Update prompts to "trust the tool"
 - Add sessions and store them to disk, include --resume functionality
 - Stream answers
