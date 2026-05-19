@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from codemoo.core.backend import Message
+from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.commentator_bot import ContextEvent
 from codemoo.core.bots.compact_bot import CompactBot
 from codemoo.core.context_items import (
@@ -212,6 +212,45 @@ async def test_compact_emits_no_event_when_commentator_is_none() -> None:
 
     disabled = [i for i in result if i.mode == ItemMode.DISABLED]
     assert len(disabled) >= 1
+
+
+# ---------------------------------------------------------------------------
+# compact() — _summarise() fallback when LLM unexpectedly returns tool calls
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_compact_uses_fallback_summary_when_llm_returns_tool_use() -> None:
+    tool_use = ToolUse(
+        name="run_shell",
+        arguments={"command": "echo hi"},
+        call_id="c1",
+        assistant_message=Message(
+            role="assistant",
+            content="",
+            tool_calls_json='[{"id":"c1","type":"function","function":{"name":"run_shell","arguments":"{}"}}]',
+        ),
+    )
+    long_text = "word " * 20
+    bot = CompactBot(
+        name="Drop",
+        emoji="\N{BROOM}",
+        llm=_FakeLLM([[tool_use]]),  # type: ignore[arg-type]
+        tools=[],
+        instructions="You are Drop.",
+        context_source=None,
+        memory_file=None,
+        session_folder=Path(),
+        compact_threshold=5,
+    )
+
+    result = await bot.compact(_ctx([long_text, long_text, long_text]))
+
+    summaries = [i for i in result if isinstance(i.content, InjectedContent)]
+    assert len(summaries) == 1
+    summary_content = summaries[0].content
+    assert isinstance(summary_content, InjectedContent)
+    assert summary_content.text == "(Summary unavailable)"
 
 
 @pytest.mark.asyncio

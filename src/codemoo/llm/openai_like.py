@@ -72,11 +72,11 @@ class OpenAILikeBackend:
     @overload
     async def complete(
         self, messages: list[Message], tools: list[ToolDef]
-    ) -> str | ToolUse: ...
+    ) -> str | list[ToolUse]: ...
 
     async def complete(
         self, messages: list[Message], tools: list[ToolDef] | None = None
-    ) -> str | ToolUse:
+    ) -> str | list[ToolUse]:
         """Unified completion: handles both text and tool-calling responses."""
         serialized = self._serialize(messages)
         tool_schemas = [self._tool_schema(t) for t in tools] if tools else None
@@ -90,36 +90,42 @@ class OpenAILikeBackend:
             self._tracer.on_response(response.model_dump())  # ty: ignore[unresolved-attribute]
         message = response.choices[0].message  # ty: ignore[unresolved-attribute]
         if tools and message.tool_calls:
-            tool_call = message.tool_calls[0]
-            raw_args = tool_call.function.arguments
-            arguments: dict[str, object] = (
-                json.loads(raw_args) if isinstance(raw_args, str) else (raw_args or {})
-            )
-            assistant_message = Message(
-                role="assistant",
-                content="",
-                tool_calls_json=json.dumps(
-                    [
-                        {
-                            "id": tool_call.id,
-                            "type": "function",
-                            "function": {
-                                "name": tool_call.function.name,
-                                "arguments": (
-                                    raw_args
-                                    if isinstance(raw_args, str)
-                                    else json.dumps(raw_args)
-                                ),
-                            },
-                        }
-                    ]
-                ),
-            )
-            return ToolUse(
-                name=tool_call.function.name,
-                arguments=arguments,
-                call_id=tool_call.id or "",
-                assistant_message=assistant_message,
-            )
+            result = []
+            for tool_call in message.tool_calls:
+                raw_args = tool_call.function.arguments
+                arguments: dict[str, object] = (
+                    json.loads(raw_args)
+                    if isinstance(raw_args, str)
+                    else (raw_args or {})
+                )
+                assistant_message = Message(
+                    role="assistant",
+                    content="",
+                    tool_calls_json=json.dumps(
+                        [
+                            {
+                                "id": tool_call.id,
+                                "type": "function",
+                                "function": {
+                                    "name": tool_call.function.name,
+                                    "arguments": (
+                                        raw_args
+                                        if isinstance(raw_args, str)
+                                        else json.dumps(raw_args)
+                                    ),
+                                },
+                            }
+                        ]
+                    ),
+                )
+                result.append(
+                    ToolUse(
+                        name=tool_call.function.name,
+                        arguments=arguments,
+                        call_id=tool_call.id or "",
+                        assistant_message=assistant_message,
+                    )
+                )
+            return result
         content = message.content
         return content if isinstance(content, str) else str(content or "")

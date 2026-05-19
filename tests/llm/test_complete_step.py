@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from codemoo.core.backend import Message, ToolUse
+from codemoo.core.backend import Message
 from codemoo.core.tools import ToolDef, reverse_string
 from codemoo.llm.mistral import _MistralBackend
 
@@ -77,10 +77,10 @@ async def test_complete_tool_use_returned(
         [reverse_string],
     )
 
-    assert isinstance(result, ToolUse)
-    assert result.name == "reverse_string"
-    assert result.arguments == {"text": "hello"}
-    assert result.call_id == "call-42"
+    assert isinstance(result, list)
+    assert result[0].name == "reverse_string"
+    assert result[0].arguments == {"text": "hello"}
+    assert result[0].call_id == "call-42"
 
 
 @pytest.mark.asyncio
@@ -121,9 +121,9 @@ async def test_complete_assistant_message_has_tool_calls_json(
         [Message(role="user", content="hi")], [reverse_string]
     )
 
-    assert isinstance(result, ToolUse)
-    assert result.assistant_message.role == "assistant"
-    parsed = json.loads(result.assistant_message.tool_calls_json or "[]")
+    assert isinstance(result, list)
+    assert result[0].assistant_message.role == "assistant"
+    parsed = json.loads(result[0].assistant_message.tool_calls_json or "[]")
     assert parsed[0]["id"] == "call-7"
     assert parsed[0]["function"]["name"] == "reverse_string"
 

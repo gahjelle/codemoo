@@ -6,7 +6,7 @@ import json
 from codemoo.core.backend import (
     LLMBackend,
     Message,
-    ToolUse,
+    merge_tool_uses,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.context_builder import build_context
@@ -50,28 +50,27 @@ class AgentBot:
 
         while True:
             response = await self.llm.complete(messages, self.tools)
-            if not isinstance(response, ToolUse):
+            if not isinstance(response, list):
                 return [
                     *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
                     ContextItem(
                         content=AssistantMessageContent(response), turn_id=turn
                     ),
                 ]
-            tool_output = await dispatch_tool(
-                tool_map[response.name], response.arguments, self.name, self.commentator
-            )
-            tool_use_items.append(
-                ToolUseContent(
-                    name=response.name,
-                    arguments_json=json.dumps(response.arguments),
-                    call_id=response.call_id,
-                    output=tool_output,
+            tool_result_messages: list[Message] = []
+            for use in response:
+                tool_output = await dispatch_tool(
+                    tool_map[use.name], use.arguments, self.name, self.commentator
                 )
-            )
-            messages = [
-                *messages,
-                response.assistant_message,
-                Message(
-                    role="tool", content=tool_output, tool_call_id=response.call_id
-                ),
-            ]
+                tool_use_items.append(
+                    ToolUseContent(
+                        name=use.name,
+                        arguments_json=json.dumps(use.arguments),
+                        call_id=use.call_id,
+                        output=tool_output,
+                    )
+                )
+                tool_result_messages.append(
+                    Message(role="tool", content=tool_output, tool_call_id=use.call_id)
+                )
+            messages = [*messages, merge_tool_uses(response), *tool_result_messages]

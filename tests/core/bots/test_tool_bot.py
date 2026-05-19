@@ -25,7 +25,7 @@ class _MockBackend:
 
     def __init__(
         self,
-        step_result: str | ToolUse,
+        step_result: str | list[ToolUse],
         complete_response: str = "final answer",
     ) -> None:
         self.step_result = step_result
@@ -35,7 +35,7 @@ class _MockBackend:
 
     async def complete(
         self, messages: list[Message], tools: list[ToolDef] | None = None
-    ) -> str | ToolUse:
+    ) -> str | list[ToolUse]:
         if tools is not None:
             self.step_calls.append((list(messages), list(tools)))
             return self.step_result
@@ -51,12 +51,14 @@ def text_backend() -> _MockBackend:
 @pytest.fixture
 def tool_backend() -> _MockBackend:
     return _MockBackend(
-        step_result=ToolUse(
-            name="reverse_string",
-            arguments={"text": "hello"},
-            call_id="c1",
-            assistant_message=_make_assistant_msg(),
-        ),
+        step_result=[
+            ToolUse(
+                name="reverse_string",
+                arguments={"text": "hello"},
+                call_id="c1",
+                assistant_message=_make_assistant_msg(),
+            )
+        ],
         complete_response="The reversed string is: olleh",
     )
 
@@ -75,12 +77,14 @@ def bot_text(text_backend: _MockBackend) -> ToolBot:
 @pytest.fixture
 def empty_backend() -> _MockBackend:
     return _MockBackend(
-        step_result=ToolUse(
-            name="reverse_string",
-            arguments={"text": "hello"},
-            call_id="c1",
-            assistant_message=_make_assistant_msg(),
-        ),
+        step_result=[
+            ToolUse(
+                name="reverse_string",
+                arguments={"text": "hello"},
+                call_id="c1",
+                assistant_message=_make_assistant_msg(),
+            )
+        ],
         complete_response="",
     )
 

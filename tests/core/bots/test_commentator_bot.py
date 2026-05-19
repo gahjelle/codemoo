@@ -322,9 +322,10 @@ class _SingleStepBackend:
 
     async def complete(
         self, messages: list[Message], tools: object = None
-    ) -> str | ToolUse:
+    ) -> str | list[ToolUse]:
+        step = self._step
         if tools is not None:
-            return self._step
+            return [step] if isinstance(step, ToolUse) else step
         return "done"
 
 
@@ -363,8 +364,9 @@ class _MultiStepBackend:
 
     async def complete(
         self, messages: list[Message], tools: object = None
-    ) -> str | ToolUse:
-        return self._steps.pop(0)
+    ) -> str | list[ToolUse]:
+        step = self._steps.pop(0)
+        return [step] if isinstance(step, ToolUse) else step
 
 
 def _tool_use(call_id: str) -> ToolUse:

@@ -6,7 +6,6 @@ import json
 from codemoo.core.backend import (
     LLMBackend,
     Message,
-    ToolUse,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot
 from codemoo.core.context_builder import build_context
@@ -47,23 +46,22 @@ class SingleTurnToolBot:
         ]
         turn = next_turn_id(context)
         response = await self.llm.complete(messages, self.tools)
-        if isinstance(response, ToolUse):
+        if isinstance(response, list):
+            use = response[0]
             tool_map = {t.name: t for t in self.tools}
             tool_output = await dispatch_tool(
-                tool_map[response.name], response.arguments, self.name, self.commentator
+                tool_map[use.name], use.arguments, self.name, self.commentator
             )
             tool_use_item = ToolUseContent(
-                name=response.name,
-                arguments_json=json.dumps(response.arguments),
-                call_id=response.call_id,
+                name=use.name,
+                arguments_json=json.dumps(use.arguments),
+                call_id=use.call_id,
                 output=tool_output,
             )
             follow_up = [
                 *messages,
-                response.assistant_message,
-                Message(
-                    role="tool", content=tool_output, tool_call_id=response.call_id
-                ),
+                use.assistant_message,
+                Message(role="tool", content=tool_output, tool_call_id=use.call_id),
             ]
             text = await self.llm.complete(follow_up) or _INTERRUPTED
             return [

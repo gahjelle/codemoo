@@ -1,10 +1,4 @@
-# Spec: agent-bot
-
-## Purpose
-
-TBD — defines AgentBot, a bot participant that implements an agentic loop, repeatedly calling the backend with tool use until a final text response is produced.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: AgentBot loops tool calls until the LLM returns plain text
 `AgentBot` SHALL implement `on_message` with an agentic loop. On each iteration it
@@ -32,10 +26,3 @@ again. The loop SHALL terminate when `complete` returns a `str`, at which point
 #### Scenario: Immediate text response — no tool call
 - **WHEN** `complete` returns `str` on the first call
 - **THEN** `AgentBot.on_message` SHALL return a `ContextItem` with that text and SHALL NOT invoke any tool
-
-### Requirement: AgentBot satisfies the ChatParticipant protocol
-`AgentBot` SHALL expose `name: str`, `emoji: str`, and `is_human: ClassVar[bool]` attributes. `is_human` SHALL always be `False`.
-
-#### Scenario: is_human is False
-- **WHEN** `is_human` is accessed on an `AgentBot` instance
-- **THEN** it SHALL return `False`

@@ -8,7 +8,7 @@ from pathlib import Path
 from codemoo.core.backend import (
     LLMBackend,
     Message,
-    ToolUse,
+    merge_tool_uses,
 )
 from codemoo.core.bots.approval import (
     ApprovalRequest,
@@ -172,7 +172,7 @@ class CompactBot:
         prompt = _SUMMARISE_PROMPT.format(history=history)
         summary_messages: list[Message] = [Message(role="user", content=prompt)]
         response = await self.llm.complete(summary_messages, [])
-        if isinstance(response, ToolUse):
+        if isinstance(response, list):
             return "(Summary unavailable)"
         return response
 
@@ -199,7 +199,7 @@ class CompactBot:
 
         while True:
             response = await self.llm.complete(messages, self.tools)
-            if not isinstance(response, ToolUse):
+            if not isinstance(response, list):
                 return [
                     *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
                     ContextItem(
@@ -207,56 +207,58 @@ class CompactBot:
                     ),
                 ]
 
-            retry_key = (response.name, json.dumps(response.arguments, sort_keys=True))
-            if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
-                escalation = self._escalation_message(retry_key[0], successful_calls)
-                return [
-                    *[ContextItem(content=tu, turn_id=turn) for tu in tool_use_items],
-                    ContextItem(
-                        content=AssistantMessageContent(escalation), turn_id=turn
-                    ),
-                ]
+            tool_result_messages: list[Message] = []
+            for use in response:
+                retry_key = (use.name, json.dumps(use.arguments, sort_keys=True))
+                if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
+                    escalation = self._escalation_message(
+                        retry_key[0], successful_calls
+                    )
+                    return [
+                        *[
+                            ContextItem(content=tu, turn_id=turn)
+                            for tu in tool_use_items
+                        ],
+                        ContextItem(
+                            content=AssistantMessageContent(escalation), turn_id=turn
+                        ),
+                    ]
 
-            tool = tool_map[response.name]
-            if tool.requires_approval:
-                decision = await self._ask_fn(
-                    ApprovalRequest(bot_name=self.name, tool_use=response)
-                )
-                if isinstance(decision, Denied):
-                    tool_output = _denial_message(decision)
+                tool = tool_map[use.name]
+                if tool.requires_approval:
+                    decision = await self._ask_fn(
+                        ApprovalRequest(bot_name=self.name, tool_use=use)
+                    )
+                    if isinstance(decision, Denied):
+                        tool_output = _denial_message(decision)
+                    else:
+                        tool_output = await dispatch_tool(
+                            tool, use.arguments, self.name, self.commentator
+                        )
                 else:
                     tool_output = await dispatch_tool(
-                        tool, response.arguments, self.name, self.commentator
+                        tool, use.arguments, self.name, self.commentator
                     )
-            else:
-                tool_output = await dispatch_tool(
-                    tool, response.arguments, self.name, self.commentator
-                )
 
-            retry_counts[retry_key] = retry_counts.get(retry_key, 0) + 1
+                retry_counts[retry_key] = retry_counts.get(retry_key, 0) + 1
 
-            if not tool_output.startswith("Error "):
-                successful_calls.append(
-                    format_tool_call(
-                        response.name, response.arguments, max_value_len=40
+                if not tool_output.startswith("Error "):
+                    successful_calls.append(
+                        format_tool_call(use.name, use.arguments, max_value_len=40)
+                    )
+
+                tool_use_items.append(
+                    ToolUseContent(
+                        name=use.name,
+                        arguments_json=json.dumps(use.arguments),
+                        call_id=use.call_id,
+                        output=tool_output,
                     )
                 )
-
-            tool_use_items.append(
-                ToolUseContent(
-                    name=response.name,
-                    arguments_json=json.dumps(response.arguments),
-                    call_id=response.call_id,
-                    output=tool_output,
+                tool_result_messages.append(
+                    Message(role="tool", content=tool_output, tool_call_id=use.call_id)
                 )
-            )
-            messages = [
-                *messages,
-                response.assistant_message,
-                Message(
-                    role="tool", content=tool_output, tool_call_id=response.call_id
-                ),
-            ]
+            messages = [*messages, merge_tool_uses(response), *tool_result_messages]
 
     def _escalation_message(self, tool_name: str, successful_calls: list[str]) -> str:
         """Build the failure summary returned when the retry budget is exhausted."""

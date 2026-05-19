@@ -23,25 +23,31 @@ def _serialize(
     """
     system = ""
     result: list[dict[str, object]] = []
-    for m in messages:
+    i = 0
+    while i < len(messages):
+        m = messages[i]
         if m.role == "system":
             system = m.content
+            i += 1
             continue
         if m.role == "tool":
-            # Tool result: Anthropic expects content as a list of blocks
-            result.append(
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "tool_result",
-                            "tool_use_id": m.tool_call_id or "",
-                            "content": m.content,
-                        }
-                    ],
-                }
-            )
-        elif m.tool_calls_json is not None:
+            # Collect all consecutive tool results into one batched user message.
+            # Anthropic requires that all results for a parallel tool-use batch
+            # arrive in a single user message.
+            tool_results: list[dict[str, object]] = []
+            while i < len(messages) and messages[i].role == "tool":
+                tm = messages[i]
+                tool_results.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tm.tool_call_id or "",
+                        "content": tm.content,
+                    }
+                )
+                i += 1
+            result.append({"role": "user", "content": tool_results})
+            continue
+        if m.tool_calls_json is not None:
             # Assistant message carrying a tool call
             tool_calls = json.loads(m.tool_calls_json)
             content: list[dict[str, object]] = []
@@ -62,6 +68,7 @@ def _serialize(
             result.append({"role": "assistant", "content": content})
         else:
             result.append({"role": m.role, "content": m.content})
+        i += 1
     return system, result
 
 
@@ -102,13 +109,13 @@ class _AnthropicBackend:
     @overload
     async def complete(
         self, messages: list[Message], tools: list[ToolDef]
-    ) -> str | ToolUse: ...
+    ) -> str | list[ToolUse]: ...
 
     async def complete(
         self,
         messages: list[Message],
         tools: list[ToolDef] | None = None,
-    ) -> str | ToolUse:
+    ) -> str | list[ToolUse]:
         """Call Anthropic messages API; return text or a tool-call descriptor."""
         system, conversation = _serialize(messages)
         tool_schemas = [_tool_schema(t) for t in tools] if tools else []
@@ -130,16 +137,17 @@ class _AnthropicBackend:
         )
         if self._tracer and self._tracer.on_response:
             self._tracer.on_response(response.model_dump())
-        for block in response.content:
-            if block.type == "tool_use" and tools:
-                tool_call_id = block.id
+        tool_uses = [block for block in response.content if block.type == "tool_use"]
+        if tool_uses and tools:
+            result = []
+            for block in tool_uses:
                 assistant_message = Message(
                     role="assistant",
                     content="",
                     tool_calls_json=json.dumps(
                         [
                             {
-                                "id": tool_call_id,
+                                "id": block.id,
                                 "type": "function",
                                 "function": {
                                     "name": block.name,
@@ -149,12 +157,15 @@ class _AnthropicBackend:
                         ]
                     ),
                 )
-                return ToolUse(
-                    name=block.name,
-                    arguments=dict(block.input),
-                    call_id=tool_call_id,
-                    assistant_message=assistant_message,
+                result.append(
+                    ToolUse(
+                        name=block.name,
+                        arguments=dict(block.input),
+                        call_id=block.id,
+                        assistant_message=assistant_message,
+                    )
                 )
+            return result
         for block in response.content:
             if hasattr(block, "text"):
                 return block.text

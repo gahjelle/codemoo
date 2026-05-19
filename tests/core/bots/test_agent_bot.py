@@ -33,13 +33,13 @@ def _tool_use(call_id: str = "c1") -> ToolUse:
 class _SequentialBackend:
     """Returns step results from a queue, then raises if exhausted."""
 
-    def __init__(self, steps: list[str | ToolUse]) -> None:
+    def __init__(self, steps: list[str | list[ToolUse]]) -> None:
         self._steps = list(steps)
         self.step_calls: list[list[Message]] = []
 
     async def complete(
         self, messages: list[Message], tools: list[ToolDef] | None = None
-    ) -> str | ToolUse:
+    ) -> str | list[ToolUse]:
         self.step_calls.append(list(messages))
         return self._steps.pop(0)
 
@@ -72,7 +72,7 @@ async def test_immediate_text_response_no_tool_call() -> None:
 async def test_single_tool_call_then_text_response() -> None:
     from codemoo.core.context_items import AssistantMessageContent
 
-    backend = _SequentialBackend([_tool_use("c1"), "done"])
+    backend = _SequentialBackend([[_tool_use("c1")], "done"])
     bot = _make_bot(backend)
 
     new_items = await bot.on_message(user_ctx("run echo hi"))
@@ -84,7 +84,7 @@ async def test_single_tool_call_then_text_response() -> None:
 
 @pytest.mark.asyncio
 async def test_single_tool_call_context_fed_back() -> None:
-    backend = _SequentialBackend([_tool_use("c1"), "done"])
+    backend = _SequentialBackend([[_tool_use("c1")], "done"])
     bot = _make_bot(backend)
 
     await bot.on_message(user_ctx("run echo hi"))
@@ -99,7 +99,7 @@ async def test_single_tool_call_context_fed_back() -> None:
 async def test_two_sequential_tool_calls_then_text() -> None:
     from codemoo.core.context_items import AssistantMessageContent
 
-    backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
+    backend = _SequentialBackend([[_tool_use("c1")], [_tool_use("c2")], "all done"])
     bot = _make_bot(backend)
 
     new_items = await bot.on_message(user_ctx("do two things"))
@@ -111,7 +111,7 @@ async def test_two_sequential_tool_calls_then_text() -> None:
 
 @pytest.mark.asyncio
 async def test_two_tool_calls_both_outputs_in_final_context() -> None:
-    backend = _SequentialBackend([_tool_use("c1"), _tool_use("c2"), "all done"])
+    backend = _SequentialBackend([[_tool_use("c1")], [_tool_use("c2")], "all done"])
     bot = _make_bot(backend)
 
     await bot.on_message(user_ctx("do two things"))
@@ -120,3 +120,24 @@ async def test_two_tool_calls_both_outputs_in_final_context() -> None:
     tool_msgs = [m for m in third_call_msgs if m.role == "tool"]
     call_ids = {m.tool_call_id for m in tool_msgs}
     assert call_ids == {"c1", "c2"}
+
+
+@pytest.mark.asyncio
+async def test_two_parallel_tool_calls_dispatched_without_extra_llm_round_trip() -> (
+    None
+):
+    """When complete() returns two calls at once, AgentBot dispatches both in one iteration."""
+    from codemoo.core.context_items import AssistantMessageContent
+
+    backend = _SequentialBackend([[_tool_use("c1"), _tool_use("c2")], "done"])
+    bot = _make_bot(backend)
+
+    new_items = await bot.on_message(user_ctx("do two things at once"))
+
+    assert isinstance(new_items[-1].content, AssistantMessageContent)
+    assert new_items[-1].content.text == "done"
+    assert len(backend.step_calls) == 2  # one round with both tools, then final reply
+
+    second_call_msgs = backend.step_calls[1]
+    tool_msgs = [m for m in second_call_msgs if m.role == "tool"]
+    assert {m.tool_call_id for m in tool_msgs} == {"c1", "c2"}

@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from codemoo.core.backend import Message, ToolUse
+from codemoo.core.backend import Message
 from codemoo.core.tools import reverse_string
 from codemoo.llm.mistral import _MistralBackend
 from codemoo.llm.openai_like import OpenAILikeBackend
@@ -125,10 +125,10 @@ async def test_complete_with_tools_and_tool_call_returns_tool_use(
         [Message(role="user", content="reverse hello")], tools=[reverse_string]
     )
 
-    assert isinstance(result, ToolUse)
-    assert result.name == "reverse_string"
-    assert result.arguments == {"text": "hello"}
-    assert result.call_id == "c42"
+    assert isinstance(result, list)
+    assert result[0].name == "reverse_string"
+    assert result[0].arguments == {"text": "hello"}
+    assert result[0].call_id == "c42"
 
 
 @pytest.mark.asyncio

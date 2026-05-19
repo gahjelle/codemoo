@@ -26,7 +26,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Show full content of first parameter in GuardBot approval box
 - Add context management capability that can customize context
 - Add tool management capability that can customize tools
-- Run all tool calls in one turn, not only the first one
 
 ## Proposed by agent
 

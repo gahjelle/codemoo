@@ -1,13 +1,14 @@
 """Tests verifying the unified complete() interface across backends."""
 
 import json
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from codemoo.core.backend import Message, ToolUse
+from codemoo.core.backend import Message
 from codemoo.core.tools import reverse_string
-from codemoo.llm.anthropic import _AnthropicBackend
+from codemoo.llm.anthropic import _AnthropicBackend, _serialize
 from codemoo.llm.mistral import _MistralBackend
 
 
@@ -118,7 +119,7 @@ async def test_complete_with_tools_and_tool_call_returns_tool_use(
         [Message(role="user", content="reverse hi")], tools=[reverse_string]
     )
 
-    assert isinstance(result, ToolUse)
+    assert isinstance(result, list)
 
 
 @pytest.mark.asyncio
@@ -160,6 +161,47 @@ async def test_anthropic_without_tools_ignores_tool_use_in_response(
     assert result == ""
 
 
+def test_anthropic_serialize_merges_consecutive_tool_messages() -> None:
+    messages = [
+        Message(role="user", content="go"),
+        Message(
+            role="assistant",
+            content="",
+            tool_calls_json=json.dumps(
+                [
+                    {
+                        "id": "c1",
+                        "type": "function",
+                        "function": {"name": "f", "arguments": "{}"},
+                    },
+                    {
+                        "id": "c2",
+                        "type": "function",
+                        "function": {"name": "g", "arguments": "{}"},
+                    },
+                ]
+            ),
+        ),
+        Message(role="tool", content="r1", tool_call_id="c1"),
+        Message(role="tool", content="r2", tool_call_id="c2"),
+    ]
+    _, serialized = _serialize(messages)
+
+    tool_result_msgs = [
+        m
+        for m in serialized
+        if m.get("role") == "user" and isinstance(m.get("content"), list)
+    ]
+    assert len(tool_result_msgs) == 1, (
+        "consecutive tool results must be batched into one user message"
+    )
+    content = tool_result_msgs[0]["content"]
+    assert isinstance(content, list)
+    assert len(content) == 2
+    ids = {cast("dict[str, object]", block)["tool_use_id"] for block in content}
+    assert ids == {"c1", "c2"}
+
+
 @pytest.mark.asyncio
 async def test_complete_replaces_complete_step_for_tool_bots(
     mistral_backend: _MistralBackend, mock_api: AsyncMock
@@ -171,9 +213,9 @@ async def test_complete_replaces_complete_step_for_tool_bots(
         [Message(role="user", content="reverse hello")], tools=[reverse_string]
     )
 
-    assert isinstance(result, ToolUse)
-    assert result.name == "reverse_string"
-    assert result.arguments == {"text": "hello"}
-    assert result.assistant_message.tool_calls_json is not None
-    parsed = json.loads(result.assistant_message.tool_calls_json)
+    assert isinstance(result, list)
+    assert result[0].name == "reverse_string"
+    assert result[0].arguments == {"text": "hello"}
+    assert result[0].assistant_message.tool_calls_json is not None
+    parsed = json.loads(result[0].assistant_message.tool_calls_json)
     assert parsed[0]["function"]["name"] == "reverse_string"

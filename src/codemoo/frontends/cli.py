@@ -10,7 +10,7 @@ from rich.markdown import Markdown
 from rich.syntax import Syntax
 
 from codemoo.config import config
-from codemoo.core.backend import Message, ToolUse
+from codemoo.core.backend import Message, merge_tool_uses
 from codemoo.core.tools import TOOL_REGISTRY
 from codemoo.core.tracer import Tracer
 from codemoo.llm.factory import resolve_backend
@@ -83,18 +83,19 @@ async def tool(
     ]
     read_file_tool = TOOL_REGISTRY["read_file"]
     step = await backend.complete(context, [read_file_tool])
-    if isinstance(step, ToolUse):
-        tool_output = read_file_tool.fn(**step.arguments)
+    if isinstance(step, list):
+        use = step[0]
+        tool_output = read_file_tool.fn(**use.arguments)
         _rule("Tool Call", start)
-        stdout.print(f"[bold]{step.name}[/bold]  [dim]id: {step.call_id}[/dim]")
-        _print_json(step.arguments)
+        stdout.print(f"[bold]{use.name}[/bold]  [dim]id: {use.call_id}[/dim]")
+        _print_json(use.arguments)
         _rule("Tool Result", start)
-        stdout.print(f"[dim]id: {step.call_id}[/dim]")
+        stdout.print(f"[dim]id: {use.call_id}[/dim]")
         stdout.print(tool_output)
         follow_up = [
             *context,
-            step.assistant_message,
-            Message(role="tool", content=tool_output, tool_call_id=step.call_id),
+            use.assistant_message,
+            Message(role="tool", content=tool_output, tool_call_id=use.call_id),
         ]
         response = await backend.complete(follow_up)
     else:
@@ -129,20 +130,21 @@ async def agent(
     while True:
         round_num += 1
         response = await backend.complete(messages, tools)
-        if not isinstance(response, ToolUse):
+        if not isinstance(response, list):
             break
-        _rule(f"Round {round_num} · Tool Call", start)
-        stdout.print(f"[bold]{response.name}[/bold]  [dim]id: {response.call_id}[/dim]")
-        _print_json(response.arguments)
-        _rule(f"Round {round_num} · Tool Result", start)
-        stdout.print(f"[dim]id: {response.call_id}[/dim]")
-        tool_output = tool_map[response.name].fn(**response.arguments)
-        stdout.print(tool_output)
-        messages = [
-            *messages,
-            response.assistant_message,
-            Message(role="tool", content=tool_output, tool_call_id=response.call_id),
-        ]
+        tool_result_messages: list[Message] = []
+        for use in response:
+            _rule(f"Round {round_num} · Tool Call", start)
+            stdout.print(f"[bold]{use.name}[/bold]  [dim]id: {use.call_id}[/dim]")
+            _print_json(use.arguments)
+            _rule(f"Round {round_num} · Tool Result", start)
+            stdout.print(f"[dim]id: {use.call_id}[/dim]")
+            tool_output = tool_map[use.name].fn(**use.arguments)
+            stdout.print(tool_output)
+            tool_result_messages.append(
+                Message(role="tool", content=tool_output, tool_call_id=use.call_id)
+            )
+        messages = [*messages, merge_tool_uses(response), *tool_result_messages]
 
     _rule("Reply", start)
     stdout.print(Markdown(response))
