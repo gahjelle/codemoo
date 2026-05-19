@@ -80,7 +80,7 @@ bots = [
 #
 [tool_lists]
 code_read = ["read_file", "list_files"]
-code_write = ["read_file", "list_files", "run_shell", "write_file"]
+code_write = ["write_file", "run_shell"]
 m365_read = [
     "get_datetime",
     "read_sharepoint",
@@ -208,7 +208,7 @@ sources = ["change_bot.py", "single_turn_tool_bot.py"]
 [bots.ChangeBot.variants.code]
 description = "Execute shell commands and write files — now it can change things."
 instruction_file = "change_bot-code.txt"
-tools = ["@code_write"]
+tools = ["@code_read", "@code_write"]
 prompts_file = "change_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -239,7 +239,7 @@ sources = ["agent_bot.py"]
 [bots.AgentBot.variants.code]
 description = "Loop tool calls until done — pursue goals, not single commands."
 instruction_file = "agent_bot-code.txt"
-tools = ["@code_write"]
+tools = ["@code_read", "@code_write"]
 prompts_file = "agent_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -265,7 +265,7 @@ sources = ["guard_bot.py"]
 [bots.GuardBot.variants.code]
 description = "Pause before dangerous tool calls — nothing destructive without your say-so."
 instruction_file = "guard_bot-code.txt"
-tools = ["@code_write"]
+tools = ["@code_read", "@code_write"]
 prompts_file = "guard_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -292,7 +292,7 @@ sources = ["project_bot.py"]
 description = "Read AGENTS.md for project context before acting."
 instruction_file = "project_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
-tools = ["@code_write"]
+tools = ["@code_read", "@code_write"]
 prompts_file = "project_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -322,7 +322,7 @@ description = "Persist facts and preferences across sessions via a local memory 
 instruction_file = "memory_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write", "save_memory"]
+tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "memory_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -354,7 +354,7 @@ description = "Retry failing tool calls up to 3 times, then escalate with a clea
 instruction_file = "retry_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write", "save_memory"]
+tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "retry_bot-code.txt"
 capabilities = ["context_display"]
 
@@ -386,7 +386,7 @@ description = "Summarise old context automatically when the token budget is exce
 instruction_file = "compact_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write", "save_memory"]
+tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "compact_bot-code.txt"
 capabilities = ["context_display"]
 compact_threshold = 8000
@@ -416,7 +416,7 @@ description = "Full-capability coding assistant with automatic context summarisa
 instruction_file = "compact_bot-codemoo.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_write", "save_memory"]
+tools = ["@code_read", "@code_write", "save_memory"]
 capabilities = ["context_display"]
 compact_threshold = 100_000
 
