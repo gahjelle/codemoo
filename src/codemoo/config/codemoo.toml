@@ -69,10 +69,17 @@ bots = [
 
 [scripts.vs]
 bots = [
-    { type = "ReadBot", variant = "code" },
+    { type = "EchoBot", variant = "default" },
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "SystemBot", variant = "default" },
+    { type = "ToolBot", variant = "default" },
     { type = "ScanBot", variant = "workspace" },
+    { type = "ReadBot", variant = "code" },
     { type = "ChangeBot", variant = "code" },
     { type = "SendBot", variant = "workspace" },
+    { type = "AgentBot", variant = "code" },
+    { type = "GuardBot", variant = "code" },
 ]
 
 #

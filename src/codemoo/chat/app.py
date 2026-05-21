@@ -40,7 +40,7 @@ from codemoo.llm.factory import BackendInfo
 
 
 def _bind_context_management(app: "ChatApp") -> None:
-    app.mount(ContextStatus(), after="BackendStatus")
+    app.mount(ContextStatus(), before="VerticalScroll")
 
 
 _CAPABILITY_BINDERS: dict[str, Callable[["ChatApp"], None]] = {
