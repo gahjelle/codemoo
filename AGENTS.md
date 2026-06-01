@@ -68,11 +68,11 @@ No sandbox or approval applies to `!` commands; the user is trusted.
 
 When running `uv run codemoo demo`, the following shortcuts are active:
 
-| Key    | Action                                                                                   |
-| ------ | ---------------------------------------------------------------------------------------- |
-| Ctrl-N | Advance to the next bot in the progression                                               |
-| Ctrl-S | Reopen the current bot's slide overlay                                                   |
-| Ctrl-E | Insert the next preset example prompt                                                    |
+| Key    | Action                                                                                                                  |
+| ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Ctrl-N | Advance to the next bot in the progression                                                                              |
+| Ctrl-S | Reopen the current bot's slide overlay                                                                                  |
+| Ctrl-E | Insert the next preset example prompt                                                                                   |
 | Ctrl-R | Restart the current bot (clears history, reloads context/memory, resets example prompts) — also works outside demo mode |
 
 ## Demo Environment
@@ -156,9 +156,10 @@ capabilities = ["context_display"]
 
 Currently supported capabilities:
 
-| Capability         | UI effect                                                      |
-| ------------------ | -------------------------------------------------------------- |
-| `context_display`  | Adds a status bar showing message count and estimated token count (e.g. `12 messages · ~3.2k tokens`); Ctrl-X opens a read-only context inspector modal |
+| Capability        | UI effect                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `context_display` | Adds a status bar showing message count and estimated token count (e.g. `12 messages · ~3.2k tokens`); Ctrl-X opens a read-only context inspector modal |
+| `tracing`         | Enables Ctrl-T to open a scrollable overlay showing the LLM request/response payloads from the most recent turn                                         |
 
 ### Adding a New Bot
 
@@ -237,18 +238,18 @@ Commentary event prompt templates are declared in `codemoo.toml` under `[comment
 
 The ten current personas and their real-world inspirations:
 
-| Name | Based on | Character |
-| ----------- | ------------------------------------------------------------------- | ------------------------------------------------- |
-| Arne | Arne Scheie (NRK football & ski jumping, 1971–2013) | Sage elder — measured, Gandalf-like authority |
-| Herwig | Jon Herwig Carlsen (NRK biathlon, known for live limericks) | Flowery — rhymes and alliteration |
-| Sølve | Sølve Grotmol (NRK sports & news, 1960s–2010) | Deadpan — terse, unimpressed |
-| Rike | Kjell Kristian Rike (NRK biathlon, partner of Carlsen) | Skeptical — secretly impressed |
-| Unni | Unni Anisdahl (NRK handball, 72 Norway caps) | Excited athlete — insider credibility |
-| Th | Knut Th. Gleditsch (NRK football & alpine, 1966–2001) | Warm and witty — charming, light-hearted |
-| Karen Marie | Karen-Marie Ellefsen (first female NRK sports reporter, 10 Olympics) | Pioneer authority — precise, unflappable |
-| Bjørnsen | Knut Bjørnsen (NRK speed skating; quiz host) | Quiz questions only — never answered |
-| Bredeli | Harald Bredeli (TV2 handball) | Outlandish bets on every moment |
-| Jorsett | Per Jorsett (NRK speed skating, alongside Bjørnsen) | Measurable outcomes and comparisons |
+| Name        | Based on                                                             | Character                                     |
+| ----------- | -------------------------------------------------------------------- | --------------------------------------------- |
+| Arne        | Arne Scheie (NRK football & ski jumping, 1971–2013)                  | Sage elder — measured, Gandalf-like authority |
+| Herwig      | Jon Herwig Carlsen (NRK biathlon, known for live limericks)          | Flowery — rhymes and alliteration             |
+| Sølve       | Sølve Grotmol (NRK sports & news, 1960s–2010)                        | Deadpan — terse, unimpressed                  |
+| Rike        | Kjell Kristian Rike (NRK biathlon, partner of Carlsen)               | Skeptical — secretly impressed                |
+| Unni        | Unni Anisdahl (NRK handball, 72 Norway caps)                         | Excited athlete — insider credibility         |
+| Th          | Knut Th. Gleditsch (NRK football & alpine, 1966–2001)                | Warm and witty — charming, light-hearted      |
+| Karen Marie | Karen-Marie Ellefsen (first female NRK sports reporter, 10 Olympics) | Pioneer authority — precise, unflappable      |
+| Bjørnsen    | Knut Bjørnsen (NRK speed skating; quiz host)                         | Quiz questions only — never answered          |
+| Bredeli     | Harald Bredeli (TV2 handball)                                        | Outlandish bets on every moment               |
+| Jorsett     | Per Jorsett (NRK speed skating, alongside Bjørnsen)                  | Measurable outcomes and comparisons           |
 
 ## Context Architecture
 

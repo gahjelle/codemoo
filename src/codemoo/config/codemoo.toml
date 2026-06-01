@@ -8,7 +8,7 @@ workspace_token_path = "{cache_path}/workspace_token.pkl"
 #
 # Scripts
 #
-[scripts.default]
+[scripts.all]
 bots = [
     { type = "EchoBot", variant = "default" },
     { type = "LlmBot", variant = "default" },
@@ -23,6 +23,20 @@ bots = [
     { type = "MemoryBot", variant = "code" },
     { type = "RetryBot", variant = "code" },
     { type = "CompactBot", variant = "code" },
+]
+
+[scripts.code]
+bots = [
+    { type = "EchoBot", variant = "default" },
+    { type = "LlmBot", variant = "default" },
+    { type = "ChatBot", variant = "default" },
+    { type = "SystemBot", variant = "default" },
+    { type = "ToolBot", variant = "default" },
+    { type = "ReadBot", variant = "code" },
+    { type = "ChangeBot", variant = "code" },
+    { type = "AgentBot", variant = "code" },
+    { type = "GuardBot", variant = "code" },
+    { type = "ProjectBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -141,7 +155,7 @@ sources = ["llm_bot.py"]
 [bots.LlmBot.variants.default]
 description = "Call the LLM once and forget the conversation immediately after."
 prompts_file = "llm_bot-default.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ChatBot]
 name = "Iris"
@@ -151,7 +165,7 @@ sources = ["chat_bot.py"]
 [bots.ChatBot.variants.default]
 description = "Keep the full conversation history, remember what you said."
 prompts_file = "chat_bot-default.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.SystemBot]
 name = "Sona"
@@ -162,7 +176,7 @@ sources = ["system_bot.py"]
 description = "Add a system prompt to shape the LLM's persona and behavior."
 instruction_file = "system_bot-default.txt"
 prompts_file = "system_bot-default.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ToolBot]
 name = "Telo"
@@ -174,7 +188,7 @@ description = "Call a tool before replying — the first step toward doing thing
 instruction_file = "tool_bot-default.txt"
 tools = ["reverse_string"]
 prompts_file = "tool_bot-default.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ReadBot]
 name = "Rune"
@@ -186,7 +200,7 @@ description = "Read files from disk to answer questions about your code."
 instruction_file = "read_bot-code.txt"
 tools = ["@code_read"]
 prompts_file = "read_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ScanBot]
 name = "Roam"
@@ -198,14 +212,14 @@ description = "Read SharePoint docs, email, and calendar — observational M365 
 instruction_file = "scan_bot-m365.txt"
 tools = ["@m365_read"]
 prompts_file = "scan_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ScanBot.variants.workspace]
 description = "Read Gmail, Google Calendar, and Google Drive — observational Workspace access."
 instruction_file = "scan_bot-workspace.txt"
 tools = ["@workspace_read"]
 prompts_file = "scan_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ChangeBot]
 name = "Axel"
@@ -217,7 +231,7 @@ description = "Execute shell commands and write files — now it can change thin
 instruction_file = "change_bot-code.txt"
 tools = ["@code_read", "@code_write"]
 prompts_file = "change_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.SendBot]
 name = "Aero"
@@ -229,14 +243,14 @@ description = "Send email, create calendar events, post to Teams, write SharePoi
 instruction_file = "send_bot-m365.txt"
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "send_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.SendBot.variants.workspace]
 description = "Send Gmail, create Google Calendar events, post to Google Chat, write Google Drive files."
 instruction_file = "send_bot-workspace.txt"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "send_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.AgentBot]
 name = "Loom"
@@ -248,21 +262,21 @@ description = "Loop tool calls until done — pursue goals, not single commands.
 instruction_file = "agent_bot-code.txt"
 tools = ["@code_read", "@code_write"]
 prompts_file = "agent_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.AgentBot.variants.m365]
 description = "Loop M365 tool calls until done — pursue goals across email, calendar, and SharePoint."
 instruction_file = "agent_bot-m365.txt"
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "agent_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.AgentBot.variants.workspace]
 description = "Loop Google Workspace tool calls until done — pursue goals across Gmail, Calendar, and Drive."
 instruction_file = "agent_bot-workspace.txt"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "agent_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.GuardBot]
 name = "Cato"
@@ -274,21 +288,21 @@ description = "Pause before dangerous tool calls — nothing destructive without
 instruction_file = "guard_bot-code.txt"
 tools = ["@code_read", "@code_write"]
 prompts_file = "guard_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.GuardBot.variants.m365]
 description = "Pause before sending M365 actions — nothing sent without your say-so."
 instruction_file = "guard_bot-m365.txt"
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "guard_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.GuardBot.variants.workspace]
 description = "Pause before sending Workspace actions — nothing sent without your say-so."
 instruction_file = "guard_bot-workspace.txt"
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "guard_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ProjectBot]
 name = "Lore"
@@ -301,7 +315,7 @@ instruction_file = "project_bot-code.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 tools = ["@code_read", "@code_write"]
 prompts_file = "project_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ProjectBot.variants.m365]
 description = "Read team context from SharePoint before acting."
@@ -309,7 +323,7 @@ instruction_file = "project_bot-m365.txt"
 context_source = { type = "sharepoint", name = "TEAM.md" }
 tools = ["@m365_read", "@m365_write"]
 prompts_file = "project_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.ProjectBot.variants.workspace]
 description = "Read team context from Google Drive before acting."
@@ -317,7 +331,7 @@ instruction_file = "project_bot-workspace.txt"
 context_source = { type = "drive", name = "TEAM.md" }
 tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "project_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.MemoryBot]
 name = "Aura"
@@ -331,7 +345,7 @@ context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "memory_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.MemoryBot.variants.m365]
 description = "Persist user preferences across sessions via a local memory file."
@@ -340,7 +354,7 @@ context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
 tools = ["@m365_read", "@m365_write", "save_memory"]
 prompts_file = "memory_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.MemoryBot.variants.workspace]
 description = "Persist user preferences across sessions via a local memory file."
@@ -349,7 +363,7 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "memory_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.RetryBot]
 name = "Undo"
@@ -363,7 +377,7 @@ context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "retry_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.RetryBot.variants.m365]
 description = "Retry failing M365 tool calls up to 3 times, then escalate with a clear summary."
@@ -372,7 +386,7 @@ context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
 tools = ["@m365_read", "@m365_write", "save_memory"]
 prompts_file = "retry_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.RetryBot.variants.workspace]
 description = "Retry failing Workspace tool calls up to 3 times, then escalate with a clear summary."
@@ -381,7 +395,7 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "retry_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 
 [bots.CompactBot]
 name = "Drop"
@@ -395,7 +409,7 @@ context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_read", "@code_write", "save_memory"]
 prompts_file = "compact_bot-code.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 compact_threshold = 8000
 
 [bots.CompactBot.variants.m365]
@@ -405,7 +419,7 @@ context_source = { type = "sharepoint", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-m365.md"
 tools = ["@m365_read", "@m365_write", "save_memory"]
 prompts_file = "compact_bot-m365.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 compact_threshold = 8000
 
 [bots.CompactBot.variants.workspace]
@@ -415,7 +429,7 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "compact_bot-workspace.txt"
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 compact_threshold = 8000
 
 [bots.CompactBot.variants.codemoo]
@@ -424,7 +438,7 @@ instruction_file = "compact_bot-codemoo.txt"
 context_source = { type = "file", name = "AGENTS.md" }
 memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_read", "@code_write", "save_memory"]
-capabilities = ["context_display"]
+capabilities = ["context_display", "tracing"]
 compact_threshold = 100_000
 
 #

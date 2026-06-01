@@ -21,6 +21,7 @@ from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.input import ChatInput
 from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
+from codemoo.chat.trace_modal import TraceModal
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
 from codemoo.core.bots.commentator_bot import CommentatorBot, ContextEvent
@@ -36,6 +37,7 @@ from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.core.token_counter import estimate_tokens
 from codemoo.core.tools.shell import _run_shell
+from codemoo.core.trace_store import TraceStore
 from codemoo.llm.factory import BackendInfo
 
 
@@ -43,8 +45,13 @@ def _bind_context_management(app: "ChatApp") -> None:
     app.mount(ContextStatus(), before="VerticalScroll")
 
 
+def _bind_tracing(app: "ChatApp") -> None:
+    pass  # Ctrl-T is handled in on_key; no persistent widget needed
+
+
 _CAPABILITY_BINDERS: dict[str, Callable[["ChatApp"], None]] = {
     "context_display": _bind_context_management,
+    "tracing": _bind_tracing,
 }
 
 
@@ -62,6 +69,7 @@ class ChatApp(App[str | None]):
         demo_context: DemoContext | None = None,
         backend_info: BackendInfo | None = None,
         resolved_bots: list[ResolvedBotConfig] | None = None,
+        trace_store: TraceStore | None = None,
     ) -> None:
         """Initialise with the human, bot participants, and error bot."""
         super().__init__()
@@ -71,6 +79,7 @@ class ChatApp(App[str | None]):
         self._demo_context = demo_context
         self._backend_info = backend_info
         self._resolved_bots = resolved_bots or []
+        self._trace_store = trace_store or TraceStore()
 
         # Build a lookup from sender name → (emoji, css_class)
         self._sender_info: dict[str, tuple[str, str]] = {
@@ -112,6 +121,7 @@ class ChatApp(App[str | None]):
 
     async def on_mount(self) -> None:
         """Push the slide overlay when entering demo mode and focus the input."""
+        self._trace_store.clear()
         if self._commentator_bot is not None:
             self._commentator_bot.register(self._append_to_log)
         for cap in self._active_capabilities:
@@ -224,6 +234,7 @@ class ChatApp(App[str | None]):
 
     async def _dispatch(self, initial_message: ChatMessage) -> None:
         """Consume replies from _collect_replies and render them to the log."""
+        self._trace_store.clear()
         status = self.query_one(ThinkingStatus)
         async for reply in self._collect_replies(initial_message, status):
             self._append_to_log(reply)
@@ -248,7 +259,7 @@ class ChatApp(App[str | None]):
         return ask_fn
 
     def on_key(self, event: Key) -> None:
-        """Handle keyboard shortcuts: Ctrl-R/X are global; Ctrl-N/E/S are demo-only."""
+        """Handle keyboard shortcuts: Ctrl-RXT are global; Ctrl-NES are demo-only."""
         if event.key == "ctrl+r":
             self._restart_bot()
             return
@@ -257,6 +268,11 @@ class ChatApp(App[str | None]):
                 ContextInspectModal(self._chat_context, self._last_token_count)
             )
             return
+        if event.key == "ctrl+t" and "tracing" in self._active_capabilities:
+            self.push_screen(TraceModal(self._trace_store))
+            return
+
+        # Demo keyboard shortcuts
         if self._demo_context is None:
             return
         if event.key == "ctrl+n":

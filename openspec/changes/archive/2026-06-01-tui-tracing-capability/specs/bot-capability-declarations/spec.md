@@ -1,16 +1,10 @@
-# Spec: bot-capability-declarations
-
-## Purpose
-
-TBD — defines the `BotCapability` Literal type, the `ChatApp._active_capabilities` frozenset computed at construction, and the `_CAPABILITY_BINDERS` dispatch table used to activate capabilities on mount.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: BotCapability is a closed Literal type in schema.py
-A `BotCapability` type alias SHALL be defined as `Literal["context_display", "tracing"]`. It SHALL follow the same pattern as `BotType` and `ScriptName`. Adding new capability names requires extending the Literal.
+A `BotCapability` type alias SHALL be defined as `Literal["context_management", "tracing"]`. It SHALL follow the same pattern as `BotType` and `ScriptName`. Adding new capability names requires extending the Literal.
 
 #### Scenario: Valid capability name is accepted
-- **WHEN** `capabilities = ["context_display"]` appears in a variant config
+- **WHEN** `capabilities = ["context_management"]` appears in a variant config
 - **THEN** Pydantic SHALL parse it without error
 
 #### Scenario: tracing capability name is accepted
@@ -21,16 +15,12 @@ A `BotCapability` type alias SHALL be defined as `Literal["context_display", "tr
 - **WHEN** `capabilities = ["unknown_capability"]` appears in a variant config
 - **THEN** Pydantic SHALL raise a validation error at config load time
 
-#### Scenario: Old capability name context_management raises a validation error
-- **WHEN** `capabilities = ["context_management"]` appears in a variant config
-- **THEN** Pydantic SHALL raise a validation error at config load time
-
 ### Requirement: ChatApp computes active capabilities as a frozenset at construction
 `ChatApp` SHALL compute `_active_capabilities: frozenset[str]` as the union of all `capabilities` lists from its `resolved_bots` argument. The set SHALL be computed once in `__init__` and treated as immutable for the session.
 
 #### Scenario: Active capabilities union across all resolved bots
-- **WHEN** two resolved bots declare `["context_display"]` and `[]` respectively
-- **THEN** `_active_capabilities` SHALL equal `frozenset({"context_display"})`
+- **WHEN** two resolved bots declare `["context_management"]` and `[]` respectively
+- **THEN** `_active_capabilities` SHALL equal `frozenset({"context_management"})`
 
 #### Scenario: No capabilities declared yields empty frozenset
 - **WHEN** all resolved bots have empty `capabilities` lists
@@ -40,7 +30,7 @@ A `BotCapability` type alias SHALL be defined as `Literal["context_display", "tr
 A module-level dict `_CAPABILITY_BINDERS: dict[str, Callable[[ChatApp], None]]` SHALL map capability names to setup functions. `ChatApp.on_mount` SHALL iterate `_active_capabilities` and call the registered binder for each known capability. Unknown capability names SHALL be silently skipped. The `"tracing"` key SHALL be registered with a `_bind_tracing` function that is a no-op (Ctrl-T handling is done in `on_key`; no persistent widget is needed).
 
 #### Scenario: Registered capability binder is called on mount
-- **WHEN** `_active_capabilities` contains `"context_display"` and a binder is registered for it
+- **WHEN** `_active_capabilities` contains `"context_management"` and a binder is registered for it
 - **THEN** the binder SHALL be called during `on_mount`
 
 #### Scenario: tracing binder is registered and does not raise
@@ -50,6 +40,8 @@ A module-level dict `_CAPABILITY_BINDERS: dict[str, Callable[[ChatApp], None]]` 
 #### Scenario: Unknown capability in active set is ignored
 - **WHEN** `_active_capabilities` contains a name with no entry in `_CAPABILITY_BINDERS`
 - **THEN** `on_mount` SHALL complete without error
+
+## ADDED Requirements
 
 ### Requirement: Ctrl-T opens TraceModal when tracing capability is active
 In `ChatApp.on_key`, pressing Ctrl-T when `"tracing" in self._active_capabilities` SHALL push `TraceModal(self._trace_store)` onto the screen stack. This check SHALL occur before the demo-mode guard so the modal works in both demo and normal mode.

@@ -286,3 +286,14 @@ ChatInput:focus {
     text-style: dim;
     text-align: center;
 }
+
+/* ── TraceModal ── */
+#trace-scroll {
+    background: $surface;
+    border: thick $primary;
+    padding: 1 2;
+}
+
+#trace-scroll Label {
+    width: auto;
+}

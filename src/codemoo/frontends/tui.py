@@ -28,6 +28,7 @@ from codemoo.core.bots import make_bots, resolve_bot, run_init_hooks
 from codemoo.core.bots.commentator_bot import CommentatorBot, Persona
 from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
+from codemoo.core.trace_store import TraceStore
 from codemoo.llm.factory import BackendInfo, resolve_backend
 from codemoo.m365.tools import M365_TOOL_REGISTRY
 from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
@@ -44,6 +45,7 @@ class SetupResult:
     resolved_bots: list[ResolvedBotConfig]
     error_bot: ErrorBot
     commentator_bot: CommentatorBot
+    trace_store: TraceStore
 
 
 # One app defaults to code bots/scripts, while the other to business bots/scripts
@@ -51,9 +53,12 @@ code_app = cyclopts.App(help="Codemoo — demo coding agents step by step.")
 business_app = cyclopts.App(help="Collebra - demo enterprise agents step by step.")
 
 
-async def _setup(script: ScriptName = "default") -> SetupResult:
+async def _setup(script: ScriptName = "all") -> SetupResult:
     session_folder = Path.cwd()
-    llm_backend, backend_info = resolve_backend(config)
+    trace_store = TraceStore()
+    llm_backend, backend_info = resolve_backend(
+        config, tracer=trace_store.make_tracer()
+    )
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
@@ -82,6 +87,7 @@ async def _setup(script: ScriptName = "default") -> SetupResult:
         resolved_bots=resolved_bots,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
+        trace_store=trace_store,
     )
 
 
@@ -109,7 +115,10 @@ async def _setup_for_launcher(*, bot: BotType, variant: str) -> SetupResult:
     """Build the full setup for a single-bot chat session without launching ChatApp."""
     session_folder = Path.cwd()
     bot_ref = BotRef(type=bot, variant=variant)
-    llm_backend, backend_info = resolve_backend(config)
+    trace_store = TraceStore()
+    llm_backend, backend_info = resolve_backend(
+        config, tracer=trace_store.make_tracer()
+    )
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
@@ -139,6 +148,7 @@ async def _setup_for_launcher(*, bot: BotType, variant: str) -> SetupResult:
         resolved_bots=resolved_bots,
         error_bot=error_bot,
         commentator_bot=commentator_bot,
+        trace_store=trace_store,
     )
 
 
@@ -152,6 +162,7 @@ async def _chat(*, bot: BotType, variant: str) -> None:
         commentator_bot=setup.commentator_bot,
         backend_info=setup.backend_info,
         resolved_bots=setup.resolved_bots,
+        trace_store=setup.trace_store,
     ).run_async()
 
 
@@ -164,7 +175,7 @@ def show_config(section: str | None = None) -> None:
 
 @code_app.command
 @business_app.command
-async def list_bots(*, script: ScriptName = "default") -> None:
+async def list_bots(*, script: ScriptName = "all") -> None:
     """List all available bots with their index, type, and name."""
     setup = await _setup(script)
     table = Table(show_header=True)
@@ -206,7 +217,10 @@ async def select() -> None:
     if not selected:
         return
 
-    llm_backend, backend_info = resolve_backend(config)
+    trace_store = TraceStore()
+    llm_backend, backend_info = resolve_backend(
+        config, tracer=trace_store.make_tracer()
+    )
     human = HumanParticipant()
     language = config.language
     error_bot = bot_module.ErrorBot(llm=llm_backend, language=language)
@@ -237,12 +251,13 @@ async def select() -> None:
         commentator_bot=commentator_bot,
         backend_info=backend_info,
         resolved_bots=resolved_bots,
+        trace_store=trace_store,
     ).run_async()
 
 
 @code_app.command(name="demo")
 def code_demo(
-    *, script: ScriptName = "default", start: str | None = None, end: str | None = None
+    *, script: ScriptName = "all", start: str | None = None, end: str | None = None
 ) -> None:
     """Run the bot progression demo. Use Ctrl-N to advance to the next bot."""
     try:
@@ -302,6 +317,7 @@ async def _run_demo(script: ScriptName, start: str | None, end: str | None) -> N
             demo_context=context,
             backend_info=setup.backend_info,
             resolved_bots=[demo_resolved[i]],
+            trace_store=setup.trace_store,
         ).run_async()
         if result != "next":
             break
