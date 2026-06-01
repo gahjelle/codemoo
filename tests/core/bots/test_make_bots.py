@@ -18,7 +18,7 @@ async def _bots() -> list:
     bots, _ = await make_bots(
         _MockBackend(),
         cfg=config.bots,
-        bot_refs=config.scripts["default"].bots,
+        bot_refs=config.scripts["all"].bots,
         session_folder=Path.cwd(),
     )
     return bots

@@ -53,5 +53,5 @@ def test_compact_bot_variants_all_have_context_display() -> None:
 
 
 def test_default_script_includes_compact_bot() -> None:
-    types = [ref.type for ref in config.scripts["default"].bots]
+    types = [ref.type for ref in config.scripts["all"].bots]
     assert "CompactBot" in types
