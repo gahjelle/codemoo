@@ -18,8 +18,8 @@ bots = [
     { type = "ReadBot", variant = "code" },
     { type = "ChangeBot", variant = "code" },
     { type = "AgentBot", variant = "code" },
-    { type = "GuardBot", variant = "code" },
     { type = "RetryBot", variant = "code" },
+    { type = "GuardBot", variant = "code" },
     { type = "ProjectBot", variant = "code" },
     { type = "MemoryBot", variant = "code" },
     { type = "CompactBot", variant = "code" },
@@ -35,8 +35,8 @@ bots = [
     { type = "ReadBot", variant = "code" },
     { type = "ChangeBot", variant = "code" },
     { type = "AgentBot", variant = "code" },
+    { type = "RetryBot", variant = "code" },
     { type = "GuardBot", variant = "code" },
-    { type = "ProjectBot", variant = "code" },
 ]
 
 [scripts.focused]
@@ -57,8 +57,8 @@ bots = [
     { type = "ScanBot", variant = "m365" },
     { type = "SendBot", variant = "m365" },
     { type = "AgentBot", variant = "m365" },
-    { type = "GuardBot", variant = "m365" },
     { type = "RetryBot", variant = "m365" },
+    { type = "GuardBot", variant = "m365" },
     { type = "ProjectBot", variant = "m365" },
     { type = "MemoryBot", variant = "m365" },
     { type = "CompactBot", variant = "m365" },
@@ -74,8 +74,8 @@ bots = [
     { type = "ScanBot", variant = "workspace" },
     { type = "SendBot", variant = "workspace" },
     { type = "AgentBot", variant = "workspace" },
-    { type = "GuardBot", variant = "workspace" },
     { type = "RetryBot", variant = "workspace" },
+    { type = "GuardBot", variant = "workspace" },
     { type = "ProjectBot", variant = "workspace" },
     { type = "MemoryBot", variant = "workspace" },
     { type = "CompactBot", variant = "workspace" },
@@ -275,7 +275,7 @@ prompts_file = "agent_bot-workspace.txt"
 capabilities = ["context_display", "tracing"]
 
 [bots.GuardBot]
-name = "Cato"
+name = "Lock"
 emoji = "LOCK"
 sources = ["guard_bot.py"]
 
@@ -301,8 +301,8 @@ prompts_file = "guard_bot-workspace.txt"
 capabilities = ["context_display", "tracing"]
 
 [bots.RetryBot]
-name = "Lava"
-emoji = "VOLCANO"
+name = "Crow"
+emoji = "BIRD"
 sources = ["retry_bot.py"]
 
 [bots.RetryBot.variants.code]

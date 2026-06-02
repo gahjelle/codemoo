@@ -1,10 +1,4 @@
-# Spec: retry-bot
-
-## Purpose
-
-Defines RetryBot (Crow) — the bot positioned immediately after AgentBot and before GuardBot in the demo progression. RetryBot's single new capability is passing `catch_errors=True` to all `dispatch_tool` calls, so tool errors are returned to the LLM as result strings rather than crashing the turn, giving the LLM the opportunity to reason about and recover from failures.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: RetryBot passes catch_errors=True to all dispatch_tool calls
 RetryBot's defining new capability SHALL be passing `catch_errors=True` to every `dispatch_tool` call in its tool loop. This causes tool errors to be returned to the LLM as result strings rather than raised as `ToolError` exceptions. No retry-counting logic SHALL be present. RetryBot SHALL NOT include an approval gate — it SHALL NOT check `requires_approval` and SHALL NOT call any `_ask_fn`.
@@ -45,3 +39,13 @@ RetryBot SHALL appear in `codemoo.toml` with `name = "Crow"` and `emoji = "BIRD"
 - **WHEN** the `all` script is loaded
 - **THEN** the bot immediately after AgentBot SHALL be RetryBot
 - **AND** the bot immediately after RetryBot SHALL be GuardBot
+
+## REMOVED Requirements
+
+### Requirement: RetryBot implements the full MemoryBot feature set
+**Reason**: After the position swap, RetryBot sits directly after AgentBot and before GuardBot. Its single new capability is `catch_errors=True`. Memory and project-context features are introduced later in the progression by MemoryBot.
+**Migration**: Memory features remain in MemoryBot. Approval gate features move to GuardBot (which now gains `catch_errors=True` as well).
+
+### Requirement: RetryBot is registered with name "Lava", emoji "VOLCANO", and positioned after GuardBot
+**Reason**: Name and position both change as part of the swap.
+**Migration**: Replaced by the new "Crow" / "BIRD" requirement above.

@@ -88,7 +88,7 @@ production code. It contains intentional issues that must stay in place:
   reveal a real difference between the README and the code.
 - **`demo/whoami.py`** reads its API key from `os.environ["MISTAKE_API_KEY"]` instead
   of `MISTRAL_API_KEY`. This causes a `KeyError` at runtime and is the deliberate
-  failure that RetryBot (Lava) surfaces. Do not fix this typo.
+  failure that RetryBot (Crow) surfaces. Do not fix this typo.
   The game picks a daily-seeded random famous person and runs a single non-interactive
   LLM call per invocation.
 
@@ -209,10 +209,10 @@ because listing available API tools adds context the user may not know.
 | Axel (ChangeBot)  | Changes leave marks — make them count.                           |
 | Aero (SendBot)    | Once sent, it can't be recalled.                                 |
 | Loom (AgentBot)   | Follow the thread — one call at a time — until the task is done. |
-| Cato (GuardBot)   | Caution isn't hesitation — it's precision.                       |
+| Crow (RetryBot)   | Failure is data — use it.                                        |
+| Lock (GuardBot)   | Caution isn't hesitation — it's precision.                       |
 | Aria (ProjectBot) | Context first — conventions are rarely arbitrary.                |
 | Ursa (MemoryBot)  | Past turns are future context.                                   |
-| Lava (RetryBot)   | Failure is data — use it.                                        |
 | Drop (CompactBot) | Let go of the detail, hold the thread.                           |
 
 `reverse_string` is assigned directly to Telo's variant (not via any named list)

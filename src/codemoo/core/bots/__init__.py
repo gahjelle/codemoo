@@ -168,8 +168,8 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 instructions=bot.instructions,
                 commentator=commentator,
             )
-        case "GuardBot":
-            return GuardBot(
+        case "RetryBot":
+            return RetryBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,
@@ -177,8 +177,8 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 instructions=bot.instructions,
                 commentator=commentator,
             )
-        case "RetryBot":
-            return RetryBot(
+        case "GuardBot":
+            return GuardBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,

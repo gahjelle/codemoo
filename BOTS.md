@@ -6,23 +6,23 @@ The demo walks through a sequence of bots, each adding one capability. There are
 
 Each bot has a memorable name, playing on the feature it introduces.
 
-| #   | Bot        | Mode                  | Name | Name rationale                                                          | Emoji | Emoji name               | Emoji rationale                                           |
-| --- | ---------- | --------------------- | ---- | ----------------------------------------------------------------------- | ----- | ------------------------ | --------------------------------------------------------- |
-| 1   | EchoBot    | code, m365, workspace | Coco | Echo - co - co                                                          | 🦜     | `PARROT`                 | Parrots echo                                              |
-| 2   | LLMBot     | code, m365, workspace | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`               | A flash of intelligence                                   |
-| 3   | ChatBot    | code, m365, workspace | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`           | "The iris sees the whole scene"                           |
-| 4   | SystemBot  | code, m365, workspace | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS`        | Adopts a persona/role                                     |
-| 5   | ToolBot    | code, m365, workspace | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`                 | Uses a tool                                               |
-| 6   | ReadBot    | code                  | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`            | Reads files and lists directories                         |
-| 6   | ScanBot    | m365, workspace       | Roam | Roams through M365/Workspace data                                       | 🚶     | `PEDESTRIAN`             | Wanders through your data                                 |
-| 7   | ChangeBot  | code                  | Axel | Axe — change, cut, action                                               | 🔨     | `HAMMER`                 | Drives change                                             |
-| 7   | SendBot    | m365, workspace       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`            | Sends email, events, messages                             |
-| 8   | AgentBot   | code, m365, workspace | Loom | Weave everything together                                               | 🌀     | `CYCLONE`                | Loops until done                                          |
-| 9   | GuardBot   | code, m365, workspace | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`                   | Guards dangerous actions                                  |
-| 10  | RetryBot   | code, m365, workspace | Lava | Lava flows through every obstacle — errors become fuel                  | 🌋     | `VOLCANO`                | The pressure builds; the eruption is the recovery         |
-| 11  | ProjectBot | code, m365, workspace | Aria | Aria sings the context — the voice that sets the scene                  | 🎤     | `MICROPHONE`             | Speaks the project's context before acting                |
-| 12  | MemoryBot  | code, m365, workspace | Ursa | Ursa — the bear remembers where it has been                             | 🐻     | `BEAR FACE`              | Bears remember — it follows you everywhere                |
-| 13  | CompactBot | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread                         | 🧹     | `BROOM`            | What's dropped leaves no trace in the visible context     |
+| #   | Bot        | Mode                  | Name | Name rationale                                                          | Emoji | Emoji name        | Emoji rationale                                       |
+| --- | ---------- | --------------------- | ---- | ----------------------------------------------------------------------- | ----- | ----------------- | ----------------------------------------------------- |
+| 1   | EchoBot    | code, m365, workspace | Coco | Echo - co - co                                                          | 🦜     | `PARROT`          | Parrots echo                                          |
+| 2   | LLMBot     | code, m365, workspace | Mono | Mono represents the single-turn, no history                             | ✨     | `SPARKLES`        | A flash of intelligence                               |
+| 3   | ChatBot    | code, m365, workspace | Iris | The iris sees the whole scene — Iris sees the full conversation history | 🧿     | `NAZAR AMULET`    | "The iris sees the whole scene"                       |
+| 4   | SystemBot  | code, m365, workspace | Sona | Sona plays the part with a strong personality                           | 🎭     | `PERFORMING ARTS` | Adopts a persona/role                                 |
+| 5   | ToolBot    | code, m365, workspace | Telo | Telo from Greek *telos* (purpose/end) — a bot that can achieve purposes | 🔧     | `WRENCH`          | Uses a tool                                           |
+| 6   | ReadBot    | code                  | Rune | Files are modern day runes                                              | 📁     | `FILE FOLDER`     | Reads files and lists directories                     |
+| 6   | ScanBot    | m365, workspace       | Roam | Roams through M365/Workspace data                                       | 🚶     | `PEDESTRIAN`      | Wanders through your data                             |
+| 7   | ChangeBot  | code                  | Axel | Axe — change, cut, action                                               | 🔨     | `HAMMER`          | Drives change                                         |
+| 7   | SendBot    | m365, workspace       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`     | Sends email, events, messages                         |
+| 8   | AgentBot   | code, m365, workspace | Loom | Weave everything together                                               | 🌀     | `CYCLONE`         | Loops until done                                      |
+| 9   | RetryBot   | code, m365, workspace | Crow | Crow — smart, persistent; treats failure as data                        | 🐦     | `BIRD`            | Failure is data — use it                              |
+| 10  | GuardBot   | code, m365, workspace | Lock | Lock — guards against dangerous actions                                 | 🔒     | `LOCK`            | Guards dangerous actions                              |
+| 11  | ProjectBot | code, m365, workspace | Aria | Aria sings the context — the voice that sets the scene                  | 🎤     | `MICROPHONE`      | Speaks the project's context before acting            |
+| 12  | MemoryBot  | code, m365, workspace | Ursa | Ursa — the stars remember everything                                    | 🐻     | `BEAR FACE`       | Ursa Minor, little bear                               |
+| 13  | CompactBot | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread                         | 🧹     | `BROOM`           | What's dropped leaves no trace in the visible context |
 
 **Provisional** *(add emojis when each bot is implemented)*
 
@@ -60,8 +60,8 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 7   | ChangeBot  | Axel | Changes leave marks — make them count.                           |
 | 7   | SendBot    | Aero | Once sent, it can't be recalled.                                 |
 | 8   | AgentBot   | Loom | Follow the thread — one call at a time — until the task is done. |
-| 9   | GuardBot   | Cato | Caution isn't hesitation — it's precision.                       |
-| 10  | RetryBot   | Lava | Failure is data — use it.                                        |
+| 9   | RetryBot   | Crow | Failure is data — use it.                                        |
+| 10  | GuardBot   | Lock | Caution isn't hesitation — it's precision.                       |
 | 11  | ProjectBot | Aria | Context first — conventions are rarely arbitrary.                |
 | 12  | MemoryBot  | Ursa | Past turns are future context.                                   |
 | 13  | CompactBot | Drop | Let go of the detail, hold the thread.                           |
@@ -101,8 +101,8 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 6   | ReadBot     | Rune | Reads files and lists directories                  | Now it can look at your code. Ask it anything about a file                                |
 | 7   | ChangeBot   | Axel | Executes shell commands and writes files           | Now it can run code and change things. This is where it gets consequential                |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                 | Now it keeps going until the task is finished. You give a goal, not a command             |
-| 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions       | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                   | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 9   | RetryBot    | Crow | Tool errors feed back to the LLM                   | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 10  | GuardBot    | Lock | Human-in-the-loop before destructive actions       | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 11  | ProjectBot  | Aria | Reads AGENTS.md for project context                | Now it reads the room. It understands your project before touching anything               |
 | 12  | MemoryBot   | Ursa | Persists state across turns                        | Now it remembers *you* across sessions. It builds a model of your project                 |
 | 13  | CompactBot  | Drop | Context summarisation and token management         | Now it manages its own working memory. Long sessions don't hit walls                      |
@@ -133,8 +133,8 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 6   | * ScanBot   | Roam | Reads SharePoint, Outlook email, and calendar             | Now it can look at your organisation's data                                               |
 | 7   | * SendBot   | Aero | Sends Outlook email, creates events, posts to Teams       | Now it can change things against your M365 tenant                                         |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                        | Now it keeps going until the task is finished. You give a goal, not a command             |
-| 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions              | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                          | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 9   | RetryBot    | Crow | Tool errors feed back to the LLM                          | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 10  | GuardBot    | Lock | Human-in-the-loop before destructive actions              | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 11  | ProjectBot  | Aria | Reads team context from SharePoint                        | Now it reads the room. It understands your team before acting on M365 data                |
 | 12  | MemoryBot   | Ursa | Persists user preferences across sessions                 | Now it remembers you across sessions. It builds a model of who you are                    |
 | 13  | CompactBot  | Drop | Context summarisation and token management                | Now it manages its own working memory. Long sessions don't hit walls                      |
@@ -166,8 +166,8 @@ Bot types marked with * are unique to `m365` mode.
 | 6   | * ScanBot   | Roam | Reads Gmail, Google Calendar, and Google Drive                                    | Now it can look at your Google Workspace data                                             |
 | 7   | * SendBot   | Aero | Sends Gmail, creates Calendar events, posts to Chat, reads and writes Drive files | Now it can take actions via Google Workspace                                              |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                                                | Now it keeps going until the task is finished. You give a goal, not a command             |
-| 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions                                      | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                                                  | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 9   | RetryBot    | Crow | Tool errors feed back to the LLM                                                  | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 10  | GuardBot    | Lock | Human-in-the-loop before destructive actions                                      | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
 | 11  | ProjectBot  | Aria | Reads team context from Google Drive (TEAM.md) before acting                      | Now it reads the room. It loads your team's context doc before touching anything          |
 | 12  | MemoryBot   | Ursa | Persists user preferences across sessions                                         | Now it remembers you across sessions. It builds a model of who you are                    |
 | 13  | CompactBot  | Drop | Context summarisation and token management                                        | Now it manages its own working memory. Long sessions don't hit walls                      |
@@ -193,8 +193,8 @@ Bot types marked with * are unique to `workspace` mode.
 - **Act 1 — The Loop** (Coco → Mono → Iris): "An LLM isn't an agent. A loop is."
 - **Act 2 — Control** (Sona → Telo): "Instructions and tools — the two levers."
 - **Act 3 — Access** (Rune → Axel **or** Roam → Aero): "Reading and changing — and where each becomes consequential."
-- **Act 4 — Agency** (Loom → Cato): "Goals, not commands. And guardrails, not blind trust."
-- **Act 5 — Resilience** (Lava): "Failure is data. Now the bot reasons about it instead of crashing."
+- **Act 4 — Agency** (Loom → Crow): "Goals, not commands. And now it learns from failure."
+- **Act 5 — Guardrails** (Lock): "Failure is handled — now nothing destructive happens without your say-so."
 
 *Provisional:*
 - **Act 6 — Context** (Aria → Ursa): "It knows your project. It knows you."

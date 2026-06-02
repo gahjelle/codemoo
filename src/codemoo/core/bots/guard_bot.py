@@ -1,4 +1,4 @@
-"""LLM bot that loops tool calls, pausing for human approval before dangerous ones."""
+"""GuardBot: full RetryBot feature set with human approval before dangerous tools."""
 
 import dataclasses
 import json
@@ -29,11 +29,11 @@ from codemoo.core.tools import ToolDef, dispatch_tool
 
 @dataclasses.dataclass(eq=False)
 class GuardBot:
-    """Chat participant that loops tool calls with human approval before dangerous ones.
+    """Chat participant that loops tool calls with catch_errors and human approval.
 
-    Identical to AgentBot except that tools flagged requires_approval=True are
-    gated: the bot awaits a GuardDecision from the registered ask_fn before
-    executing. The loop continues in all cases, feeding the result back to the LLM.
+    Extends RetryBot: passes catch_errors=True to all dispatch_tool calls and
+    additionally gates tools flagged requires_approval=True behind a GuardDecision
+    from the registered ask_fn. The loop continues in all cases.
     """
 
     name: str
@@ -85,11 +85,19 @@ class GuardBot:
                         tool_output = _denial_message(decision)
                     else:
                         tool_output = await dispatch_tool(
-                            tool, use.arguments, self.name, self.commentator
+                            tool,
+                            use.arguments,
+                            self.name,
+                            self.commentator,
+                            catch_errors=True,
                         )
                 else:
                     tool_output = await dispatch_tool(
-                        tool, use.arguments, self.name, self.commentator
+                        tool,
+                        use.arguments,
+                        self.name,
+                        self.commentator,
+                        catch_errors=True,
                     )
                 tool_use_items.append(
                     ToolUseContent(
