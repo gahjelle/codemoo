@@ -113,11 +113,19 @@ class MemoryBot:
                         tool_output = _denial_message(decision)
                     else:
                         tool_output = await dispatch_tool(
-                            tool, use.arguments, self.name, self.commentator
+                            tool,
+                            use.arguments,
+                            self.name,
+                            self.commentator,
+                            catch_errors=True,
                         )
                 else:
                     tool_output = await dispatch_tool(
-                        tool, use.arguments, self.name, self.commentator
+                        tool,
+                        use.arguments,
+                        self.name,
+                        self.commentator,
+                        catch_errors=True,
                     )
                 tool_use_items.append(
                     ToolUseContent(

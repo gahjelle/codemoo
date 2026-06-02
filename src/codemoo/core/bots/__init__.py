@@ -177,6 +177,15 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 instructions=bot.instructions,
                 commentator=commentator,
             )
+        case "RetryBot":
+            return RetryBot(
+                name=bot.name,
+                emoji=bot.emoji,
+                llm=llm,
+                tools=tools,
+                instructions=bot.instructions,
+                commentator=commentator,
+            )
         case "ProjectBot":
             return ProjectBot(
                 name=bot.name,
@@ -190,18 +199,6 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
             )
         case "MemoryBot":
             return MemoryBot(
-                name=bot.name,
-                emoji=bot.emoji,
-                llm=llm,
-                tools=tools,
-                instructions=bot.instructions,
-                context_source=bot.context_source,
-                memory_file=Path(bot.memory_file) if bot.memory_file else None,
-                session_folder=session_folder,
-                commentator=commentator,
-            )
-        case "RetryBot":
-            return RetryBot(
                 name=bot.name,
                 emoji=bot.emoji,
                 llm=llm,

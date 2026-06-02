@@ -73,9 +73,17 @@ async def dispatch_tool(
     arguments: dict[str, object],
     bot_name: str,
     commentator: "CommentatorBot | None",
+    *,
+    catch_errors: bool = False,
 ) -> str:
-    """Run validate then fn; emit ToolEvent to commentator for all outcomes."""
+    """Run validate then fn; emit ToolEvent to commentator for all outcomes.
+
+    When catch_errors=False (default), an "Error: ..." result raises ToolError
+    without emitting a commentary event. When catch_errors=True, the error event
+    fires and the error string is returned to the caller.
+    """
     from codemoo.core.bots.commentator_bot import ToolEvent  # noqa: PLC0415
+    from codemoo.core.exceptions import ToolError  # noqa: PLC0415
 
     if tool.validate is not None:
         error = tool.validate(**arguments)
@@ -101,16 +109,20 @@ async def dispatch_tool(
             )
         )
     result = tool.fn(**arguments)
-    if commentator is not None and result.startswith("Error "):
-        await commentator.comment(
-            ToolEvent(
-                outcome="error",
-                bot_name=bot_name,
-                tool_name=tool.name,
-                arguments=arguments,
-                detail=result,
-            )
-        )
+    if result.startswith("Error: "):
+        if catch_errors:
+            if commentator is not None:
+                await commentator.comment(
+                    ToolEvent(
+                        outcome="error",
+                        bot_name=bot_name,
+                        tool_name=tool.name,
+                        arguments=arguments,
+                        detail=result,
+                    )
+                )
+            return result
+        raise ToolError(result)
     return result
 
 

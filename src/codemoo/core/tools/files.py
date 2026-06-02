@@ -14,7 +14,7 @@ def make_file_validator(session_folder: Path) -> Callable[..., str | None]:
         resolved = (resolved_root / path).resolve()
         if not resolved.is_relative_to(resolved_root):
             return (
-                f"Blocked: '{path}' resolves to '{resolved}', which is outside the"
+                f"Error: '{path}' resolves to '{resolved}', which is outside the"
                 f" session folder '{resolved_root}'."
                 " Only paths within the session folder are permitted."
             )

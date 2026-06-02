@@ -5,8 +5,8 @@ import os
 import openai as openai_sdk
 
 from codemoo.core.backend import LLMBackend
+from codemoo.core.exceptions import BackendUnavailableError
 from codemoo.core.tracer import Tracer
-from codemoo.llm.exceptions import BackendUnavailableError
 from codemoo.llm.openai_like import OpenAILikeBackend
 
 

@@ -25,7 +25,6 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Show full content of first parameter in GuardBot approval box
 - Add context editing capability: select, disable, summarise, or edit individual context items via a modal UI (the read-only inspector from `context_display` is the foundation)
 - Add tool management capability that can customize tools
-- Move compaction limit to config. Use a small window on CompactBot (demo), but a bigger (100k?) on other bots, including the codemoo variant.
 
 ## Proposed by agent
 

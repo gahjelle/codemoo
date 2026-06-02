@@ -19,9 +19,9 @@ bots = [
     { type = "ChangeBot", variant = "code" },
     { type = "AgentBot", variant = "code" },
     { type = "GuardBot", variant = "code" },
+    { type = "RetryBot", variant = "code" },
     { type = "ProjectBot", variant = "code" },
     { type = "MemoryBot", variant = "code" },
-    { type = "RetryBot", variant = "code" },
     { type = "CompactBot", variant = "code" },
 ]
 
@@ -58,9 +58,9 @@ bots = [
     { type = "SendBot", variant = "m365" },
     { type = "AgentBot", variant = "m365" },
     { type = "GuardBot", variant = "m365" },
+    { type = "RetryBot", variant = "m365" },
     { type = "ProjectBot", variant = "m365" },
     { type = "MemoryBot", variant = "m365" },
-    { type = "RetryBot", variant = "m365" },
     { type = "CompactBot", variant = "m365" },
 ]
 
@@ -75,18 +75,14 @@ bots = [
     { type = "SendBot", variant = "workspace" },
     { type = "AgentBot", variant = "workspace" },
     { type = "GuardBot", variant = "workspace" },
+    { type = "RetryBot", variant = "workspace" },
     { type = "ProjectBot", variant = "workspace" },
     { type = "MemoryBot", variant = "workspace" },
-    { type = "RetryBot", variant = "workspace" },
     { type = "CompactBot", variant = "workspace" },
 ]
 
 [scripts.vs]
 bots = [
-    { type = "EchoBot", variant = "default" },
-    { type = "LlmBot", variant = "default" },
-    { type = "ChatBot", variant = "default" },
-    { type = "SystemBot", variant = "default" },
     { type = "ToolBot", variant = "default" },
     { type = "ScanBot", variant = "workspace" },
     { type = "ReadBot", variant = "code" },
@@ -304,9 +300,35 @@ tools = ["@workspace_read", "@workspace_write"]
 prompts_file = "guard_bot-workspace.txt"
 capabilities = ["context_display", "tracing"]
 
+[bots.RetryBot]
+name = "Lava"
+emoji = "VOLCANO"
+sources = ["retry_bot.py"]
+
+[bots.RetryBot.variants.code]
+description = "Feed tool errors back to the LLM so it can reason about and recover from failures."
+instruction_file = "retry_bot-code.txt"
+tools = ["@code_read", "@code_write"]
+prompts_file = "retry_bot-code.txt"
+capabilities = ["context_display", "tracing"]
+
+[bots.RetryBot.variants.m365]
+description = "Feed M365 tool errors back to the LLM so it can reason about and recover from failures."
+instruction_file = "retry_bot-m365.txt"
+tools = ["@m365_read", "@m365_write"]
+prompts_file = "retry_bot-m365.txt"
+capabilities = ["context_display", "tracing"]
+
+[bots.RetryBot.variants.workspace]
+description = "Feed Workspace tool errors back to the LLM so it can reason about and recover from failures."
+instruction_file = "retry_bot-workspace.txt"
+tools = ["@workspace_read", "@workspace_write"]
+prompts_file = "retry_bot-workspace.txt"
+capabilities = ["context_display", "tracing"]
+
 [bots.ProjectBot]
-name = "Lore"
-emoji = "OPEN BOOK"
+name = "Aria"
+emoji = "MICROPHONE"
 sources = ["project_bot.py"]
 
 [bots.ProjectBot.variants.code]
@@ -334,8 +356,8 @@ prompts_file = "project_bot-workspace.txt"
 capabilities = ["context_display", "tracing"]
 
 [bots.MemoryBot]
-name = "Aura"
-emoji = "SMILING FACE WITH HALO"
+name = "Ursa"
+emoji = "BEAR FACE"
 sources = ["memory_bot.py"]
 
 [bots.MemoryBot.variants.code]
@@ -363,38 +385,6 @@ context_source = { type = "drive", name = "TEAM.md" }
 memory_file = "{user_settings_path}/memory-workspace.md"
 tools = ["@workspace_read", "@workspace_write", "save_memory"]
 prompts_file = "memory_bot-workspace.txt"
-capabilities = ["context_display", "tracing"]
-
-[bots.RetryBot]
-name = "Undo"
-emoji = "GAME DIE"
-sources = ["retry_bot.py"]
-
-[bots.RetryBot.variants.code]
-description = "Retry failing tool calls up to 3 times, then escalate with a clear summary."
-instruction_file = "retry_bot-code.txt"
-context_source = { type = "file", name = "AGENTS.md" }
-memory_file = "{project_settings_path}/memory-code.md"
-tools = ["@code_read", "@code_write", "save_memory"]
-prompts_file = "retry_bot-code.txt"
-capabilities = ["context_display", "tracing"]
-
-[bots.RetryBot.variants.m365]
-description = "Retry failing M365 tool calls up to 3 times, then escalate with a clear summary."
-instruction_file = "retry_bot-m365.txt"
-context_source = { type = "sharepoint", name = "TEAM.md" }
-memory_file = "{user_settings_path}/memory-m365.md"
-tools = ["@m365_read", "@m365_write", "save_memory"]
-prompts_file = "retry_bot-m365.txt"
-capabilities = ["context_display", "tracing"]
-
-[bots.RetryBot.variants.workspace]
-description = "Retry failing Workspace tool calls up to 3 times, then escalate with a clear summary."
-instruction_file = "retry_bot-workspace.txt"
-context_source = { type = "drive", name = "TEAM.md" }
-memory_file = "{user_settings_path}/memory-workspace.md"
-tools = ["@workspace_read", "@workspace_write", "save_memory"]
-prompts_file = "retry_bot-workspace.txt"
 capabilities = ["context_display", "tracing"]
 
 [bots.CompactBot]

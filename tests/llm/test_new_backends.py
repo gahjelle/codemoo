@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 from codemoo.config.schema import BackendConfig
-from codemoo.llm.exceptions import BackendUnavailableError
+from codemoo.core.exceptions import BackendUnavailableError
 from codemoo.llm.factory import BackendInfo, _create, resolve_backend
 from codemoo.llm.google import _GoogleBackend, create_google_backend
 from codemoo.llm.ollama import _OllamaBackend, create_ollama_backend

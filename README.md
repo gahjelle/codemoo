@@ -169,7 +169,8 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 🔨 **Axel** | ChangeBot — runs shell commands and writes files   |
 | 8   | 🌀 Loom     | Agent — full agentic loop with planning            |
 | 9   | 🔒 Cato     | Guard — human-in-the-loop before risky actions     |
-| 10  | Lore 📖     | Project context - inject information in every call |
+| 10  | 🌋 Lava     | RetryBot — tool errors feed back to the LLM        |
+| 11  | 🎤 Aria     | Project context - inject information in every call |
 
 **M365 path** (`--script m365`):
 
@@ -184,7 +185,8 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 📤 **Aero** | SendBot — sends Outlook email, creates events, posts to Teams |
 | 8   | 🌀 Loom     | Agent — full agentic loop over M365 data                      |
 | 9   | 🔒 Cato     | Guard — human approval before M365 actions                    |
-| 10  | Lore 📖     | Project context - inject information in every call            |
+| 10  | 🌋 Lava     | RetryBot — tool errors feed back to the LLM                   |
+| 11  | 🎤 Aria     | Project context - inject information in every call            |
 
 **Workspace path** (`--script workspace`):
 
@@ -199,7 +201,8 @@ You can set language with `CODEMOO_LANGUAGE`. For example, if you use `CODEMOO_L
 | 7   | 📤 **Aero** | SendBot — sends Gmail, creates Calendar events, posts to Chat |
 | 8   | 🌀 Loom     | Agent — full agentic loop over Google Workspace data          |
 | 9   | 🔒 Cato     | Guard — human approval before Workspace actions               |
-| 10  | Lore 📖     | Project context - inject information in every call            |
+| 10  | 🌋 Lava     | RetryBot — tool errors feed back to the LLM                   |
+| 11  | 🎤 Aria     | Project context - inject information in every call            |
 
 See [BOTS.md](BOTS.md) for more information about the bots.
 

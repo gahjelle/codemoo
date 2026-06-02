@@ -4,7 +4,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from codemoo.core.backend import Message, ToolUse, merge_tool_uses
-from codemoo.llm.exceptions import BackendUnavailableError
+from codemoo.core.exceptions import BackendUnavailableError
 from codemoo.llm.mistral import _MistralBackend, create_mistral_backend
 
 

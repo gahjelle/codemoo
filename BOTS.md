@@ -19,9 +19,9 @@ Each bot has a memorable name, playing on the feature it introduces.
 | 7   | SendBot    | m365, workspace       | Aero | Sends things through the air                                            | 📤     | `OUTBOX TRAY`            | Sends email, events, messages                             |
 | 8   | AgentBot   | code, m365, workspace | Loom | Weave everything together                                               | 🌀     | `CYCLONE`                | Loops until done                                          |
 | 9   | GuardBot   | code, m365, workspace | Cato | Cato the Censor — guards against dangerous actions                      | 🔒     | `LOCK`                   | Guards dangerous actions                                  |
-| 10  | ProjectBot | code, m365, workspace | Lore | Lore from folklore — keeper of knowledge and stories                    | 📖     | `OPEN BOOK`              | Reads project context                                     |
-| 11  | MemoryBot  | code, m365, workspace | Aura | An aura surrounds and travels with you — it accumulates over time       | 😇     | `SMILING FACE WITH HALO` | A halo is the aura around you — it follows you everywhere |
-| 12  | RetryBot   | code, m365, workspace | Undo | Undo the failure — retry from a known good state                        | 🎲     | `GAME DIE`               | Roll again — each retry is another chance                 |
+| 10  | RetryBot   | code, m365, workspace | Lava | Lava flows through every obstacle — errors become fuel                  | 🌋     | `VOLCANO`                | The pressure builds; the eruption is the recovery         |
+| 11  | ProjectBot | code, m365, workspace | Aria | Aria sings the context — the voice that sets the scene                  | 🎤     | `MICROPHONE`             | Speaks the project's context before acting                |
+| 12  | MemoryBot  | code, m365, workspace | Ursa | Ursa — the bear remembers where it has been                             | 🐻     | `BEAR FACE`              | Bears remember — it follows you everywhere                |
 | 13  | CompactBot | code, m365, workspace | Drop | Drops what's no longer needed; keeps the thread                         | 🧹     | `BROOM`            | What's dropped leaves no trace in the visible context     |
 
 **Provisional** *(add emojis when each bot is implemented)*
@@ -61,9 +61,9 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 7   | SendBot    | Aero | Once sent, it can't be recalled.                                 |
 | 8   | AgentBot   | Loom | Follow the thread — one call at a time — until the task is done. |
 | 9   | GuardBot   | Cato | Caution isn't hesitation — it's precision.                       |
-| 10  | ProjectBot | Lore | Context first — conventions are rarely arbitrary.                |
-| 11  | MemoryBot  | Aura | Past turns are future context.                                   |
-| 12  | RetryBot   | Undo | Failure is data — use it.                                        |
+| 10  | RetryBot   | Lava | Failure is data — use it.                                        |
+| 11  | ProjectBot | Aria | Context first — conventions are rarely arbitrary.                |
+| 12  | MemoryBot  | Ursa | Past turns are future context.                                   |
 | 13  | CompactBot | Drop | Let go of the detail, hold the thread.                           |
 
 **Provisional** *(revisit and confirm when each bot is implemented)*:
@@ -102,9 +102,9 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 7   | ChangeBot   | Axel | Executes shell commands and writes files           | Now it can run code and change things. This is where it gets consequential                |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                 | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions       | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | ProjectBot  | Lore | Reads AGENTS.md for project context                | Now it reads the room. It understands your project before touching anything               |
-| 11  | MemoryBot   | Aura | Persists state across turns                        | Now it remembers *you* across sessions. It builds a model of your project                 |
-| 12  | RetryBot    | Undo | Error recovery and retry budget                    | Now it handles failure. It retries, adapts, and knows when to stop                        |
+| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                   | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 11  | ProjectBot  | Aria | Reads AGENTS.md for project context                | Now it reads the room. It understands your project before touching anything               |
+| 12  | MemoryBot   | Ursa | Persists state across turns                        | Now it remembers *you* across sessions. It builds a model of your project                 |
 | 13  | CompactBot  | Drop | Context summarisation and token management         | Now it manages its own working memory. Long sessions don't hit walls                      |
 | 14  | CommandBot  | Exec | Slash commands defined and dispatched via config   | Now it has a vocabulary. Define a command once, invoke it anywhere                        |
 | 15  | SkillBot    | Cord | Predefined multi-step skill workflows              | Now it has playbooks. Structured workflows, not improvised responses                      |
@@ -134,9 +134,9 @@ Each bot from Telo onwards has a credo — a short phrase baked into its system 
 | 7   | * SendBot   | Aero | Sends Outlook email, creates events, posts to Teams       | Now it can change things against your M365 tenant                                         |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                        | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions              | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | ProjectBot  | Lore | Reads team context from SharePoint                        | Now it reads the room. It understands your team before acting on M365 data                |
-| 11  | MemoryBot   | Aura | Persists user preferences across sessions                 | Now it remembers you across sessions. It builds a model of who you are                    |
-| 12  | RetryBot    | Undo | Error recovery and retry budget                           | Now it handles failure. It retries, adapts, and knows when to stop                        |
+| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                          | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 11  | ProjectBot  | Aria | Reads team context from SharePoint                        | Now it reads the room. It understands your team before acting on M365 data                |
+| 12  | MemoryBot   | Ursa | Persists user preferences across sessions                 | Now it remembers you across sessions. It builds a model of who you are                    |
 | 13  | CompactBot  | Drop | Context summarisation and token management                | Now it manages its own working memory. Long sessions don't hit walls                      |
 | 14  | CommandBot  | Exec | Slash commands defined and dispatched via config          | Now it has a vocabulary. Define a command once, invoke it anywhere                        |
 | 15  | SkillBot    | Cord | Predefined multi-step skill workflows                     | Now it has playbooks. Structured workflows, not improvised responses                      |
@@ -167,9 +167,9 @@ Bot types marked with * are unique to `m365` mode.
 | 7   | * SendBot   | Aero | Sends Gmail, creates Calendar events, posts to Chat, reads and writes Drive files | Now it can take actions via Google Workspace                                              |
 | 8   | AgentBot    | Loom | Full tool loop, multi-step actions                                                | Now it keeps going until the task is finished. You give a goal, not a command             |
 | 9   | GuardBot    | Cato | Human-in-the-loop before destructive actions                                      | Now it pauses before the dangerous stuff. Nothing destructive happens without your say-so |
-| 10  | ProjectBot  | Lore | Reads team context from Google Drive (TEAM.md) before acting                      | Now it reads the room. It loads your team's context doc before touching anything          |
-| 11  | MemoryBot   | Aura | Persists user preferences across sessions                                         | Now it remembers you across sessions. It builds a model of who you are                    |
-| 12  | RetryBot    | Undo | Error recovery and retry budget                                                   | Now it handles failure. It retries, adapts, and knows when to stop                        |
+| 10  | RetryBot    | Lava | Tool errors feed back to the LLM                                                  | Now it handles failure. Tool errors become data — the LLM reasons about them and recovers |
+| 11  | ProjectBot  | Aria | Reads team context from Google Drive (TEAM.md) before acting                      | Now it reads the room. It loads your team's context doc before touching anything          |
+| 12  | MemoryBot   | Ursa | Persists user preferences across sessions                                         | Now it remembers you across sessions. It builds a model of who you are                    |
 | 13  | CompactBot  | Drop | Context summarisation and token management                                        | Now it manages its own working memory. Long sessions don't hit walls                      |
 | 14  | CommandBot  | Exec | Slash commands defined and dispatched via config                                  | Now it has a vocabulary. Define a command once, invoke it anywhere                        |
 | 15  | SkillBot    | Cord | Predefined multi-step skill workflows                                             | Now it has playbooks. Structured workflows, not improvised responses                      |
@@ -194,10 +194,11 @@ Bot types marked with * are unique to `workspace` mode.
 - **Act 2 — Control** (Sona → Telo): "Instructions and tools — the two levers."
 - **Act 3 — Access** (Rune → Axel **or** Roam → Aero): "Reading and changing — and where each becomes consequential."
 - **Act 4 — Agency** (Loom → Cato): "Goals, not commands. And guardrails, not blind trust."
-- **Act 5 — Context** (Lore → Aura): "It knows your project. It knows you."
+- **Act 5 — Resilience** (Lava): "Failure is data. Now the bot reasons about it instead of crashing."
 
 *Provisional:*
-- **Act 6 — Resilience** (Undo → Drop): "It holds up under pressure. It knows when to let go."
+- **Act 6 — Context** (Aria → Ursa): "It knows your project. It knows you."
+- **Act 7 — Endurance** (Drop): "It holds up under pressure. It knows when to let go."
 - **Act 7 — Commands** (Exec → Cord): "Define the vocabulary. Build the playbooks."
 - **Act 8 — Intelligence** (Omni → Dive → Exam): "It finds what it needs — online, in the codebase, and in the IDE."
 - **Act 9 — Deliberation** (Cast → Omen → Dual): "It plans. It reasons. It checks its own work."

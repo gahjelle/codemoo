@@ -17,7 +17,7 @@ def make_shell_validator(session_folder: Path) -> Callable[..., str | None]:
             tokens = shlex.split(command)
         except ValueError:
             return (
-                f"Blocked: the command could not be parsed."
+                f"Error: the command could not be parsed."
                 f" Only shell commands using paths within the session folder"
                 f" '{resolved_root}' are permitted."
             )
@@ -29,7 +29,7 @@ def make_shell_validator(session_folder: Path) -> Callable[..., str | None]:
                 candidate.startswith("/") and not candidate.startswith("./")
             ):
                 return (
-                    f"Blocked: the command contains '{candidate}', which references a"
+                    f"Error: the command contains '{candidate}', which references a"
                     f" path outside the session folder '{resolved_root}'."
                     " Use paths relative to the session folder instead."
                 )
@@ -49,13 +49,24 @@ def _run_shell(command: str, _timeout: int = 30) -> str:
             check=False,
         )
     except subprocess.TimeoutExpired:
-        return f"[timeout after {_timeout}s] Command did not complete: {command}"
-    parts = [f"exit code: {result.returncode}"]
-    if result.stdout:
-        parts.append(f"stdout:\n{result.stdout.rstrip()}")
-    if result.stderr:
-        parts.append(f"stderr:\n{result.stderr.rstrip()}")
-    return "\n".join(parts)
+        return f"Error: timeout after {_timeout}s. Command did not complete: {command}"
+
+    if result.returncode:
+        return "\n".join(
+            [
+                f"Error: {result.stderr.rstrip()}",
+                f"exit code: {result.returncode}",
+                f"stdout:\n{result.stdout.rstrip()}" if result.stdout.strip() else "",
+            ]
+        )
+
+    return "\n".join(
+        [
+            f"stdout:\n{result.stdout.rstrip()}",
+            f"stderr:\n{result.stderr.rstrip()}" if result.stderr.strip() else "",
+            f"exit code: {result.returncode}",
+        ]
+    )
 
 
 run_shell = ToolDef(

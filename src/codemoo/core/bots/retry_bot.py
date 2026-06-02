@@ -1,9 +1,8 @@
-"""RetryBot: full MemoryBot feature set with a per-turn retry budget."""
+"""RetryBot: full GuardBot feature set with catch_errors=True on all tool calls."""
 
 import dataclasses
 import json
 from collections.abc import Awaitable, Callable
-from pathlib import Path
 
 from codemoo.core.backend import (
     LLMBackend,
@@ -18,7 +17,6 @@ from codemoo.core.bots.approval import (
     _denial_message,
 )
 from codemoo.core.bots.commentator_bot import CommentatorBot
-from codemoo.core.context import read_memory_file, read_project_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,
@@ -26,19 +24,16 @@ from codemoo.core.context_items import (
     ToolUseContent,
     next_turn_id,
 )
-from codemoo.core.tools import ToolDef, dispatch_tool, format_tool_call
-
-_RETRY_BUDGET = 3
+from codemoo.core.tools import ToolDef, dispatch_tool
 
 
 @dataclasses.dataclass(eq=False)
 class RetryBot:
-    """Chat participant that escalates after repeated identical tool failures.
+    """Chat participant that feeds tool errors back to the LLM as result strings.
 
     Reimplements the full MemoryBot feature set (context, memory, approval gates)
-    and adds a per-turn retry counter. When the same (tool, args) pair is called
-    _RETRY_BUDGET times in a single turn, the loop exits and returns a failure
-    summary with any partial progress instead of continuing silently.
+    and passes catch_errors=True to all dispatch_tool calls so the LLM can reason
+    about and recover from tool failures instead of crashing the turn.
     """
 
     name: str
@@ -46,12 +41,7 @@ class RetryBot:
     llm: LLMBackend
     tools: list[ToolDef]
     instructions: str
-    context_source: dict[str, str] | None
-    memory_file: Path | None
-    session_folder: Path
     commentator: CommentatorBot | None = None
-    context: str | None = None
-    memory: str | None = None
 
     def __post_init__(self) -> None:  # noqa: D105
         self._ask_fn = _async_approved
@@ -62,42 +52,19 @@ class RetryBot:
         """Register the callback used to request approval for dangerous tool calls."""
         self._ask_fn = ask_fn
 
-    async def startup(self) -> None:
-        """Load project context and memory file before the first message."""
-        if self.commentator is not None:
-            self.context = await read_project_context(
-                context_source=self.context_source,
-                bot_name=self.name,
-                commentator=self.commentator,
-                session_folder=self.session_folder,
-            )
-            if self.memory_file is not None:
-                self.memory = await read_memory_file(
-                    memory_file_path=self.memory_file,
-                    bot_name=self.name,
-                    commentator=self.commentator,
-                )
-
+ 
     async def on_message(
         self,
         context: list[ContextItem],
     ) -> list[ContextItem]:
-        """Respond using context and memory, escalating after repeated tool failures."""
-        system_content = self.instructions
-        if self.context:
-            system_content = f"{system_content}\n\n# Project Context\n\n{self.context}"
-        if self.memory:
-            system_content = f"{system_content}\n\n# Memory\n\n{self.memory}"
-
+        """Respond using context and memory; tool errors feed back to the LLM."""
         messages: list[Message] = [
-            Message(role="system", content=system_content),
+            Message(role="system", content=self.instructions),
             *build_context(context),
         ]
         tool_map = {t.name: t for t in self.tools}
         turn = next_turn_id(context)
         tool_use_items: list[ToolUseContent] = []
-        retry_counts: dict[tuple[str, str], int] = {}
-        successful_calls: list[str] = []
 
         while True:
             response = await self.llm.complete(messages, self.tools)
@@ -111,21 +78,6 @@ class RetryBot:
 
             tool_result_messages: list[Message] = []
             for use in response:
-                retry_key = (use.name, json.dumps(use.arguments, sort_keys=True))
-                if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
-                    escalation = self._escalation_message(
-                        retry_key[0], successful_calls
-                    )
-                    return [
-                        *[
-                            ContextItem(content=tu, turn_id=turn)
-                            for tu in tool_use_items
-                        ],
-                        ContextItem(
-                            content=AssistantMessageContent(escalation), turn_id=turn
-                        ),
-                    ]
-
                 tool = tool_map[use.name]
                 if tool.requires_approval:
                     decision = await self._ask_fn(
@@ -135,18 +87,19 @@ class RetryBot:
                         tool_output = _denial_message(decision)
                     else:
                         tool_output = await dispatch_tool(
-                            tool, use.arguments, self.name, self.commentator
+                            tool,
+                            use.arguments,
+                            self.name,
+                            self.commentator,
+                            catch_errors=True,
                         )
                 else:
                     tool_output = await dispatch_tool(
-                        tool, use.arguments, self.name, self.commentator
-                    )
-
-                retry_counts[retry_key] = retry_counts.get(retry_key, 0) + 1
-
-                if not tool_output.startswith("Error "):
-                    successful_calls.append(
-                        format_tool_call(use.name, use.arguments, max_value_len=40)
+                        tool,
+                        use.arguments,
+                        self.name,
+                        self.commentator,
+                        catch_errors=True,
                     )
 
                 tool_use_items.append(
@@ -161,15 +114,3 @@ class RetryBot:
                     Message(role="tool", content=tool_output, tool_call_id=use.call_id)
                 )
             messages = [*messages, merge_tool_uses(response), *tool_result_messages]
-
-    def _escalation_message(self, tool_name: str, successful_calls: list[str]) -> str:
-        """Build the failure summary returned when the retry budget is exhausted."""
-        lines = [
-            f"I tried calling `{tool_name}` {_RETRY_BUDGET} times but kept getting"
-            " the same error. I'm stopping here rather than continuing in a loop."
-        ]
-        if successful_calls:
-            lines.append("\nCompleted before the failure:")
-            lines.extend(f"  • {call}" for call in successful_calls)
-        lines.append("\nPlease let me know how you'd like to proceed.")
-        return "\n".join(lines)

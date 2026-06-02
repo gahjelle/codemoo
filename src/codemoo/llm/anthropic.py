@@ -7,9 +7,9 @@ from typing import overload
 import anthropic as anthropic_sdk
 
 from codemoo.core.backend import LLMBackend, Message, ToolUse
+from codemoo.core.exceptions import BackendUnavailableError
 from codemoo.core.tools import ToolDef
 from codemoo.core.tracer import Tracer
-from codemoo.llm.exceptions import BackendUnavailableError
 
 
 def _serialize(

@@ -29,9 +29,8 @@ from codemoo.core.context_items import (
     next_turn_id,
 )
 from codemoo.core.token_counter import estimate_tokens
-from codemoo.core.tools import ToolDef, dispatch_tool, format_tool_call
+from codemoo.core.tools import ToolDef, dispatch_tool
 
-_RETRY_BUDGET = 3
 _RECENT_WINDOW_FRACTION = 0.3
 _DEFAULT_COMPACT_THRESHOLD = 8000
 
@@ -54,8 +53,8 @@ Be concise. The summary will be injected as context for the next LLM turn.
 class CompactBot:
     """Chat participant that summarises old context when the token budget is exceeded.
 
-    Reimplements the full RetryBot feature set (context, memory, approval gates,
-    per-turn retry budget) and adds a compact() method. When the token count of
+    Reimplements the full MemoryBot feature set (context, memory, approval gates,
+    catch_errors=True) and adds a compact() method. When the token count of
     build_context(context) reaches compact_threshold, older turns are condensed
     into a single InjectedContent summary item and disabled, keeping the LLM
     context manageable without losing important decisions or file references.
@@ -180,7 +179,7 @@ class CompactBot:
         self,
         context: list[ContextItem],
     ) -> list[ContextItem]:
-        """Respond using context and memory, escalating after repeated tool failures."""
+        """Respond using context and memory; tool errors feed back to the LLM."""
         system_content = self.instructions
         if self.context:
             system_content = f"{system_content}\n\n# Project Context\n\n{self.context}"
@@ -194,8 +193,6 @@ class CompactBot:
         tool_map = {t.name: t for t in self.tools}
         turn = next_turn_id(context)
         tool_use_items: list[ToolUseContent] = []
-        retry_counts: dict[tuple[str, str], int] = {}
-        successful_calls: list[str] = []
 
         while True:
             response = await self.llm.complete(messages, self.tools)
@@ -209,21 +206,6 @@ class CompactBot:
 
             tool_result_messages: list[Message] = []
             for use in response:
-                retry_key = (use.name, json.dumps(use.arguments, sort_keys=True))
-                if retry_counts.get(retry_key, 0) >= _RETRY_BUDGET:
-                    escalation = self._escalation_message(
-                        retry_key[0], successful_calls
-                    )
-                    return [
-                        *[
-                            ContextItem(content=tu, turn_id=turn)
-                            for tu in tool_use_items
-                        ],
-                        ContextItem(
-                            content=AssistantMessageContent(escalation), turn_id=turn
-                        ),
-                    ]
-
                 tool = tool_map[use.name]
                 if tool.requires_approval:
                     decision = await self._ask_fn(
@@ -233,18 +215,19 @@ class CompactBot:
                         tool_output = _denial_message(decision)
                     else:
                         tool_output = await dispatch_tool(
-                            tool, use.arguments, self.name, self.commentator
+                            tool,
+                            use.arguments,
+                            self.name,
+                            self.commentator,
+                            catch_errors=True,
                         )
                 else:
                     tool_output = await dispatch_tool(
-                        tool, use.arguments, self.name, self.commentator
-                    )
-
-                retry_counts[retry_key] = retry_counts.get(retry_key, 0) + 1
-
-                if not tool_output.startswith("Error "):
-                    successful_calls.append(
-                        format_tool_call(use.name, use.arguments, max_value_len=40)
+                        tool,
+                        use.arguments,
+                        self.name,
+                        self.commentator,
+                        catch_errors=True,
                     )
 
                 tool_use_items.append(
@@ -259,15 +242,3 @@ class CompactBot:
                     Message(role="tool", content=tool_output, tool_call_id=use.call_id)
                 )
             messages = [*messages, merge_tool_uses(response), *tool_result_messages]
-
-    def _escalation_message(self, tool_name: str, successful_calls: list[str]) -> str:
-        """Build the failure summary returned when the retry budget is exhausted."""
-        lines = [
-            f"I tried calling `{tool_name}` {_RETRY_BUDGET} times but kept getting"
-            " the same error. I'm stopping here rather than continuing in a loop."
-        ]
-        if successful_calls:
-            lines.append("\nCompleted before the failure:")
-            lines.extend(f"  • {call}" for call in successful_calls)
-        lines.append("\nPlease let me know how you'd like to proceed.")
-        return "\n".join(lines)

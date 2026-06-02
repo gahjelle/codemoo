@@ -1,13 +1,21 @@
-# Spec: retry-bot
+## REMOVED Requirements
 
-## Purpose
+### Requirement: RetryBot tracks repeated identical tool calls per turn
+**Reason**: Retry-counting is undemonstrable — modern LLMs adapt without looping on identical tool calls. The dead code obscures the bot's actual new capability.
+**Migration**: No callers depend on this behavior. Remove `retry_counts`, `_RETRY_BUDGET`, and the retry-key check from `retry_bot.py`.
 
-Defines RetryBot (Lava) — the bot positioned immediately after GuardBot in the demo progression. RetryBot extends MemoryBot with `catch_errors=True` on all tool calls, so tool errors are returned to the LLM as result strings rather than crashing the turn, giving the LLM the opportunity to reason about and recover from failures.
+### Requirement: RetryBot escalates after 3 identical calls and returns a failure summary
+**Reason**: Removed along with retry-counting. The escalation message and `_escalation_message` method are no longer needed.
+**Migration**: None. The LLM now receives tool errors directly and produces its own recovery response.
 
-## Requirements
+### Requirement: RetryBot re-requires approval for failed requires_approval tools
+**Reason**: With no retry loop, there is no concept of "re-requesting approval for a retry". Approval is still requested per-call as in every other bot.
+**Migration**: None — the per-call approval behavior from GuardBot is preserved unchanged.
+
+## MODIFIED Requirements
 
 ### Requirement: RetryBot passes catch_errors=True to all dispatch_tool calls
-RetryBot's defining new capability SHALL be passing `catch_errors=True` to every `dispatch_tool` call in its tool loop. This causes tool errors to be returned to the LLM as result strings rather than raised as `ToolError` exceptions. No retry-counting logic SHALL be present.
+RetryBot's defining new capability SHALL be passing `catch_errors=True` to every `dispatch_tool` call in its tool loop. This causes tool errors to be returned to the LLM as result strings rather than raised as `ToolError` exceptions. The retry-counting logic SHALL NOT be present.
 
 #### Scenario: Tool error feeds back to the LLM
 - **WHEN** a tool called by RetryBot returns `"Error: ..."`
@@ -43,7 +51,7 @@ RetryBot SHALL appear in `codemoo.toml` with `name = "Lava"` and `emoji = "VOLCA
 - **AND** the bot at position N+2 SHALL be ProjectBot
 
 ### Requirement: RetryBot becomes the default bot for `uv run codemoo` and `uv run codemoo business`
-The `bot` parameter default in `code_chat` and `business_chat` in `tui.py` SHALL be set to `"RetryBot"` (or remain if already set).
+The `bot` parameter default in `code_chat` and `business_chat` in `tui.py` SHALL remain `"RetryBot"` (no change needed if already set; update if still pointing to MemoryBot).
 
 #### Scenario: Running codemoo with no arguments starts RetryBot
 - **WHEN** `uv run codemoo` is run with no `--bot` argument
