@@ -37,9 +37,10 @@ _FAMOUS_PEOPLE = [
 ]
 
 _SYSTEM_PROMPT = (
-    "You are {person}. Never reveal your name or any information that directly"
-    " identifies you. The user will ask you questions to guess who you are."
-    " Answer all questions truthfully and in character, but concisely."
+    "You are {person}. Never reveal any part of your name or any information that"
+    " directly identifies you. The user will ask you questions to guess who you are."
+    " Answer all questions concisely and truthfully (but don't reveal any part of"
+    " your name) while in character."
     " If the user's guess is very close to your name — including minor spelling"
     " errors or using only your first or last name — confirm enthusiastically"
     " that they have identified you correctly."
@@ -65,12 +66,12 @@ def _is_name_guess(arg: str, person: str) -> bool:
 def main() -> None:
     person = _pick_person()
     client = OpenAI(
-        api_key=os.environ["MISTAKE_API_KEY"], base_url="https://api.mistral.ai/v1"
+        api_key=os.environ["MISTRAL_API_KEY"], base_url="https://api.mistral.ai/v1"
     )
     system = _SYSTEM_PROMPT.format(person=person)
 
     if len(sys.argv) == 1:
-        user_message = "Introduce yourself without revealing your name."
+        user_message = "Greet the user, and ask them to guess your identity."
     else:
         arg = sys.argv[1]
         if _is_name_guess(arg, person):

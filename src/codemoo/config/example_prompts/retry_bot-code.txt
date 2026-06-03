@@ -1,3 +1,1 @@
-Run `uv run python whoami.py` five times.
----
-Fix the variable name in whoami.py and run the game again.
+Fix greeter.py — it crashes when run. Verify with `uv run pytest`.

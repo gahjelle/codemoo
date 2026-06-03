@@ -1,5 +1,7 @@
-Run `uv run greeter.py`
+Run `time uv run python kaprekar.py`
 ---
-Run `uv run pytest test_greeter.py`
+How is the kaprekar script described in README.md
 ---
-Show the contents of README.md and greeter.py in a single command
+Create kaprekar2.py with the efficient algorithm described in the README
+---
+Run kaprekar2.py. Then run the original kaprekar.py and compare their outputs
