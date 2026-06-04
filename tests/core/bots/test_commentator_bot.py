@@ -9,7 +9,8 @@ import pytest
 from codemoo.chat.app import ChatApp
 from codemoo.core.backend import Message, ToolUse
 from codemoo.core.bots.agent_bot import AgentBot
-from codemoo.core.bots.commentator_bot import (
+from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
+from codemoo.core.commentator import (
     _STREIK_NAME,
     CommentatorBot,
     ContextEvent,
@@ -17,8 +18,7 @@ from codemoo.core.bots.commentator_bot import (
     Persona,
     ToolEvent,
 )
-from codemoo.core.bots.error_bot import ErrorBot
-from codemoo.core.bots.single_turn_tool_bot import SingleTurnToolBot
+from codemoo.core.error import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import HumanParticipant
 from codemoo.core.tools.shell import run_shell

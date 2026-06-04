@@ -3,7 +3,7 @@
 import pytest
 
 from codemoo.core.backend import Message
-from codemoo.core.bots.error_bot import _PERSONAS, ErrorBot
+from codemoo.core.error import _PERSONAS, ErrorBot
 from codemoo.core.message import ChatMessage
 
 

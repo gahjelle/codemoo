@@ -9,8 +9,8 @@ import pytest
 
 from codemoo.chat.app import ChatApp
 from codemoo.config.schema import ResolvedBotConfig
-from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.context_items import ContextItem, UserMessageContent
+from codemoo.core.error import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 

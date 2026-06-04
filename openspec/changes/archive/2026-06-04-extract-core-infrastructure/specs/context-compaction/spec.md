@@ -1,10 +1,4 @@
-# Spec: context-compaction
-
-## Purpose
-
-TBD — defines the attribute-based protocol by which `ChatApp` integrates context compaction into its message-handling loop, allowing any bot with a `compact_threshold` attribute to trim conversation context before `on_message` is called.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: ChatApp calls compact() before on_message if the method exists
 `ChatApp._collect_replies` SHALL check `getattr(participant, "compact_threshold", None)`

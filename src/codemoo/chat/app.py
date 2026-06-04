@@ -23,9 +23,9 @@ from codemoo.chat.slides import DemoContext, SlideScreen
 from codemoo.chat.status import ThinkingStatus
 from codemoo.chat.trace_modal import TraceModal
 from codemoo.config.schema import ResolvedBotConfig
-from codemoo.core.bots.approval import ApprovalRequest, GuardDecision
-from codemoo.core.bots.commentator_bot import CommentatorBot, ContextEvent
-from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.approval import ApprovalRequest, GuardDecision
+from codemoo.core.commentator import CommentatorBot, ContextEvent
+from codemoo.core.compaction import compact_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,
@@ -33,6 +33,7 @@ from codemoo.core.context_items import (
     UserMessageContent,
     next_turn_id,
 )
+from codemoo.core.error import ErrorBot
 from codemoo.core.message import ChatMessage
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.core.token_counter import estimate_tokens
@@ -206,10 +207,16 @@ class ChatApp(App[str | None]):
                     status.set_bot(participant.emoji, participant.name)
                 reply = None
                 try:
-                    if hasattr(participant, "compact"):
-                        self._chat_context = await participant.compact(
-                            self._chat_context
-                        )  # ty: ignore[call-non-callable]
+                    if (
+                        threshold := getattr(participant, "compact_threshold", None)
+                    ) is not None:
+                        self._chat_context = await compact_context(
+                            self._chat_context,
+                            participant.llm,  # ty: ignore[unresolved-attribute]
+                            threshold,
+                            getattr(participant, "commentator", None),
+                            participant.name,
+                        )
                     # Invariant: self._chat_context[-1] is the triggering message
                     new_items = await participant.on_message(self._chat_context)
                     self._chat_context = [*self._chat_context, *new_items]

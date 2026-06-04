@@ -5,19 +5,19 @@ import json
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 
-from codemoo.core.backend import (
-    LLMBackend,
-    Message,
-    merge_tool_uses,
-)
-from codemoo.core.bots.approval import (
+from codemoo.core.approval import (
     ApprovalRequest,
     Denied,
     GuardDecision,
     _async_approved,
     _denial_message,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.backend import (
+    LLMBackend,
+    Message,
+    merge_tool_uses,
+)
+from codemoo.core.commentator import CommentatorBot
 from codemoo.core.context import read_project_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (

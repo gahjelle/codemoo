@@ -3,10 +3,10 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from codemoo.core.bots.commentator_bot import LoadEvent
+from codemoo.core.commentator import LoadEvent
 
 if TYPE_CHECKING:
-    from codemoo.core.bots.commentator_bot import CommentatorBot
+    from codemoo.core.commentator import CommentatorBot
 
 
 async def read_project_context(

@@ -25,8 +25,8 @@ from codemoo.config.schema import (
 from codemoo.core import bots as bot_module
 from codemoo.core.backend import LLMBackend
 from codemoo.core.bots import make_bots, resolve_bot, run_init_hooks
-from codemoo.core.bots.commentator_bot import CommentatorBot, Persona
-from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.commentator import CommentatorBot, Persona
+from codemoo.core.error import ErrorBot
 from codemoo.core.participant import ChatParticipant, HumanParticipant
 from codemoo.core.trace_store import TraceStore
 from codemoo.llm.factory import BackendInfo, resolve_backend

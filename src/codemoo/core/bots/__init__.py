@@ -9,10 +9,8 @@ from codemoo.core.backend import LLMBackend
 from codemoo.core.bots.agent_bot import AgentBot
 from codemoo.core.bots.change_bot import ChangeBot
 from codemoo.core.bots.chat_bot import ChatBot
-from codemoo.core.bots.commentator_bot import CommentatorBot
-from codemoo.core.bots.compact_bot import _DEFAULT_COMPACT_THRESHOLD, CompactBot
+from codemoo.core.bots.compact_bot import CompactBot
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.error_bot import ErrorBot
 from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.bots.llm_bot import LlmBot
 from codemoo.core.bots.memory_bot import MemoryBot
@@ -23,6 +21,8 @@ from codemoo.core.bots.scan_bot import ScanBot
 from codemoo.core.bots.send_bot import SendBot
 from codemoo.core.bots.system_bot import SystemBot
 from codemoo.core.bots.tool_bot import ToolBot
+from codemoo.core.commentator import CommentatorBot
+from codemoo.core.error import ErrorBot
 from codemoo.core.participant import ChatParticipant
 from codemoo.core.tools import TOOL_REGISTRY, ToolDef
 from codemoo.core.tools.files import make_file_validator
@@ -219,7 +219,7 @@ def _make_bot(  # noqa: C901, PLR0911, PLR0912
                 context_source=bot.context_source,
                 memory_file=Path(bot.memory_file) if bot.memory_file else None,
                 session_folder=session_folder,
-                compact_threshold=bot.compact_threshold or _DEFAULT_COMPACT_THRESHOLD,
+                compact_threshold=bot.compact_threshold,
                 commentator=commentator,
             )
 

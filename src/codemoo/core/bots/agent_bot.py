@@ -8,7 +8,7 @@ from codemoo.core.backend import (
     Message,
     merge_tool_uses,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot
+from codemoo.core.commentator import CommentatorBot
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,

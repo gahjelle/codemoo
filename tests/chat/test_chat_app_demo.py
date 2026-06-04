@@ -7,7 +7,7 @@ from codemoo.chat.demo_header import DemoHeader
 from codemoo.chat.slides import DemoContext
 from codemoo.config.schema import ResolvedBotConfig
 from codemoo.core.bots.echo_bot import EchoBot
-from codemoo.core.bots.error_bot import ErrorBot
+from codemoo.core.error import ErrorBot
 from codemoo.core.participant import HumanParticipant
 
 

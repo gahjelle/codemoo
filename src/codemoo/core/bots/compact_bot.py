@@ -1,52 +1,32 @@
-"""CompactBot: full RetryBot feature set with automatic context summarisation."""
+"""CompactBot: full MemoryBot feature set with automatic context summarisation."""
 
 import dataclasses
 import json
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 
-from codemoo.core.backend import (
-    LLMBackend,
-    Message,
-    merge_tool_uses,
-)
-from codemoo.core.bots.approval import (
+from codemoo.core.approval import (
     ApprovalRequest,
     Denied,
     GuardDecision,
     _async_approved,
     _denial_message,
 )
-from codemoo.core.bots.commentator_bot import CommentatorBot, ContextEvent
+from codemoo.core.backend import (
+    LLMBackend,
+    Message,
+    merge_tool_uses,
+)
+from codemoo.core.commentator import CommentatorBot
 from codemoo.core.context import read_memory_file, read_project_context
 from codemoo.core.context_builder import build_context
 from codemoo.core.context_items import (
     AssistantMessageContent,
     ContextItem,
-    InjectedContent,
-    ItemMode,
     ToolUseContent,
     next_turn_id,
 )
-from codemoo.core.token_counter import estimate_tokens
 from codemoo.core.tools import ToolDef, dispatch_tool
-
-_RECENT_WINDOW_FRACTION = 0.3
-_DEFAULT_COMPACT_THRESHOLD = 8000
-
-_SUMMARISE_PROMPT = """\
-Summarise the conversation history below. Preserve:
-- Decisions made and their rationale
-- Files created, read, or modified (include paths)
-- Explicit user instructions or constraints
-- Open questions or next steps
-
-Omit tool call traces and raw command output — those can be re-derived if needed.
-Be concise. The summary will be injected as context for the next LLM turn.
-
---- CONVERSATION HISTORY ---
-{history}
---- END ---"""
 
 
 @dataclasses.dataclass(eq=False)
@@ -54,10 +34,9 @@ class CompactBot:
     """Chat participant that summarises old context when the token budget is exceeded.
 
     Reimplements the full MemoryBot feature set (context, memory, approval gates,
-    catch_errors=True) and adds a compact() method. When the token count of
-    build_context(context) reaches compact_threshold, older turns are condensed
-    into a single InjectedContent summary item and disabled, keeping the LLM
-    context manageable without losing important decisions or file references.
+    catch_errors=True) and adds a compact_threshold field. When the token count of
+    build_context(context) reaches compact_threshold, app.py calls compact_context()
+    before on_message to keep the LLM context manageable.
     """
 
     name: str
@@ -68,14 +47,13 @@ class CompactBot:
     context_source: dict[str, str] | None
     memory_file: Path | None
     session_folder: Path
-    compact_threshold: int
+    compact_threshold: int | None
     commentator: CommentatorBot | None = None
     context: str | None = None
     memory: str | None = None
 
     def __post_init__(self) -> None:  # noqa: D105
         self._ask_fn = _async_approved
-        self._compacted = False
 
     def register_guard(
         self, ask_fn: Callable[[ApprovalRequest], Awaitable[GuardDecision]]
@@ -84,8 +62,7 @@ class CompactBot:
         self._ask_fn = ask_fn
 
     async def startup(self) -> None:
-        """Load project context and memory; reset compaction state."""
-        self._compacted = False
+        """Load project context and memory."""
         if self.commentator is not None:
             self.context = await read_project_context(
                 context_source=self.context_source,
@@ -99,81 +76,6 @@ class CompactBot:
                     bot_name=self.name,
                     commentator=self.commentator,
                 )
-
-    async def compact(self, context: list[ContextItem]) -> list[ContextItem]:
-        """Summarise old context items when the token budget is exceeded.
-
-        Returns context unchanged if below compact_threshold. When at or above
-        threshold, disables old items (preserving pinned ones) and injects a
-        single summary InjectedContent item before the recent window.
-        """
-        if estimate_tokens(build_context(context)) < self.compact_threshold:
-            return context
-
-        recent_budget = int(self.compact_threshold * _RECENT_WINDOW_FRACTION)
-        recent_start = len(context)
-        recent_tokens = 0
-        for i in range(len(context) - 1, -1, -1):
-            item_tokens = estimate_tokens(build_context([context[i]]))
-            if recent_tokens + item_tokens <= recent_budget:
-                recent_tokens += item_tokens
-                recent_start = i
-            else:
-                break
-
-        items_to_summarise = [
-            item for item in context[:recent_start] if not item.pinned
-        ]
-        summary_text = await self._summarise(items_to_summarise)
-
-        new_context: list[ContextItem] = []
-        for item in context[:recent_start]:
-            if item.pinned:
-                new_context.append(item)
-            else:
-                new_context.append(dataclasses.replace(item, mode=ItemMode.DISABLED))
-
-        summary_turn = (
-            context[recent_start].turn_id if recent_start < len(context) else 0
-        )
-        new_context.append(
-            ContextItem(
-                content=InjectedContent(
-                    label="Conversation summary",
-                    text=summary_text,
-                    role="user",
-                ),
-                turn_id=summary_turn,
-                pinned=True,
-            )
-        )
-        new_context.extend(context[recent_start:])
-        self._compacted = True
-        if self.commentator is not None:
-            await self.commentator.comment(
-                ContextEvent(
-                    kind="compact",
-                    bot_name=self.name,
-                    items_affected=len(items_to_summarise),
-                    preview=summary_text[:300],
-                )
-            )
-        return new_context
-
-    async def _summarise(self, items: list[ContextItem]) -> str:
-        """Call the LLM to produce a focused summary of the given context items."""
-        messages = build_context(items)
-        history_lines: list[str] = []
-        for msg in messages:
-            role = msg.role.upper()
-            history_lines.append(f"[{role}] {msg.content or ''}")
-        history = "\n".join(history_lines)
-        prompt = _SUMMARISE_PROMPT.format(history=history)
-        summary_messages: list[Message] = [Message(role="user", content=prompt)]
-        response = await self.llm.complete(summary_messages, [])
-        if isinstance(response, list):
-            return "(Summary unavailable)"
-        return response
 
     async def on_message(
         self,

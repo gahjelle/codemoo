@@ -1,4 +1,4 @@
-"""Tests for CompactBot — compact() logic, startup state reset, and registry."""
+"""Tests for compact_context() logic and CompactBot registry integration."""
 
 import dataclasses
 from pathlib import Path
@@ -7,8 +7,9 @@ from unittest.mock import AsyncMock
 import pytest
 
 from codemoo.core.backend import Message, ToolUse
-from codemoo.core.bots.commentator_bot import ContextEvent
 from codemoo.core.bots.compact_bot import CompactBot
+from codemoo.core.commentator import ContextEvent
+from codemoo.core.compaction import compact_context
 from codemoo.core.context_items import (
     ContextItem,
     InjectedContent,
@@ -56,7 +57,7 @@ def _ctx(texts: list[str], pinned: list[bool] | None = None) -> list[ContextItem
 
 
 # ---------------------------------------------------------------------------
-# compact() — below threshold
+# compact_context() — below threshold
 # ---------------------------------------------------------------------------
 
 
@@ -65,7 +66,7 @@ async def test_compact_returns_unchanged_below_threshold() -> None:
     bot = _make_bot(threshold=100_000, llm_responses=[])
     ctx = _ctx(["hello", "world"])
 
-    result = await bot.compact(ctx)
+    result = await compact_context(ctx, bot.llm, 100_000)
 
     assert result is ctx
 
@@ -73,12 +74,12 @@ async def test_compact_returns_unchanged_below_threshold() -> None:
 @pytest.mark.asyncio
 async def test_compact_returns_same_object_when_empty_context() -> None:
     bot = _make_bot(threshold=1, llm_responses=[])
-    result = await bot.compact([])
+    result = await compact_context([], bot.llm, 1)
     assert result == []
 
 
 # ---------------------------------------------------------------------------
-# compact() — at or above threshold
+# compact_context() — at or above threshold
 # ---------------------------------------------------------------------------
 
 
@@ -90,7 +91,7 @@ async def test_compact_disables_old_items_and_injects_summary() -> None:
     ctx = _ctx([long_text, long_text, long_text])
     bot = _make_bot(threshold=5, llm_responses=["Summary of old turns."])
 
-    result = await bot.compact(ctx)
+    result = await compact_context(ctx, bot.llm, 5)
 
     disabled = [i for i in result if i.mode == ItemMode.DISABLED]
     summaries = [i for i in result if isinstance(i.content, InjectedContent)]
@@ -112,7 +113,7 @@ async def test_compact_summary_appears_before_recent_window() -> None:
     ctx = _ctx([long_text, long_text, long_text, long_text, long_text])
     bot = _make_bot(threshold=80, llm_responses=["Summary."])
 
-    result = await bot.compact(ctx)
+    result = await compact_context(ctx, bot.llm, 80)
 
     summary_idx = next(
         i for i, item in enumerate(result) if isinstance(item.content, InjectedContent)
@@ -126,18 +127,8 @@ async def test_compact_summary_appears_before_recent_window() -> None:
     assert summary_idx < recent_idx, "Summary must appear before the recent window"
 
 
-@pytest.mark.asyncio
-async def test_compact_sets_compacted_flag() -> None:
-    long_text = "word " * 20
-    bot = _make_bot(threshold=5, llm_responses=["Summary."])
-
-    assert bot._compacted is False
-    await bot.compact(_ctx([long_text, long_text, long_text]))
-    assert bot._compacted is True
-
-
 # ---------------------------------------------------------------------------
-# compact() — pinned items are never disabled
+# compact_context() — pinned items are never disabled
 # ---------------------------------------------------------------------------
 
 
@@ -148,7 +139,7 @@ async def test_pinned_items_are_never_disabled() -> None:
     ctx = _ctx([long_text, long_text, long_text], pinned=[True, False, False])
     bot = _make_bot(threshold=5, llm_responses=["Summary."])
 
-    result = await bot.compact(ctx)
+    result = await compact_context(ctx, bot.llm, 5)
 
     pinned_in_result = [
         i for i in result if i.pinned and not isinstance(i.content, InjectedContent)
@@ -158,24 +149,7 @@ async def test_pinned_items_are_never_disabled() -> None:
 
 
 # ---------------------------------------------------------------------------
-# startup() resets compaction state
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_startup_resets_compacted_flag() -> None:
-    long_text = "word " * 20
-    bot = _make_bot(threshold=5, llm_responses=["Summary.", "Ignored."])
-
-    await bot.compact(_ctx([long_text, long_text, long_text]))
-    assert bot._compacted is True
-
-    await bot.startup()
-    assert bot._compacted is False
-
-
-# ---------------------------------------------------------------------------
-# compact() — ContextEvent emission
+# compact_context() — ContextEvent emission
 # ---------------------------------------------------------------------------
 
 
@@ -188,9 +162,10 @@ async def test_compact_emits_context_event_when_commentator_set() -> None:
     received_events: list[object] = []
     mock_commentator = AsyncMock()
     mock_commentator.comment = AsyncMock(side_effect=received_events.append)
-    bot.commentator = mock_commentator
 
-    await bot.compact(ctx)
+    await compact_context(
+        ctx, bot.llm, 5, commentator=mock_commentator, bot_name="Drop"
+    )
 
     assert len(received_events) == 1
     event = received_events[0]
@@ -207,15 +182,14 @@ async def test_compact_emits_no_event_when_commentator_is_none() -> None:
     ctx = _ctx([long_text, long_text, long_text])
     bot = _make_bot(threshold=5, llm_responses=["Summary."])
 
-    assert bot.commentator is None
-    result = await bot.compact(ctx)
+    result = await compact_context(ctx, bot.llm, 5)
 
     disabled = [i for i in result if i.mode == ItemMode.DISABLED]
     assert len(disabled) >= 1
 
 
 # ---------------------------------------------------------------------------
-# compact() — _summarise() fallback when LLM unexpectedly returns tool calls
+# compact_context() — _summarise() fallback when LLM unexpectedly returns tool calls
 # ---------------------------------------------------------------------------
 
 
@@ -232,19 +206,9 @@ async def test_compact_uses_fallback_summary_when_llm_returns_tool_use() -> None
         ),
     )
     long_text = "word " * 20
-    bot = CompactBot(
-        name="Drop",
-        emoji="\N{BROOM}",
-        llm=_FakeLLM([[tool_use]]),  # type: ignore[arg-type]
-        tools=[],
-        instructions="You are Drop.",
-        context_source=None,
-        memory_file=None,
-        session_folder=Path(),
-        compact_threshold=5,
-    )
+    llm = _FakeLLM([[tool_use]])  # type: ignore[arg-type]
 
-    result = await bot.compact(_ctx([long_text, long_text, long_text]))
+    result = await compact_context(_ctx([long_text, long_text, long_text]), llm, 5)
 
     summaries = [i for i in result if isinstance(i.content, InjectedContent)]
     assert len(summaries) == 1
@@ -261,8 +225,7 @@ async def test_compact_emits_no_event_below_threshold() -> None:
     received_events: list[object] = []
     mock_commentator = AsyncMock()
     mock_commentator.comment = AsyncMock(side_effect=received_events.append)
-    bot.commentator = mock_commentator
 
-    await bot.compact(ctx)
+    await compact_context(ctx, bot.llm, 100_000, commentator=mock_commentator)
 
     assert len(received_events) == 0

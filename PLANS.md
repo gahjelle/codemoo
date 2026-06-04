@@ -28,4 +28,5 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 
 ## Proposed by agent
 
+- Merge the `Persona` types in `core/commentator.py` and `core/error.py` into a single shared type in `core/` — both are identical frozen dataclasses with `name`, `emoji`, `instructions` fields
 - Include system message tokens in the `context_management` status bar count — currently `estimate_tokens(build_context(_chat_context))` excludes the system prompt (instructions + project context + memory), which is fixed overhead that still consumes the context window. The cleanest fix is to have `startup()` push a `SystemContent` ContextItem so `build_context` picks it up automatically.

@@ -5,7 +5,7 @@ from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from codemoo.core.bots.commentator_bot import ToolEvent
+from codemoo.core.commentator import ToolEvent
 from codemoo.core.tools import ToolDef, ToolParam, dispatch_tool
 from codemoo.core.tools.files import make_file_validator
 from codemoo.core.tools.shell import make_shell_validator

@@ -2,8 +2,8 @@
 
 import pytest
 
+from codemoo.core.approval import ApprovalRequest, Approved, Denied
 from codemoo.core.backend import Message, ToolUse
-from codemoo.core.bots.approval import ApprovalRequest, Approved, Denied
 from codemoo.core.bots.guard_bot import GuardBot
 from codemoo.core.tools import ToolDef, ToolParam, run_shell
 

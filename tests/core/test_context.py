@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from codemoo.core.bots.commentator_bot import LoadEvent
+from codemoo.core.commentator import LoadEvent
 from codemoo.core.context import read_project_context
 
 

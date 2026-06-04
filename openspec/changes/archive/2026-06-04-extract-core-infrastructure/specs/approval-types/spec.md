@@ -1,10 +1,4 @@
-# Spec: approval-types
-
-## Purpose
-
-TBD — Defines the canonical approval gate data model used by GuardBot and other gated bots.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: approval.py is the canonical home of the approval gate data model
 A module `core/approval.py` SHALL export the complete approval gate

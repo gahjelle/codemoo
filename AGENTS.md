@@ -140,7 +140,7 @@ memory_file = "{project_settings_path}/memory-code.md"
 tools = ["@code_write", "save_memory"]
 ```
 
-The optional `compact_threshold` field sets the token count at which `CompactBot` triggers compaction for that variant. Omit it for bots that don't implement `compact()`.
+The optional `compact_threshold` field sets the token count at which the app triggers compaction for that variant. When non-`None`, `ChatApp` calls `compact_context()` from `core/compaction.py` before each `on_message` call. Omit it for bots that do not need compaction.
 
 ```toml
 [bots.CompactBot.variants.code]

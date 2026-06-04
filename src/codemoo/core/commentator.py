@@ -111,17 +111,18 @@ class CommentatorBot:
             sig=full_sig,
             detail=detail,
         )
-        if event.outcome == "call":
-            fallback = f"{event.bot_name} calls {full_sig}"
-            dim_prefix = display_sig
-        elif event.outcome == "blocked":
+        if event.outcome == "blocked":
             fallback = f"Blocked: {detail}"
             dim_prefix = f"Blocked: {detail}"
+        elif event.outcome == "call":
+            fallback = f"{event.bot_name} calls {full_sig}"
+            dim_prefix = display_sig
         else:
-            if len(detail) > _ERROR_TRUNCATE_LEN:
-                truncated = detail[:_ERROR_TRUNCATE_LEN] + "\N{HORIZONTAL ELLIPSIS}"
-            else:
-                truncated = detail
+            truncated = (
+                detail[:_ERROR_TRUNCATE_LEN] + "\N{HORIZONTAL ELLIPSIS}"
+                if len(detail) > _ERROR_TRUNCATE_LEN
+                else detail
+            )
             fallback = f"{display_sig} → {truncated}"
             dim_prefix = fallback
         await self._generate_comment(

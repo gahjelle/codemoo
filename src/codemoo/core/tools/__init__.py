@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from codemoo.core.bots.commentator_bot import CommentatorBot
+    from codemoo.core.commentator import CommentatorBot
 
 
 def format_tool_call(
@@ -82,7 +82,7 @@ async def dispatch_tool(
     without emitting a commentary event. When catch_errors=True, the error event
     fires and the error string is returned to the caller.
     """
-    from codemoo.core.bots.commentator_bot import ToolEvent  # noqa: PLC0415
+    from codemoo.core.commentator import ToolEvent  # noqa: PLC0415
     from codemoo.core.exceptions import ToolError  # noqa: PLC0415
 
     if tool.validate is not None:
