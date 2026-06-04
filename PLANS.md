@@ -25,8 +25,9 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Show full content of first parameter in GuardBot approval box
 - Add context editing capability: select, disable, summarise, or edit individual context items via a modal UI (the read-only inspector from `context_display` is the foundation)
 - Add tool management capability that can customize tools
+- Merge the `Persona` types in `core/commentator.py` and `core/error.py` into a single shared type in `core/`
+- Restructure ErrorBot similarly to CommentatorBot with a random persona for each call, and instruction files in config
 
 ## Proposed by agent
 
-- Merge the `Persona` types in `core/commentator.py` and `core/error.py` into a single shared type in `core/` — both are identical frozen dataclasses with `name`, `emoji`, `instructions` fields
 - Include system message tokens in the `context_management` status bar count — currently `estimate_tokens(build_context(_chat_context))` excludes the system prompt (instructions + project context + memory), which is fixed overhead that still consumes the context window. The cleanest fix is to have `startup()` push a `SystemContent` ContextItem so `build_context` picks it up automatically.
