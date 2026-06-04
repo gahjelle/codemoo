@@ -1,1 +1,1 @@
-Fix greeter.py — it crashes when run. Verify with `uv run pytest`.
+Run uv run greeter.py — if it crashes, then fix it. Verify with `uv run pytest`.

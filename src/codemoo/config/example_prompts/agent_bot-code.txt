@@ -1,3 +1,3 @@
 Run both kaprekar.py and kaprekar2.py with `time uv run <script>` and compare their runtime and outputs. If they differ, investigate why.
 ---
-Fix greeter.py — it crashes when run. Verify with `uv run pytest`.
+Run uv run greeter.py — if it crashes, then fix it. Verify with `uv run pytest`.
