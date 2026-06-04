@@ -1,16 +1,7 @@
-Read greeter.py and write a short summary to summary.md
+Read README.md and update the kaprekar section so its description matches kaprekar2.py's actual implementation
 ---
-Run `uv run pytest`. If the tests pass, commit the changes. If they don't, fix the code first.
+Run `uv run pytest` and if the tests pass, commit all changes with a descriptive message
 ---
-Create a new directory tiemit/ and initialize it as a uv project with `uv init`.
-Then create a CLI string reversal challenge game with these requirements:
-
-1. Generate a random string of 5-10 lowercase letters.
-2. Display the string and start a timer.
-3. Ask the user to type the reversed string.
-4. Stop the timer when the user submits.
-5. Simulate an AI opponent: 30% chance of correct reversal, 70% chance of failure.
-6. Show: user's time, user's answer, AI's answer, correct answer, and who won (user, AI, or tie).
-7. Ask if the user wants to play again.
-
-Use only print() and input() — no external libraries.
+Download Crime and Punishment from https://gutenberg.org/cache/epub/2554/pg2554.txt and save it as crime.txt.
+Then download Alice in Wonderland from https://gutenberg.org/cache/epub/11/pg11.txt and save it as alice.txt.
+Then write emordnilap.py — a script that takes a filename as a command-line argument, reads the file, finds all palindromic words (words that read the same forwards and backwards, ignoring case and punctuation), and prints them one per line. Use uv to run it and verify that it works.

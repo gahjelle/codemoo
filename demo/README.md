@@ -8,9 +8,9 @@ Two scripts for exploring correctness and performance in Python.
 
 A curious mathematical pattern: (20 + 25)² = 45² = 2025, and (30 + 25)² = 55² = 3025.
 In general, a *Kaprekar pair* is a pair (a, b) where (a + b)² equals the concatenation
-of a and b. `kaprekar.py` finds all such pairs with 0 ≤ a, b < 10000.
+of a and b. `kaprekar.py` finds all such pairs with 1 ≤ a, b < 10000.
 
-Uses an efficient algorithm: for each candidate n in range(0, 20000), it computes n²,
+Uses an efficient algorithm: for each candidate n in range(1, 20000), it computes n²,
 splits the decimal representation into two parts, and checks whether they sum to n.
 Runs in milliseconds.
 

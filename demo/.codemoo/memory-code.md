@@ -1,0 +1,2 @@
+- Name: Geir Arne
+- Prefers seeing actual examples alongside any counts or statistics, rather than numbers alone.

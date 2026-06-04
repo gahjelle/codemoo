@@ -1,4 +1,4 @@
-Run `time uv run python kaprekar.py`
+Run `time uv run kaprekar.py`
 ---
 How is the kaprekar script described in README.md
 ---

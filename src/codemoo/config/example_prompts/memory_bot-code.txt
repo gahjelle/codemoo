@@ -1,5 +1,5 @@
 What do you know about me?
 ---
-I like pastel colors for UI frontends — remember that
+I find short palindromes boring — three letter words like "eve" and "pop" are too trivial. The interesting ones are four characters or longer.
 ---
-Read the current tiemit source and add a Streamlit frontend. Use my color preference for the UI theme.
+Update emordnilap.py to reflect my preferences

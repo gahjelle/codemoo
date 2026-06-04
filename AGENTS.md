@@ -81,16 +81,15 @@ The `demo/` folder is a purpose-built environment for live demonstrations — no
 production code. It contains intentional issues that must stay in place:
 
 - **`demo/greeter.py`** opens `names.txt` with `encoding="ascii"`. This causes a
-  `UnicodeDecodeError` at runtime and is the bug the demo asks AgentBot (Loom) to
-  diagnose and fix. Do not change this encoding.
+  `UnicodeDecodeError` at runtime. AgentBot (Loom) attempts to fix it but raises on
+  the tool error; RetryBot (Crow) succeeds by feeding the error back to the LLM.
+  Do not change this encoding.
 - **`demo/README.md`** claims the script "sorts names alphabetically." The code does
   not sort. This discrepancy is intentional — it makes the ReadBot comparison prompt
   reveal a real difference between the README and the code.
 - **`demo/whoami.py`** reads its API key from `os.environ["MISTAKE_API_KEY"]` instead
-  of `MISTRAL_API_KEY`. This causes a `KeyError` at runtime and is the deliberate
-  failure that RetryBot (Crow) surfaces. Do not fix this typo.
-  The game picks a daily-seeded random famous person and runs a single non-interactive
-  LLM call per invocation.
+  of `MISTRAL_API_KEY`. This is a legacy demo artifact — it is no longer part of the
+  active demo script. Do not fix the typo in case it is repurposed.
 
 When modifying `demo/` files for other reasons, preserve these intentional issues.
 
