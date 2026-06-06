@@ -15,10 +15,11 @@ def _get_headers() -> dict[str, str]:
     }
 
 
-def _list_sharepoint(site_path: str) -> str:
+async def _list_sharepoint(site_path: str) -> str:
     host, path = site_path.split(":", 1) if ":" in site_path else (site_path, "/")
     url = f"{config.m365.graph_base_url}/sites/{host}:{path}/drive/root/children"
-    resp = httpx.get(url, headers=_get_headers())
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers())
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     items = resp.json().get("value", [])
@@ -39,11 +40,12 @@ list_sharepoint = ToolDef(
 )
 
 
-def _read_sharepoint(site_path: str, item_path: str) -> str:
+async def _read_sharepoint(site_path: str, item_path: str) -> str:
     host, path = site_path.split(":", 1) if ":" in site_path else (site_path, "/")
     base = config.m365.graph_base_url
     url = f"{base}/sites/{host}:{path}/drive/root:/{item_path}:/content"
-    resp = httpx.get(url, headers=_get_headers(), follow_redirects=True)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), follow_redirects=True)
     return f"Error {resp.status_code}: {resp.text}" if resp.is_error else resp.text
 
 
@@ -65,10 +67,11 @@ read_sharepoint = ToolDef(
 )
 
 
-def _list_outlook_email(folder: str = "inbox", top: str = "10") -> str:
+async def _list_outlook_email(folder: str = "inbox", top: str = "10") -> str:
     url = f"{config.m365.graph_base_url}/me/mailFolders/{folder}/messages"
     params = {"$top": top, "$select": "subject,from,receivedDateTime"}
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     messages = resp.json().get("value", [])
@@ -101,14 +104,15 @@ list_outlook_email = ToolDef(
 )
 
 
-def _read_outlook_email(subject_keyword: str) -> str:
+async def _read_outlook_email(subject_keyword: str) -> str:
     url = f"{config.m365.graph_base_url}/me/messages"
     params = {
         "$filter": f"contains(subject, '{subject_keyword}')",
         "$top": "1",
         "$select": "subject,from,receivedDateTime,body",
     }
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     messages = resp.json().get("value", [])
@@ -137,7 +141,7 @@ read_outlook_email = ToolDef(
 )
 
 
-def _list_outlook_calendar(days: str = "7") -> str:
+async def _list_outlook_calendar(days: str = "7") -> str:
     now = datetime.now(tz=UTC)
     end = now + timedelta(days=int(days))
     url = f"{config.m365.graph_base_url}/me/calendarView"
@@ -147,7 +151,8 @@ def _list_outlook_calendar(days: str = "7") -> str:
         "$select": "subject,start,end,organizer",
         "$top": "20",
     }
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     events = resp.json().get("value", [])
@@ -174,10 +179,11 @@ list_outlook_calendar = ToolDef(
 )
 
 
-def _list_outlook_drafts() -> str:
+async def _list_outlook_drafts() -> str:
     url = f"{config.m365.graph_base_url}/me/mailFolders/Drafts/messages"
     params = {"$select": "id,subject,toRecipients,createdDateTime", "$top": "10"}
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     drafts = resp.json().get("value", [])

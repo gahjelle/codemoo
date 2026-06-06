@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from codemoo.core.tools import ToolDef
 
 
-def _get_datetime() -> str:
+async def _get_datetime() -> str:
     now = datetime.now(tz=UTC).astimezone()
     return now.strftime("%Y-%m-%d %H:%M:%S%z (%Z)")
 

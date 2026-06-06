@@ -1,18 +1,22 @@
 from pathlib import Path
 from typing import cast
 
+import pytest
+
 from codemoo.core.tools.files import read_file
 
 
-def test_read_file_returns_contents(tmp_path: Path) -> None:
+@pytest.mark.asyncio
+async def test_read_file_returns_contents(tmp_path: Path) -> None:
     f = tmp_path / "hello.txt"
     f.write_text("hello world")
-    assert read_file.fn(path=str(f)) == "hello world"
+    assert await read_file.fn(path=str(f)) == "hello world"
 
 
-def test_read_file_nonexistent_returns_error(tmp_path: Path) -> None:
+@pytest.mark.asyncio
+async def test_read_file_nonexistent_returns_error(tmp_path: Path) -> None:
     file_name = "no_such_file.txt"
-    response = read_file.fn(path=str(tmp_path / file_name))
+    response = await read_file.fn(path=str(tmp_path / file_name))
     assert "Error" in response
     assert file_name in response
 

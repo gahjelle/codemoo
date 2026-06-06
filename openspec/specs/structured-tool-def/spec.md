@@ -18,7 +18,7 @@ The `tools` module SHALL export a `ToolParam` dataclass with fields `name: str`,
 - **THEN** the `type` field SHALL hold `"integer"`
 
 ### Requirement: ToolDef has first-class name, description, parameters, and init fields
-The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `parameters: list[ToolParam]`, `fn: Callable[..., str]`, `requires_approval: bool = False`, `init: Callable[[], None] | None = None`, and `validate: Callable[..., str | None] | None = None`. The `schema: dict` field SHALL NOT be present.
+The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `parameters: list[ToolParam]`, `fn: Callable[..., Awaitable[str]]`, `requires_approval: bool = False`, `init: Callable[[], None] | None = None`, and `validate: Callable[..., str | None] | None = None`. The `schema: dict` field SHALL NOT be present.
 
 #### Scenario: ToolDef exposes name directly
 - **WHEN** a `ToolDef` is accessed via `tool.name`
@@ -51,6 +51,10 @@ The `ToolDef` dataclass SHALL have fields `name: str`, `description: str`, `para
 #### Scenario: validate can be set to a callable
 - **WHEN** a `ToolDef` is constructed with `validate=some_validator`
 - **THEN** `tool.validate` SHALL be `some_validator`
+
+#### Scenario: fn is an async callable
+- **WHEN** a `ToolDef` is constructed with an `async def` function as `fn`
+- **THEN** `await tool.fn(**arguments)` SHALL return a `str`
 
 ### Requirement: Each backend module provides a _tool_schema converter function
 Each backend module (`llm/mistral.py`, `llm/anthropic.py`, `llm/openrouter.py`) SHALL provide a module-private `_tool_schema(tool: ToolDef) -> dict` function that converts a `ToolDef` to the wire format expected by that provider. Mistral and OpenRouter SHALL use the OpenAI function-calling shape; Anthropic SHALL use the Anthropic tool shape with `input_schema`.

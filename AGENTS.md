@@ -329,7 +329,7 @@ from codemoo.core.tools.shell import run_shell
 **Code tools** (stateless OS utilities):
 
 1. Create or find the appropriate module under `src/codemoo/core/tools/`
-2. Define the implementation function (prefix with `_`): `def _my_tool(arg: str) -> str: ...`
+2. Define the implementation function (prefix with `_`): `async def _my_tool(arg: str) -> str: ...`
 3. Create a ToolDef instance with metadata: `my_tool = ToolDef(name="my_tool", description="...", parameters=[...], fn=_my_tool)`
 4. Add the tool to `TOOL_REGISTRY` in `__init__.py`
 

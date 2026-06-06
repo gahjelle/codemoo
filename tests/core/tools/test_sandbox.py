@@ -12,7 +12,7 @@ from codemoo.core.tools.shell import make_shell_validator
 
 
 def _make_tool(
-    fn: Callable[..., str], *, validate: Callable[..., str | None] | None = None
+    fn: Callable[..., object], *, validate: Callable[..., str | None] | None = None
 ) -> ToolDef:
     return ToolDef(
         name="test_tool",
@@ -30,24 +30,34 @@ def _make_tool(
 
 def test_dispatch_tool_no_validate_calls_fn() -> None:
     called: list[str] = []
-    tool = _make_tool(lambda x: (called.append(x), "ok")[1])
+
+    async def fn(x: str) -> str:
+        called.append(x)
+        return "ok"
+
+    tool = _make_tool(fn)
     result = asyncio.run(dispatch_tool(tool, {"x": "hello"}, "Bot", None))
     assert result == "ok"
     assert called == ["hello"]
 
 
 def test_dispatch_tool_validate_returns_none_calls_fn() -> None:
-    tool = _make_tool(lambda **_: "fn_result", validate=lambda **_: None)
+    async def fn(**_: object) -> str:
+        return "fn_result"
+
+    tool = _make_tool(fn, validate=lambda **_: None)
     result = asyncio.run(dispatch_tool(tool, {"x": "v"}, "Bot", None))
     assert result == "fn_result"
 
 
 def test_dispatch_tool_validate_blocks_fn_not_called() -> None:
     fn_called: list[bool] = []
-    tool = _make_tool(
-        lambda **_: (fn_called.append(True), "bad")[1],
-        validate=lambda **_: "Blocked: test reason",
-    )
+
+    async def fn(**_: object) -> str:
+        fn_called.append(True)
+        return "bad"
+
+    tool = _make_tool(fn, validate=lambda **_: "Blocked: test reason")
     result = asyncio.run(dispatch_tool(tool, {"x": "v"}, "Bot", None))
     assert result == "Blocked: test reason"
     assert fn_called == []
@@ -83,7 +93,10 @@ def test_dispatch_tool_emits_call_event_on_success() -> None:
     commentator = MagicMock()
     commentator.comment = fake_comment
 
-    tool = _make_tool(lambda **_: "ok")
+    async def fn(**_: object) -> str:
+        return "ok"
+
+    tool = _make_tool(fn)
     asyncio.run(dispatch_tool(tool, {"x": "v"}, "MyBot", commentator))
 
     assert len(events) == 1
@@ -103,7 +116,10 @@ def test_dispatch_tool_blocked_emits_no_call_event() -> None:
     commentator = MagicMock()
     commentator.comment = fake_comment
 
-    tool = _make_tool(lambda **_: "bad", validate=lambda **_: "blocked reason")
+    async def fn(**_: object) -> str:
+        return "bad"
+
+    tool = _make_tool(fn, validate=lambda **_: "blocked reason")
     asyncio.run(dispatch_tool(tool, {"x": "v"}, "MyBot", commentator))
 
     assert len(events) == 1
@@ -111,7 +127,10 @@ def test_dispatch_tool_blocked_emits_no_call_event() -> None:
 
 
 def test_dispatch_tool_blocked_no_commentator_returns_error() -> None:
-    tool = _make_tool(lambda **_: "fn", validate=lambda **_: "error msg")
+    async def fn(**_: object) -> str:
+        return "fn"
+
+    tool = _make_tool(fn, validate=lambda **_: "error msg")
     result = asyncio.run(dispatch_tool(tool, {"x": "v"}, "Bot", None))
     assert result == "error msg"
 

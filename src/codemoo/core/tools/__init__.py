@@ -1,7 +1,7 @@
 """Reusable tool definitions: structured schema and implementation paired together."""
 
 import dataclasses
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class ToolDef:
     name: str
     description: str
     parameters: list[ToolParam]
-    fn: Callable[..., str]
+    fn: Callable[..., Awaitable[str]]
     requires_approval: bool = False
     init: Callable[[], None] | None = None
     validate: Callable[..., str | None] | None = None
@@ -108,7 +108,7 @@ async def dispatch_tool(
                 arguments=arguments,
             )
         )
-    result = tool.fn(**arguments)
+    result = await tool.fn(**arguments)
     if result.startswith("Error: "):
         if catch_errors:
             if commentator is not None:

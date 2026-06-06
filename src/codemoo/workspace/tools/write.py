@@ -15,13 +15,16 @@ def _get_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {creds.token}"}
 
 
-def _draft_gmail(to: str, subject: str, body: str) -> str:
+async def _draft_gmail(to: str, subject: str, body: str) -> str:
     message = MIMEText(body)
     message["to"] = to
     message["subject"] = subject
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
     url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
-    resp = httpx.post(url, headers=_get_headers(), json={"message": {"raw": raw}})
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            url, headers=_get_headers(), json={"message": {"raw": raw}}
+        )
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     draft_id = resp.json().get("id", "?")
@@ -43,9 +46,10 @@ draft_gmail = ToolDef(
 )
 
 
-def _send_gmail(draft_id: str) -> str:
+async def _send_gmail(draft_id: str) -> str:
     url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts/send"
-    resp = httpx.post(url, headers=_get_headers(), json={"id": draft_id})
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json={"id": draft_id})
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     return "Email sent."
@@ -63,7 +67,7 @@ send_gmail = ToolDef(
 )
 
 
-def _create_gcal_event(
+async def _create_gcal_event(
     summary: str, start: str, end: str, description: str = ""
 ) -> str:
     url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
@@ -77,7 +81,8 @@ def _create_gcal_event(
     else:
         payload["start"] = {"date": start}
         payload["end"] = {"date": end}
-    resp = httpx.post(url, headers=_get_headers(), json=payload)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json=payload)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     event = resp.json()
@@ -110,9 +115,10 @@ create_gcal_event = ToolDef(
 )
 
 
-def _post_chat_message(space_id: str, message: str) -> str:
+async def _post_chat_message(space_id: str, message: str) -> str:
     url = f"https://chat.googleapis.com/v1/spaces/{space_id}/messages"
-    resp = httpx.post(url, headers=_get_headers(), json={"text": message})
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json={"text": message})
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     return "Message posted to Google Chat space"
@@ -131,7 +137,7 @@ post_chat_message = ToolDef(
 )
 
 
-def _write_gdrive(filename: str, content: str, folder_id: str = "root") -> str:
+async def _write_gdrive(filename: str, content: str, folder_id: str = "root") -> str:
     headers = _get_headers()
     search_url = "https://www.googleapis.com/drive/v3/files"
     search_params = {
@@ -139,56 +145,60 @@ def _write_gdrive(filename: str, content: str, folder_id: str = "root") -> str:
         "fields": "files(id)",
         "pageSize": "1",
     }
-    search_resp = httpx.get(search_url, headers=headers, params=search_params)
-    if search_resp.is_error:
-        return f"Error {search_resp.status_code}: {search_resp.text}"
-
-    existing = search_resp.json().get("files", [])
     boundary = "codemoo_boundary_1234567890"
-    metadata = f'{{"name": "{filename}"}}'
-    body = (
-        f"--{boundary}\r\n"
-        f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
-        f"{metadata}\r\n"
-        f"--{boundary}\r\n"
-        f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
-        f"{content}\r\n"
-        f"--{boundary}--"
-    )
     upload_headers = {
         **headers,
         "Content-Type": f"multipart/related; boundary={boundary}",
     }
+    async with httpx.AsyncClient() as client:
+        search_resp = await client.get(
+            search_url, headers=headers, params=search_params
+        )
+        if search_resp.is_error:
+            return f"Error {search_resp.status_code}: {search_resp.text}"
 
-    if existing:
-        file_id = existing[0]["id"]
-        upload_url = f"https://www.googleapis.com/upload/drive/v3/files/{file_id}"
-        resp = httpx.patch(
+        existing = search_resp.json().get("files", [])
+        metadata = f'{{"name": "{filename}"}}'
+        body = (
+            f"--{boundary}\r\n"
+            f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
+            f"{metadata}\r\n"
+            f"--{boundary}\r\n"
+            f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+            f"{content}\r\n"
+            f"--{boundary}--"
+        )
+
+        if existing:
+            file_id = existing[0]["id"]
+            upload_url = f"https://www.googleapis.com/upload/drive/v3/files/{file_id}"
+            resp = await client.patch(
+                upload_url,
+                headers=upload_headers,
+                params={"uploadType": "multipart"},
+                content=body.encode(),
+            )
+            if resp.is_error:
+                return f"Error {resp.status_code}: {resp.text}"
+            return f"Updated {filename} ({file_id})"
+
+        meta_with_parent = f'{{"name": "{filename}", "parents": ["{folder_id}"]}}'
+        body = (
+            f"--{boundary}\r\n"
+            f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
+            f"{meta_with_parent}\r\n"
+            f"--{boundary}\r\n"
+            f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+            f"{content}\r\n"
+            f"--{boundary}--"
+        )
+        upload_url = "https://www.googleapis.com/upload/drive/v3/files"
+        resp = await client.post(
             upload_url,
             headers=upload_headers,
             params={"uploadType": "multipart"},
             content=body.encode(),
         )
-        if resp.is_error:
-            return f"Error {resp.status_code}: {resp.text}"
-        return f"Updated {filename} ({file_id})"
-    upload_url = "https://www.googleapis.com/upload/drive/v3/files"
-    meta_with_parent = f'{{"name": "{filename}", "parents": ["{folder_id}"]}}'
-    body = (
-        f"--{boundary}\r\n"
-        f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
-        f"{meta_with_parent}\r\n"
-        f"--{boundary}\r\n"
-        f"Content-Type: text/plain; charset=UTF-8\r\n\r\n"
-        f"{content}\r\n"
-        f"--{boundary}--"
-    )
-    resp = httpx.post(
-        upload_url,
-        headers=upload_headers,
-        params={"uploadType": "multipart"},
-        content=body.encode(),
-    )
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     file_id = resp.json().get("id", "?")

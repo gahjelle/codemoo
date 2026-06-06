@@ -3,6 +3,8 @@
 from collections.abc import Callable
 from pathlib import Path
 
+import anyio
+
 from codemoo.core.tools import ToolDef, ToolParam
 
 
@@ -23,9 +25,9 @@ def make_file_validator(session_folder: Path) -> Callable[..., str | None]:
     return _validate
 
 
-def _read_file(path: str) -> str:
+async def _read_file(path: str) -> str:
     try:
-        return Path(path).read_text(encoding="utf-8")
+        return await anyio.Path(path).read_text(encoding="utf-8")
     except OSError as err:
         return f"Error: {err}"
 
@@ -40,13 +42,13 @@ read_file = ToolDef(
 )
 
 
-def _write_file(path: str, content: str) -> str:
+async def _write_file(path: str, content: str) -> str:
     try:
-        num_bytes = Path(path).write_text(content, encoding="utf-8")
+        await anyio.Path(path).write_text(content, encoding="utf-8")
     except OSError as err:
         return f"Error: {err}"
     else:
-        return f"{num_bytes} bytes written"
+        return f"{len(content.encode())} bytes written"
 
 
 write_file = ToolDef(
@@ -64,11 +66,12 @@ write_file = ToolDef(
 )
 
 
-def _list_files(path: str) -> str:
-    p = Path(path)
-    if not p.is_dir():
+async def _list_files(path: str) -> str:
+    p = anyio.Path(path)
+    if not await p.is_dir():
         return f"Error: {path!r} is not a valid directory"
-    return "\n".join(entry.name for entry in sorted(p.iterdir()))
+    entries = sorted([entry.name async for entry in p.iterdir()])
+    return "\n".join(entries)
 
 
 list_files = ToolDef(

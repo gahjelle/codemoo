@@ -1,10 +1,4 @@
-# Spec: run-shell-tool
-
-## Purpose
-
-Defines the `run_shell` tool, a `ToolDef` that executes arbitrary shell commands asynchronously and returns a formatted result string containing exit code, stdout, and stderr. Used by `ShellBot` to give the LLM the ability to run commands on demand.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: run_shell executes a shell command and returns its output
 `run_shell` SHALL be a `ToolDef` whose `fn` is `async def` and accepts a `command: str` argument. It SHALL run the command via `asyncio.create_subprocess_shell`, capture stdout and stderr, and return a formatted string containing the exit code, stdout, and stderr. It SHALL NOT use `subprocess.run` or `asyncio.to_thread`.
@@ -20,10 +14,3 @@ Defines the `run_shell` tool, a `ToolDef` that executes arbitrary shell commands
 #### Scenario: Timeout is enforced
 - **WHEN** a command runs longer than the configured timeout (default 30 s)
 - **THEN** `run_shell.fn` SHALL return a string indicating the timeout rather than blocking indefinitely; the event loop SHALL remain responsive during the wait
-
-### Requirement: run_shell has a valid JSON schema for LLM tool use
-`run_shell.schema` SHALL follow the OpenAI function-calling format with `type: "function"`, a `name` of `"run_shell"`, a description, and a `command` parameter of type `string`.
-
-#### Scenario: Schema top-level fields are correct
-- **WHEN** `run_shell.schema` is inspected
-- **THEN** it SHALL have `type == "function"`, `function.name == "run_shell"`, a non-empty description, and `parameters.required == ["command"]`

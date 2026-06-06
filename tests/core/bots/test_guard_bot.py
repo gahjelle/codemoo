@@ -34,11 +34,15 @@ class _SequentialBackend:
         return self._steps.pop(0)
 
 
+async def _safe_fn(path: str) -> str:
+    return f"contents of {path}"
+
+
 _safe_tool = ToolDef(
     name="read_file",
     description="Safe dummy.",
     parameters=[ToolParam(name="path", description="path")],
-    fn=lambda path: f"contents of {path}",
+    fn=_safe_fn,
     requires_approval=False,
 )
 
@@ -253,18 +257,24 @@ async def test_loop_continues_after_denial() -> None:
 
 @pytest.mark.asyncio
 async def test_only_dangerous_tools_require_approval() -> None:
+    async def safe_fn(**_: object) -> str:
+        return "safe result"
+
+    async def danger_fn(**_: object) -> str:
+        return "danger result"
+
     safe_tool = ToolDef(
         name="safe_op",
         description="Safe.",
         parameters=[ToolParam(name="x", description="x")],
-        fn=lambda **_: "safe result",
+        fn=safe_fn,
         requires_approval=False,
     )
     dangerous_tool = ToolDef(
         name="danger_op",
         description="Dangerous.",
         parameters=[ToolParam(name="x", description="x")],
-        fn=lambda **_: "danger result",
+        fn=danger_fn,
         requires_approval=True,
     )
     ask_calls: list[str] = []

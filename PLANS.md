@@ -18,7 +18,7 @@ These are plans and ideas for updating the current capabilities (bots) of Codemo
 - Read file-tool can read subset of file
 - Write file-tool can only write new files
 - Edit file-tool to change existing files
-- Make tool calls async and update the loop to use asyncio.gather()
+- Parallelise serial HTTP calls in `_list_gmail` and `_list_gmail_drafts` (n+1 requests → `asyncio.gather`) — `httpx.AsyncClient` is already in place after the async-tools change, making this a clean follow-on
 - Update prompts to "trust the tool"
 - Add sessions and store them to disk, include --resume functionality
 - Stream answers

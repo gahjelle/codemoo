@@ -85,7 +85,7 @@ async def tool(
     step = await backend.complete(context, [read_file_tool])
     if isinstance(step, list):
         use = step[0]
-        tool_output = read_file_tool.fn(**use.arguments)
+        tool_output = await read_file_tool.fn(**use.arguments)
         _rule("Tool Call", start)
         stdout.print(f"[bold]{use.name}[/bold]  [dim]id: {use.call_id}[/dim]")
         _print_json(use.arguments)
@@ -139,7 +139,7 @@ async def agent(
             _print_json(use.arguments)
             _rule(f"Round {round_num} · Tool Result", start)
             stdout.print(f"[dim]id: {use.call_id}[/dim]")
-            tool_output = tool_map[use.name].fn(**use.arguments)
+            tool_output = await tool_map[use.name].fn(**use.arguments)
             stdout.print(tool_output)
             tool_result_messages.append(
                 Message(role="tool", content=tool_output, tool_call_id=use.call_id)

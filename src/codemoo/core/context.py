@@ -45,11 +45,11 @@ async def read_project_context(
             from codemoo.m365.tools.read import _read_sharepoint  # noqa: PLC0415
 
             site_path = f"{config.m365.sharepoint_host}:{config.m365.sharepoint_site}"
-            content = _read_sharepoint(site_path, source_name)
+            content = await _read_sharepoint(site_path, source_name)
         elif source_type == "drive":
             from codemoo.workspace.tools.read import _read_gdrive_by_name  # noqa: PLC0415,I001
 
-            content = _read_gdrive_by_name(source_name)
+            content = await _read_gdrive_by_name(source_name)
         else:  # file
             context_file = session_folder / source_name
             if context_file.exists():

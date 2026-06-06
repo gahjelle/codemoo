@@ -3,13 +3,15 @@
 import functools
 from pathlib import Path
 
+import anyio
+
 from codemoo.core.tools import ToolDef, ToolParam
 
 
-def _save_memory(content: str, *, path: Path) -> str:
+async def _save_memory(content: str, *, path: Path) -> str:
     """Write content to the memory file, replacing any previous contents."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    await anyio.Path(path.parent).mkdir(parents=True, exist_ok=True)
+    await anyio.Path(path).write_text(content, encoding="utf-8")
     return f"Memory saved to {path}"
 
 

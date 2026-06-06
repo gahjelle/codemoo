@@ -13,14 +13,15 @@ def _get_headers() -> dict[str, str]:
     }
 
 
-def _draft_outlook_email(to: str, subject: str, body: str) -> str:
+async def _draft_outlook_email(to: str, subject: str, body: str) -> str:
     url = f"{config.m365.graph_base_url}/me/messages"
     payload = {
         "subject": subject,
         "body": {"contentType": "Text", "content": body},
         "toRecipients": [{"emailAddress": {"address": to}}],
     }
-    resp = httpx.post(url, headers=_get_headers(), json=payload)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json=payload)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     draft_id = resp.json().get("id", "?")
@@ -43,9 +44,10 @@ draft_outlook_email = ToolDef(
 )
 
 
-def _send_outlook_email(draft_id: str) -> str:
+async def _send_outlook_email(draft_id: str) -> str:
     url = f"{config.m365.graph_base_url}/me/messages/{draft_id}/send"
-    resp = httpx.post(url, headers=_get_headers())
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers())
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     return "Email sent."
@@ -65,7 +67,7 @@ send_outlook_email = ToolDef(
 )
 
 
-def _create_outlook_calendar_event(
+async def _create_outlook_calendar_event(
     subject: str, start: str, end: str, body: str = ""
 ) -> str:
     url = f"{config.m365.graph_base_url}/me/events"
@@ -75,7 +77,8 @@ def _create_outlook_calendar_event(
         "start": {"dateTime": start, "timeZone": "UTC"},
         "end": {"dateTime": end, "timeZone": "UTC"},
     }
-    resp = httpx.post(url, headers=_get_headers(), json=payload)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json=payload)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     event = resp.json()
@@ -102,10 +105,11 @@ create_outlook_calendar_event = ToolDef(
 )
 
 
-def _post_teams_message(team_id: str, channel_id: str, message: str) -> str:
+async def _post_teams_message(team_id: str, channel_id: str, message: str) -> str:
     url = f"{config.m365.graph_base_url}/teams/{team_id}/channels/{channel_id}/messages"
     payload = {"body": {"content": message}}
-    resp = httpx.post(url, headers=_get_headers(), json=payload)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, headers=_get_headers(), json=payload)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     return "Message posted to Teams channel"
@@ -125,15 +129,16 @@ post_teams_message = ToolDef(
 )
 
 
-def _write_sharepoint(site_path: str, item_path: str, content: str) -> str:
+async def _write_sharepoint(site_path: str, item_path: str, content: str) -> str:
     host, path = site_path.split(":", 1) if ":" in site_path else (site_path, "/")
     base = config.m365.graph_base_url
     url = f"{base}/sites/{host}:{path}/drive/root:/{item_path}:/content"
-    resp = httpx.put(
-        url,
-        headers={**_get_headers(), "Content-Type": "text/plain"},
-        content=content.encode("utf-8"),
-    )
+    async with httpx.AsyncClient() as client:
+        resp = await client.put(
+            url,
+            headers={**_get_headers(), "Content-Type": "text/plain"},
+            content=content.encode("utf-8"),
+        )
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     return f"Written {len(content)} characters to {item_path}"

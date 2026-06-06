@@ -33,33 +33,34 @@ def _extract_body(payload: dict) -> str:
     return ""
 
 
-def _list_gmail(top: str = "10") -> str:
+async def _list_gmail(top: str = "10") -> str:
     url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
     params = {"maxResults": top, "labelIds": "INBOX"}
-    resp = httpx.get(url, headers=_get_headers(), params=params)
-    if resp.is_error:
-        return f"Error {resp.status_code}: {resp.text}"
-    messages = resp.json().get("messages", [])
-    lines = []
-    for msg_ref in messages:
-        msg_resp = httpx.get(
-            f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{msg_ref['id']}",
-            headers=_get_headers(),
-            params={
-                "format": "metadata",
-                "metadataHeaders": ["From", "Subject", "Date"],
-            },
-        )
-        if msg_resp.is_error:
-            continue
-        headers = {
-            h["name"]: h["value"]
-            for h in msg_resp.json().get("payload", {}).get("headers", [])
-        }
-        date = headers.get("Date", "")[:16]
-        sender = headers.get("From", "?")
-        subject = headers.get("Subject", "(no subject)")
-        lines.append(f"[{date}] {sender}: {subject}")
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
+        if resp.is_error:
+            return f"Error {resp.status_code}: {resp.text}"
+        messages = resp.json().get("messages", [])
+        lines = []
+        for msg_ref in messages:
+            msg_resp = await client.get(
+                f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{msg_ref['id']}",
+                headers=_get_headers(),
+                params={
+                    "format": "metadata",
+                    "metadataHeaders": ["From", "Subject", "Date"],
+                },
+            )
+            if msg_resp.is_error:
+                continue
+            headers = {
+                h["name"]: h["value"]
+                for h in msg_resp.json().get("payload", {}).get("headers", [])
+            }
+            date = headers.get("Date", "")[:16]
+            sender = headers.get("From", "?")
+            subject = headers.get("Subject", "(no subject)")
+            lines.append(f"[{date}] {sender}: {subject}")
     return "\n".join(lines) if lines else "No messages found"
 
 
@@ -78,22 +79,23 @@ list_gmail = ToolDef(
 )
 
 
-def _read_gmail(subject_keyword: str) -> str:
+async def _read_gmail(subject_keyword: str) -> str:
     url = "https://gmail.googleapis.com/gmail/v1/users/me/messages"
     params = {"q": f"subject:{subject_keyword}", "maxResults": "1"}
-    resp = httpx.get(url, headers=_get_headers(), params=params)
-    if resp.is_error:
-        return f"Error {resp.status_code}: {resp.text}"
-    messages = resp.json().get("messages", [])
-    if not messages:
-        return f"No message found with subject containing {subject_keyword!r}"
-    msg_resp = httpx.get(
-        f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{messages[0]['id']}",
-        headers=_get_headers(),
-        params={"format": "full"},
-    )
-    if msg_resp.is_error:
-        return f"Error {msg_resp.status_code}: {msg_resp.text}"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
+        if resp.is_error:
+            return f"Error {resp.status_code}: {resp.text}"
+        messages = resp.json().get("messages", [])
+        if not messages:
+            return f"No message found with subject containing {subject_keyword!r}"
+        msg_resp = await client.get(
+            f"https://gmail.googleapis.com/gmail/v1/users/me/messages/{messages[0]['id']}",
+            headers=_get_headers(),
+            params={"format": "full"},
+        )
+        if msg_resp.is_error:
+            return f"Error {msg_resp.status_code}: {msg_resp.text}"
     msg = msg_resp.json()
     headers = {h["name"]: h["value"] for h in msg.get("payload", {}).get("headers", [])}
     sender = headers.get("From", "?")
@@ -119,7 +121,7 @@ read_gmail = ToolDef(
 )
 
 
-def _list_gcal(days: str = "7") -> str:
+async def _list_gcal(days: str = "7") -> str:
     now = datetime.now(tz=UTC)
     end = now + timedelta(days=int(days))
     url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
@@ -130,7 +132,8 @@ def _list_gcal(days: str = "7") -> str:
         "orderBy": "startTime",
         "maxResults": "20",
     }
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     events = resp.json().get("items", [])
@@ -158,14 +161,15 @@ list_gcal = ToolDef(
 )
 
 
-def _list_gdrive(folder_id: str = "root") -> str:
+async def _list_gdrive(folder_id: str = "root") -> str:
     url = "https://www.googleapis.com/drive/v3/files"
     params = {
         "q": f"'{folder_id}' in parents and trashed = false",
         "fields": "files(id,name)",
         "orderBy": "name",
     }
-    resp = httpx.get(url, headers=_get_headers(), params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
     if resp.is_error:
         return f"Error {resp.status_code}: {resp.text}"
     if files := resp.json().get("files", []):
@@ -194,13 +198,17 @@ list_gdrive = ToolDef(
 _GDOC_MIME = "application/vnd.google-apps.document"
 
 
-def _read_gdrive_content(file_id: str, mime_type: str) -> str:
+async def _read_gdrive_content(
+    client: httpx.AsyncClient, file_id: str, mime_type: str
+) -> str:
     if mime_type == _GDOC_MIME:
         url = f"https://www.googleapis.com/drive/v3/files/{file_id}/export"
-        resp = httpx.get(url, headers=_get_headers(), params={"mimeType": "text/plain"})
+        resp = await client.get(
+            url, headers=_get_headers(), params={"mimeType": "text/plain"}
+        )
     elif mime_type.startswith("text/"):
         url = f"https://www.googleapis.com/drive/v3/files/{file_id}"
-        resp = httpx.get(url, headers=_get_headers(), params={"alt": "media"})
+        resp = await client.get(url, headers=_get_headers(), params={"alt": "media"})
     else:
         return (
             f"Unsupported file type: {mime_type}."
@@ -209,18 +217,19 @@ def _read_gdrive_content(file_id: str, mime_type: str) -> str:
     return f"Error {resp.status_code}: {resp.text}" if resp.is_error else resp.text
 
 
-def _read_gdrive(file_id: str) -> str:
+async def _read_gdrive(file_id: str) -> str:
     meta_url = f"https://www.googleapis.com/drive/v3/files/{file_id}"
-    meta = httpx.get(
-        meta_url, headers=_get_headers(), params={"fields": "id,name,mimeType"}
-    )
-    if meta.is_error:
-        return f"Error {meta.status_code}: {meta.text}"
-    mime_type = meta.json().get("mimeType", "")
-    return _read_gdrive_content(file_id, mime_type)
+    async with httpx.AsyncClient() as client:
+        meta = await client.get(
+            meta_url, headers=_get_headers(), params={"fields": "id,name,mimeType"}
+        )
+        if meta.is_error:
+            return f"Error {meta.status_code}: {meta.text}"
+        mime_type = meta.json().get("mimeType", "")
+        return await _read_gdrive_content(client, file_id, mime_type)
 
 
-def _read_gdrive_by_name(filename: str) -> str | None:
+async def _read_gdrive_by_name(filename: str) -> str | None:
     url = "https://www.googleapis.com/drive/v3/files"
     params = {
         "q": f"name = '{filename}' and 'root' in parents and trashed = false",
@@ -228,14 +237,15 @@ def _read_gdrive_by_name(filename: str) -> str | None:
         "orderBy": "modifiedTime desc",
         "pageSize": "1",
     }
-    resp = httpx.get(url, headers=_get_headers(), params=params)
-    if resp.is_error:
-        return None
-    files = resp.json().get("files", [])
-    if not files:
-        return None
-    f = files[0]
-    content = _read_gdrive_content(f["id"], f["mimeType"])
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=_get_headers(), params=params)
+        if resp.is_error:
+            return None
+        files = resp.json().get("files", [])
+        if not files:
+            return None
+        f = files[0]
+        content = await _read_gdrive_content(client, f["id"], f["mimeType"])
     return (
         content
         if not content.startswith("Error ") and not content.startswith("Unsupported")
@@ -256,34 +266,42 @@ read_gdrive = ToolDef(
 )
 
 
-def _list_gmail_drafts() -> str:
+async def _list_gmail_drafts() -> str:
     url = "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
-    resp = httpx.get(url, headers=_get_headers(), params={"maxResults": "10"})
-    if resp.is_error:
-        return f"Error {resp.status_code}: {resp.text}"
-    drafts = resp.json().get("drafts", [])
-    if not drafts:
-        return "No drafts found."
-    lines = []
-    for draft in drafts:
-        draft_id = draft.get("id", "?")
-        msg_resp = httpx.get(
-            f"https://gmail.googleapis.com/gmail/v1/users/me/drafts/{draft_id}",
-            headers=_get_headers(),
-            params={"format": "metadata", "metadataHeaders": ["To", "Subject", "Date"]},
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            url, headers=_get_headers(), params={"maxResults": "10"}
         )
-        if msg_resp.is_error:
-            lines.append(f"id={draft_id} (metadata unavailable)")
-            continue
-        msg_data = msg_resp.json()
-        headers = {
-            h["name"]: h["value"]
-            for h in msg_data.get("message", {}).get("payload", {}).get("headers", [])
-        }
-        to = headers.get("To", "?")
-        subject = headers.get("Subject", "(no subject)")
-        date = headers.get("Date", "")[:16]
-        lines.append(f"[{date}] To: {to} | Subject: {subject} | id={draft_id}")
+        if resp.is_error:
+            return f"Error {resp.status_code}: {resp.text}"
+        drafts = resp.json().get("drafts", [])
+        if not drafts:
+            return "No drafts found."
+        lines = []
+        for draft in drafts:
+            draft_id = draft.get("id", "?")
+            msg_resp = await client.get(
+                f"https://gmail.googleapis.com/gmail/v1/users/me/drafts/{draft_id}",
+                headers=_get_headers(),
+                params={
+                    "format": "metadata",
+                    "metadataHeaders": ["To", "Subject", "Date"],
+                },
+            )
+            if msg_resp.is_error:
+                lines.append(f"id={draft_id} (metadata unavailable)")
+                continue
+            msg_data = msg_resp.json()
+            headers = {
+                h["name"]: h["value"]
+                for h in msg_data.get("message", {})
+                .get("payload", {})
+                .get("headers", [])
+            }
+            to = headers.get("To", "?")
+            subject = headers.get("Subject", "(no subject)")
+            date = headers.get("Date", "")[:16]
+            lines.append(f"[{date}] To: {to} | Subject: {subject} | id={draft_id}")
     return "\n".join(lines)
 
 

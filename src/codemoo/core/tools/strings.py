@@ -3,7 +3,7 @@
 from codemoo.core.tools import ToolDef, ToolParam
 
 
-def _reverse(text: str) -> str:
+async def _reverse(text: str) -> str:
     return text[::-1]
 
 

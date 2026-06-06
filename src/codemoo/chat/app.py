@@ -160,7 +160,7 @@ class ChatApp(App[str | None]):
 
     async def _handle_shell_input(self, command: str) -> None:
         """Run a user-typed shell command verbatim; output bypasses context."""
-        output = _run_shell(command)
+        output = await _run_shell(command)
         self._append_to_log(ChatMessage(sender="Shell", text=output))
         self.copy_to_clipboard(output)
 

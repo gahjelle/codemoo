@@ -1,6 +1,8 @@
 """Tests for Google Drive workspace tools."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from codemoo.workspace.tools import WORKSPACE_TOOL_REGISTRY
 from codemoo.workspace.tools.read import (
@@ -15,10 +17,29 @@ _GDOC_MIME = "application/vnd.google-apps.document"
 _HEADERS = {"Authorization": "Bearer test-token"}
 
 
+def _mock_client(*responses: MagicMock) -> MagicMock:
+    """Return a mock AsyncClient context manager that yields sequential responses."""
+    client = MagicMock()
+    client.__aenter__ = AsyncMock(return_value=client)
+    client.__aexit__ = AsyncMock(return_value=False)
+    if len(responses) == 1:
+        client.get = AsyncMock(return_value=responses[0])
+        client.post = AsyncMock(return_value=responses[0])
+        client.patch = AsyncMock(return_value=responses[0])
+        client.put = AsyncMock(return_value=responses[0])
+    else:
+        client.get = AsyncMock(side_effect=list(responses))
+        client.post = AsyncMock(side_effect=list(responses))
+        client.patch = AsyncMock(side_effect=list(responses))
+        client.put = AsyncMock(side_effect=list(responses))
+    return client
+
+
 # list_gdrive
 
 
-def test_list_gdrive_returns_name_and_id_lines() -> None:
+@pytest.mark.asyncio
+async def test_list_gdrive_returns_name_and_id_lines() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.json.return_value = {
@@ -29,67 +50,80 @@ def test_list_gdrive_returns_name_and_id_lines() -> None:
     }
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(mock_resp),
+        ),
     ):
-        result = _list_gdrive()
+        result = await _list_gdrive()
     assert "TEAM.md  |  abc123" in result
     assert "notes.txt  |  def456" in result
 
 
-def test_list_gdrive_empty_folder() -> None:
+@pytest.mark.asyncio
+async def test_list_gdrive_empty_folder() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.json.return_value = {"files": []}
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(mock_resp),
+        ),
     ):
-        result = _list_gdrive()
+        result = await _list_gdrive()
     assert result == "No files found"
 
 
-def test_list_gdrive_api_error() -> None:
+@pytest.mark.asyncio
+async def test_list_gdrive_api_error() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = True
     mock_resp.status_code = 403
     mock_resp.text = "Forbidden"
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(mock_resp),
+        ),
     ):
-        result = _list_gdrive()
+        result = await _list_gdrive()
     assert result == "Error 403: Forbidden"
 
 
 # _read_gdrive_content
 
 
-def test_read_gdrive_content_exports_google_doc() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_content_exports_google_doc() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.text = "Doc content"
-    with (
-        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
-    ):
-        result = _read_gdrive_content("file-id", _GDOC_MIME)
+    client = MagicMock()
+    client.get = AsyncMock(return_value=mock_resp)
+    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS):
+        result = await _read_gdrive_content(client, "file-id", _GDOC_MIME)
     assert result == "Doc content"
 
 
-def test_read_gdrive_content_downloads_text_file() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_content_downloads_text_file() -> None:
     mock_resp = MagicMock()
     mock_resp.is_error = False
     mock_resp.text = "# Hello"
-    with (
-        patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=mock_resp),
-    ):
-        result = _read_gdrive_content("file-id", "text/plain")
+    client = MagicMock()
+    client.get = AsyncMock(return_value=mock_resp)
+    with patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS):
+        result = await _read_gdrive_content(client, "file-id", "text/plain")
     assert result == "# Hello"
 
 
-def test_read_gdrive_content_unsupported_mime_type() -> None:
-    result = _read_gdrive_content("file-id", "application/pdf")
+@pytest.mark.asyncio
+async def test_read_gdrive_content_unsupported_mime_type() -> None:
+    client = MagicMock()
+    result = await _read_gdrive_content(client, "file-id", "application/pdf")
     assert "Unsupported file type" in result
     assert "application/pdf" in result
 
@@ -97,7 +131,8 @@ def test_read_gdrive_content_unsupported_mime_type() -> None:
 # _read_gdrive
 
 
-def test_read_gdrive_fetches_metadata_then_content() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_fetches_metadata_then_content() -> None:
     meta_resp = MagicMock()
     meta_resp.is_error = False
     meta_resp.json.return_value = {
@@ -113,31 +148,36 @@ def test_read_gdrive_fetches_metadata_then_content() -> None:
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
         patch(
-            "codemoo.workspace.tools.read.httpx.get",
-            side_effect=[meta_resp, content_resp],
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(meta_resp, content_resp),
         ),
     ):
-        result = _read_gdrive("abc")
+        result = await _read_gdrive("abc")
     assert result == "file content"
 
 
-def test_read_gdrive_metadata_error() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_metadata_error() -> None:
     meta_resp = MagicMock()
     meta_resp.is_error = True
     meta_resp.status_code = 404
     meta_resp.text = "Not Found"
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=meta_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(meta_resp),
+        ),
     ):
-        result = _read_gdrive("no-such-id")
+        result = await _read_gdrive("no-such-id")
     assert "Error 404" in result
 
 
 # _read_gdrive_by_name
 
 
-def test_read_gdrive_by_name_returns_content_when_found() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_by_name_returns_content_when_found() -> None:
     search_resp = MagicMock()
     search_resp.is_error = False
     search_resp.json.return_value = {"files": [{"id": "abc", "mimeType": "text/plain"}]}
@@ -149,41 +189,50 @@ def test_read_gdrive_by_name_returns_content_when_found() -> None:
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
         patch(
-            "codemoo.workspace.tools.read.httpx.get",
-            side_effect=[search_resp, content_resp],
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(search_resp, content_resp),
         ),
     ):
-        result = _read_gdrive_by_name("TEAM.md")
+        result = await _read_gdrive_by_name("TEAM.md")
     assert result == "team context"
 
 
-def test_read_gdrive_by_name_returns_none_when_not_found() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_by_name_returns_none_when_not_found() -> None:
     search_resp = MagicMock()
     search_resp.is_error = False
     search_resp.json.return_value = {"files": []}
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=search_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(search_resp),
+        ),
     ):
-        result = _read_gdrive_by_name("TEAM.md")
+        result = await _read_gdrive_by_name("TEAM.md")
     assert result is None
 
 
-def test_read_gdrive_by_name_returns_none_on_api_error() -> None:
+@pytest.mark.asyncio
+async def test_read_gdrive_by_name_returns_none_on_api_error() -> None:
     search_resp = MagicMock()
     search_resp.is_error = True
     with (
         patch("codemoo.workspace.tools.read._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.read.httpx.get", return_value=search_resp),
+        patch(
+            "codemoo.workspace.tools.read.httpx.AsyncClient",
+            return_value=_mock_client(search_resp),
+        ),
     ):
-        result = _read_gdrive_by_name("TEAM.md")
+        result = await _read_gdrive_by_name("TEAM.md")
     assert result is None
 
 
 # _write_gdrive
 
 
-def test_write_gdrive_creates_new_file() -> None:
+@pytest.mark.asyncio
+async def test_write_gdrive_creates_new_file() -> None:
     search_resp = MagicMock()
     search_resp.is_error = False
     search_resp.json.return_value = {"files": []}
@@ -192,16 +241,21 @@ def test_write_gdrive_creates_new_file() -> None:
     create_resp.is_error = False
     create_resp.json.return_value = {"id": "new-id"}
 
+    client = _mock_client(search_resp)
+    client.post = AsyncMock(return_value=create_resp)
     with (
         patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
-        patch("codemoo.workspace.tools.write.httpx.post", return_value=create_resp),
+        patch(
+            "codemoo.workspace.tools.write.httpx.AsyncClient",
+            return_value=client,
+        ),
     ):
-        result = _write_gdrive("TEAM.md", "content")
+        result = await _write_gdrive("TEAM.md", "content")
     assert result == "Created TEAM.md (new-id)"
 
 
-def test_write_gdrive_updates_existing_file() -> None:
+@pytest.mark.asyncio
+async def test_write_gdrive_updates_existing_file() -> None:
     search_resp = MagicMock()
     search_resp.is_error = False
     search_resp.json.return_value = {"files": [{"id": "existing-id"}]}
@@ -210,25 +264,33 @@ def test_write_gdrive_updates_existing_file() -> None:
     patch_resp.is_error = False
     patch_resp.json.return_value = {"id": "existing-id"}
 
+    client = _mock_client(search_resp)
+    client.patch = AsyncMock(return_value=patch_resp)
     with (
         patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
-        patch("codemoo.workspace.tools.write.httpx.patch", return_value=patch_resp),
+        patch(
+            "codemoo.workspace.tools.write.httpx.AsyncClient",
+            return_value=client,
+        ),
     ):
-        result = _write_gdrive("TEAM.md", "updated content")
+        result = await _write_gdrive("TEAM.md", "updated content")
     assert result == "Updated TEAM.md (existing-id)"
 
 
-def test_write_gdrive_search_error() -> None:
+@pytest.mark.asyncio
+async def test_write_gdrive_search_error() -> None:
     search_resp = MagicMock()
     search_resp.is_error = True
     search_resp.status_code = 500
     search_resp.text = "Internal Error"
     with (
         patch("codemoo.workspace.tools.write._get_headers", return_value=_HEADERS),
-        patch("codemoo.workspace.tools.write.httpx.get", return_value=search_resp),
+        patch(
+            "codemoo.workspace.tools.write.httpx.AsyncClient",
+            return_value=_mock_client(search_resp),
+        ),
     ):
-        result = _write_gdrive("TEAM.md", "content")
+        result = await _write_gdrive("TEAM.md", "content")
     assert "Error 500" in result
 
 

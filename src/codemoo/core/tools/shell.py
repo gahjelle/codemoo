@@ -1,7 +1,7 @@
 """Shell operation tools."""
 
+import asyncio
 import shlex
-import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -38,33 +38,43 @@ def make_shell_validator(session_folder: Path) -> Callable[..., str | None]:
     return _validate
 
 
-def _run_shell(command: str, _timeout: int = 30) -> str:
+async def _run_shell(command: str, _timeout: int = 30) -> str:
     try:
-        result = subprocess.run(  # noqa: S602
+        proc = await asyncio.create_subprocess_shell(
             command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=_timeout,
-            check=False,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-    except subprocess.TimeoutExpired:
-        return f"Error: timeout after {_timeout}s. Command did not complete: {command}"
+        try:
+            stdout_bytes, stderr_bytes = await asyncio.wait_for(
+                proc.communicate(), timeout=_timeout
+            )
+        except TimeoutError:
+            proc.kill()
+            await proc.wait()
+            return (
+                f"Error: timeout after {_timeout}s. Command did not complete: {command}"
+            )
+    except OSError as err:
+        return f"Error: {err}"
 
-    if result.returncode:
+    stdout = stdout_bytes.decode(errors="replace")
+    stderr = stderr_bytes.decode(errors="replace")
+
+    if proc.returncode:
         return "\n".join(
             [
-                f"Error: {result.stderr.rstrip()}",
-                f"exit code: {result.returncode}",
-                f"stdout:\n{result.stdout.rstrip()}" if result.stdout.strip() else "",
+                f"Error: {stderr.rstrip()}",
+                f"exit code: {proc.returncode}",
+                f"stdout:\n{stdout.rstrip()}" if stdout.strip() else "",
             ]
         )
 
     return "\n".join(
         [
-            f"stdout:\n{result.stdout.rstrip()}",
-            f"stderr:\n{result.stderr.rstrip()}" if result.stderr.strip() else "",
-            f"exit code: {result.returncode}",
+            f"stdout:\n{stdout.rstrip()}",
+            f"stderr:\n{stderr.rstrip()}" if stderr.strip() else "",
+            f"exit code: {proc.returncode}",
         ]
     )
 

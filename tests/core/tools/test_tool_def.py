@@ -1,6 +1,8 @@
 from typing import cast
 from unittest.mock import MagicMock
 
+import pytest
+
 from codemoo.core.bots import run_init_hooks
 from codemoo.core.tools import ToolDef, ToolParam
 from codemoo.core.tools.files import read_file, write_file
@@ -11,7 +13,7 @@ from codemoo.m365.tools import M365_TOOL_REGISTRY
 
 
 def test_tool_def_exposes_name_and_fn() -> None:
-    def my_fn(x: str) -> str:
+    async def my_fn(x: str) -> str:
         return x
 
     t = ToolDef(
@@ -25,7 +27,7 @@ def test_tool_def_exposes_name_and_fn() -> None:
 
 
 def test_tool_def_requires_approval_defaults_to_false() -> None:
-    def my_fn(x: str) -> str:
+    async def my_fn(x: str) -> str:
         return x
 
     t = ToolDef(
@@ -53,21 +55,24 @@ def test_reverse_string_does_not_require_approval() -> None:
     assert reverse_string.requires_approval is False
 
 
-def test_reverse_string_ascii() -> None:
-    assert reverse_string.fn(text="hello") == "olleh"
+@pytest.mark.asyncio
+async def test_reverse_string_ascii() -> None:
+    assert await reverse_string.fn(text="hello") == "olleh"
 
 
-def test_reverse_string_empty() -> None:
-    assert reverse_string.fn(text="") == ""
+@pytest.mark.asyncio
+async def test_reverse_string_empty() -> None:
+    assert await reverse_string.fn(text="") == ""
 
 
-def test_reverse_string_unicode() -> None:
-    assert reverse_string.fn(text="abc") == "cba"
-    assert reverse_string.fn(text="élève") == "evèlé"
+@pytest.mark.asyncio
+async def test_reverse_string_unicode() -> None:
+    assert await reverse_string.fn(text="abc") == "cba"
+    assert await reverse_string.fn(text="élève") == "evèlé"
 
 
 def test_tool_def_init_defaults_to_none() -> None:
-    def my_fn(x: str) -> str:
+    async def my_fn(x: str) -> str:
         return x
 
     t = ToolDef(name="t", description="", parameters=[], fn=my_fn)
@@ -98,7 +103,7 @@ def test_run_init_hooks_calls_hook_once_per_unique_fn() -> None:
     def hook_b() -> None:
         call_log.append("b")
 
-    def noop(x: str) -> str:
+    async def noop(x: str) -> str:
         return x
 
     tools = [
@@ -113,7 +118,7 @@ def test_run_init_hooks_calls_hook_once_per_unique_fn() -> None:
 def test_run_init_hooks_skips_none_init() -> None:
     called: list[bool] = []
 
-    def noop(x: str) -> str:
+    async def noop(x: str) -> str:
         return x
 
     tools = [ToolDef(name="t", description="", parameters=[], fn=noop, init=None)]
