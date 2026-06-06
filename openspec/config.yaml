@@ -1,14 +1,5 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
-
 rules:
   proposal:
     - "Keep proposals under 800 words"
@@ -18,4 +9,6 @@ rules:
     - "Always include verification tasks: ruff format, ruff check, ty check, and
       pytest. Run ruff and ty on both src/ and tests/"
     - "Always review documentation and update if necessary: Read README.md,
-      PLANS.md, BOTS.md and AGENTS.md and update whatever is necessary."
+      PLANS.md, BOTS.md and AGENTS.md; also check docs/agents/*.md for the
+      relevant detail file (bot-configuration, tools-architecture, etc.) and
+      update whatever is necessary."

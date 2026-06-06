@@ -60,7 +60,7 @@ def test_dispatch_tool_validate_blocks_fn_not_called() -> None:
     tool = _make_tool(fn, validate=lambda **_: "Blocked: test reason")
     result = asyncio.run(dispatch_tool(tool, {"x": "v"}, "Bot", None))
     assert result == "Blocked: test reason"
-    assert fn_called == []
+    assert not fn_called
 
 
 def test_dispatch_tool_emits_blocked_event() -> None:
